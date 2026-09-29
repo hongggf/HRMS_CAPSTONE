@@ -1,0 +1,297 @@
+{
+  "info": {
+    "name": "HRMS API - Enterprise Edition",
+    "description": "Production-grade API collection for the HRMS backend.\n\n### Features:\n- **Automated Token Management:** Logging in automatically sets the `{{accessToken}}` and `{{refreshToken}}` for the entire collection.\n- **Inherited Authorization:** All protected folders automatically inherit the Bearer token—no need to set headers manually.\n- **Standardized Responses:** Every endpoint follows a strict `{ success, message, data, meta }` format.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "01. System & Health",
+      "description": "Public endpoints for system diagnostics.",
+      "item": [
+        {
+          "name": "System Health Check",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            },
+            "description": "Verifies that the server and database connections are operational."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Authentication",
+      "description": "Endpoints handling sessions, JWTs, and secure logins.",
+      "item": [
+        {
+          "name": "Login (Auto-sets Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data) {",
+                  "    if (res.data.accessToken) pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
+                  "    if (res.data.refreshToken) pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken);",
+                  "    console.log(\"✅ Tokens successfully extracted and saved to environment!\");",
+                  "} else {",
+                  "    console.error(\"❌ Login failed. Check credentials.\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"head@hr.local\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Authenticates a user and returns a short-lived access token and a long-lived refresh token."
+          }
+        },
+        {
+          "name": "Get Current Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Returns the authenticated user's profile, including their flattened roles and permissions arrays."
+          }
+        },
+        {
+          "name": "Refresh Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.accessToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
+                  "    console.log(\"✅ Access Token successfully refreshed!\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Exchanges a valid refresh token for a new short-lived access token."
+          }
+        },
+        {
+          "name": "Logout (Revoke Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.collectionVariables.set(\"accessToken\", \"\");",
+                  "    pm.collectionVariables.set(\"refreshToken\", \"\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Revokes the refresh token in the database and clears local Postman variables."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. User Management (RBAC)",
+      "description": "Endpoints requiring HEAD_OF_HR roles or specific USER permissions.",
+      "item": [
+        {
+          "name": "List Users (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number for pagination"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Number of records per page"
+                }
+              ]
+            },
+            "description": "Requires `USER_READ` permission. Returns a paginated list of users with flattened role arrays and metadata."
+          }
+        },
+        {
+          "name": "Create a New HR User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"hr_admin99@hr.local\",\n  \"password\": \"securepassword99\",\n  \"roleId\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            },
+            "description": "Requires `USER_CREATE` permission. Role ID 5 corresponds to `HR_ADMIN`."
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/2/deactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "2", "deactivate"]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Disables the account preventing future logins."
+          }
+        },
+        {
+          "name": "Activate User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/2/activate",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "2", "activate"]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Re-enables a deactivated account."
+          }
+        },
+        {
+          "name": "Assign/Change Role",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"roleId\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/2/role",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "2", "role"]
+            },
+            "description": "Requires `USER_ROLE_ASSIGN` permission. Clears existing roles and assigns the new role ID."
+          }
+        }
+      ]
+    }
+  ]
+}
