@@ -112,3 +112,41 @@ export const logout = async (req: AuthRequest, res: Response) => {
 export const getMe = async (req: AuthRequest, res: Response) => {
   return sendSuccess(res, { user: req.user }, 'Profile retrieved successfully');
 };
+
+export const changePassword = async (req: AuthRequest, res: Response) => {
+  const { oldPassword, newPassword } = req.body;
+
+  try {
+    const userId = req.user?.id;
+    if (!userId) return sendError(res, 'Unauthorized', 401);
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user || !user.isActive) return sendError(res, 'User not found or disabled', 404);
+
+    const validPass = await bcrypt.compare(oldPassword, user.password);
+    if (!validPass) {
+      await logAudit('PASSWORD_CHANGE_FAILED', userId, { reason: 'invalid_old_password' });
+      return sendError(res, 'Invalid old password', 400);
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Perform password update and token revocation in a transaction
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { password: hashedNewPassword },
+      }),
+      prisma.refreshToken.updateMany({
+        where: { userId: userId, revoked: false },
+        data: { revoked: true },
+      })
+    ]);
+
+    await logAudit('PASSWORD_CHANGED', userId);
+
+    return sendSuccess(res, null, 'Password changed successfully. Please log in again.');
+  } catch (error) {
+    return sendError(res, 'Internal server error', 500);
+  }
+};
