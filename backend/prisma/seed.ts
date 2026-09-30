@@ -17,15 +17,15 @@ async function main() {
     'HR_LND',
   ];
 
-  const roles = await Promise.all(
-    rolesData.map((roleName) =>
-      prisma.role.upsert({
-        where: { name: roleName },
-        update: {},
-        create: { name: roleName },
-      })
-    )
-  );
+  const roles = [];
+  for (const roleName of rolesData) {
+    const role = await prisma.role.upsert({
+      where: { name: roleName },
+      update: {},
+      create: { name: roleName },
+    });
+    roles.push(role);
+  }
   console.log(`Created ${roles.length} roles.`);
 
   // 2. Permissions
@@ -40,37 +40,35 @@ async function main() {
     'PAYROLL_APPROVE',
   ];
 
-  const permissions = await Promise.all(
-    permissionsData.map((perm) =>
-      prisma.permission.upsert({
-        where: { action: perm },
-        update: {},
-        create: { action: perm },
-      })
-    )
-  );
+  const permissions = [];
+  for (const perm of permissionsData) {
+    const permission = await prisma.permission.upsert({
+      where: { action: perm },
+      update: {},
+      create: { action: perm },
+    });
+    permissions.push(permission);
+  }
   console.log(`Created ${permissions.length} permissions.`);
 
   // 3. Assign all permissions to HEAD_OF_HR
   const headOfHrRole = roles.find((r) => r.name === 'HEAD_OF_HR');
   if (headOfHrRole) {
-    await Promise.all(
-      permissions.map((perm) =>
-        prisma.rolePermission.upsert({
-          where: {
-            roleId_permissionId: {
-              roleId: headOfHrRole.id,
-              permissionId: perm.id,
-            },
-          },
-          update: {},
-          create: {
+    for (const perm of permissions) {
+      await prisma.rolePermission.upsert({
+        where: {
+          roleId_permissionId: {
             roleId: headOfHrRole.id,
             permissionId: perm.id,
           },
-        })
-      )
-    );
+        },
+        update: {},
+        create: {
+          roleId: headOfHrRole.id,
+          permissionId: perm.id,
+        },
+      });
+    }
   }
 
   // 4. Create HEAD_OF_HR user

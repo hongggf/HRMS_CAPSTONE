@@ -1,19 +1,15 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
+import { env } from './config/env';
 import app from './app';
 import { logger } from './utils/logger';
 import { connectDB, prisma } from './config/db';
-
-const PORT = process.env.PORT || 3000;
 
 let server: any;
 
 const startServer = async () => {
   await connectDB();
 
-  server = app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
+  server = app.listen(env.PORT, () => {
+    logger.info(`Server is running on port ${env.PORT} in ${env.NODE_ENV} mode`);
   });
 };
 

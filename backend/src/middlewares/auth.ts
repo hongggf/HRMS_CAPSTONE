@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { prisma } from '../config/db';
 import { sendError } from '../utils/response';
+import { env } from '../config/env';
+import { z } from 'zod';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -12,20 +14,38 @@ export interface AuthRequest extends Request {
   };
 }
 
+const jwtPayloadSchema = z.object({
+  id: z.number(),
+  iat: z.number().optional(),
+  exp: z.number().optional(),
+});
+
 export const requireAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return sendError(res, 'Unauthorized', 401);
+      return sendError(res, 'Unauthorized: Missing or invalid token format', 401);
     }
 
     const token = authHeader.split(' ')[1];
-    const secret = process.env.JWT_SECRET || 'supersecretkey';
 
-    const decoded = jwt.verify(token, secret) as any;
+    let decodedRaw;
+    try {
+      decodedRaw = jwt.verify(token, env.JWT_SECRET, { algorithms: ['HS256'] });
+    } catch (err: any) {
+      if (err.name === 'TokenExpiredError') {
+        return sendError(res, 'Unauthorized: Token expired', 401);
+      }
+      return sendError(res, 'Unauthorized: Invalid token', 401);
+    }
+
+    const decoded = jwtPayloadSchema.safeParse(decodedRaw);
+    if (!decoded.success) {
+      return sendError(res, 'Unauthorized: Malformed token payload', 401);
+    }
 
     const user = await prisma.user.findUnique({
-      where: { id: decoded.id },
+      where: { id: decoded.data.id },
       include: {
         roles: {
           include: {
@@ -57,7 +77,7 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 
     next();
   } catch (error) {
-    return sendError(res, 'Unauthorized: Invalid or expired token', 401);
+    return sendError(res, 'Internal server error during authentication', 500);
   }
 };
 

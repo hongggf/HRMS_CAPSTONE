@@ -46,8 +46,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/health",
-              "host": ["{{baseUrl}}"],
-              "path": ["health"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
             },
             "description": "Verifies that the server and database connections are operational."
           }
@@ -95,8 +99,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/login",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "login"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
             },
             "description": "Authenticates a user and returns a short-lived access token and a long-lived refresh token."
           }
@@ -108,8 +117,13 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "me"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
             },
             "description": "Returns the authenticated user's profile, including their flattened roles and permissions arrays."
           }
@@ -148,8 +162,13 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/refresh",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "refresh"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
             },
             "description": "Exchanges a valid refresh token for a new short-lived access token."
           }
@@ -184,10 +203,42 @@
             },
             "url": {
               "raw": "{{baseUrl}}/auth/logout",
-              "host": ["{{baseUrl}}"],
-              "path": ["auth", "logout"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "logout"
+              ]
             },
             "description": "Revokes the refresh token in the database and clears local Postman variables."
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"password123\",\n  \"newPassword\": \"NewStrongPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            },
+            "description": "Allows an authenticated user to change their password."
           }
         }
       ]
@@ -203,8 +254,12 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/users?page=1&limit=10",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ],
               "query": [
                 {
                   "key": "page",
@@ -233,14 +288,18 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"hr_admin99@hr.local\",\n  \"password\": \"securepassword99\",\n  \"roleId\": 5\n}"
+              "raw": "{\n  \"email\": \"hr_admin99@hr.local\",\n  \"password\": \"SecurePass99!\",\n  \"roleId\": 3\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/users",
-              "host": ["{{baseUrl}}"],
-              "path": ["users"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users"
+              ]
             },
-            "description": "Requires `USER_CREATE` permission. Role ID 5 corresponds to `HR_ADMIN`."
+            "description": "Requires `USER_CREATE` permission. Role ID 3 corresponds to `HR_ADMIN`."
           }
         },
         {
@@ -250,8 +309,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/users/2/deactivate",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "2", "deactivate"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "2",
+                "deactivate"
+              ]
             },
             "description": "Requires `HEAD_OF_HR` role. Disables the account preventing future logins."
           }
@@ -263,8 +328,14 @@
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/users/2/activate",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "2", "activate"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "2",
+                "activate"
+              ]
             },
             "description": "Requires `HEAD_OF_HR` role. Re-enables a deactivated account."
           }
@@ -281,14 +352,43 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"roleId\": 5\n}"
+              "raw": "{\n  \"roleId\": 3\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/users/2/role",
-              "host": ["{{baseUrl}}"],
-              "path": ["users", "2", "role"]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "users",
+                "2",
+                "role"
+              ]
             },
             "description": "Requires `USER_ROLE_ASSIGN` permission. Clears existing roles and assigns the new role ID."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Role Management",
+      "description": "Endpoints for role management.",
+      "item": [
+        {
+          "name": "List Roles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/roles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "roles"
+              ]
+            },
+            "description": "Requires authentication. Returns a list of all roles and their permissions."
           }
         }
       ]

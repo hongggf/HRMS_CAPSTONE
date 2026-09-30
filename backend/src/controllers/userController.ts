@@ -1,56 +1,31 @@
-import { Response } from 'express';
-import bcrypt from 'bcryptjs';
-import { prisma } from '../config/db';
+import { Response, NextFunction } from 'express';
 import { logAudit } from '../services/auditService';
 import { AuthRequest } from '../middlewares/auth';
-import { sendSuccess, sendError } from '../utils/response';
+import { sendSuccess } from '../utils/response';
+import { AppError } from '../utils/AppError';
+import * as userService from '../services/userService';
 
-export const createUser = async (req: AuthRequest, res: Response) => {
+export const createUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
   const { email, password, roleId } = req.body;
   try {
-    const existing = await prisma.user.findUnique({ where: { email } });
-    if (existing) return sendError(res, 'Email already exists', 400);
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        roles: roleId ? { create: { roleId } } : undefined,
-      },
-    });
-
+    const user = await userService.createUserInDB(email, password, roleId);
     await logAudit('USER_CREATED', req.user?.id || null, { newUserId: user.id });
 
-    return sendSuccess(res, { user: { id: user.id, email: user.email } }, 'User created successfully', null, 201);
+    return sendSuccess(res, { user: { id: user.id, email: user.email } }, 'User created successfully', undefined, 201);
   } catch (error) {
-    return sendError(res, 'Internal server error', 500);
+    next(error);
   }
 };
 
-export const listUsers = async (req: AuthRequest, res: Response) => {
+export const listUsers = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const skip = (page - 1) * limit;
+    
+    // Prevent abuse
+    if (limit > 100) throw new AppError('Limit cannot exceed 100', 400);
 
-    const [total, usersRaw] = await Promise.all([
-      prisma.user.count(),
-      prisma.user.findMany({
-        skip,
-        take: limit,
-        select: { id: true, email: true, isActive: true, roles: { include: { role: true } } },
-        orderBy: { createdAt: 'desc' }
-      })
-    ]);
-
-    // Flatten the relational data for the frontend
-    const users = usersRaw.map(u => ({
-      id: u.id,
-      email: u.email,
-      isActive: u.isActive,
-      roles: u.roles.map(r => r.role.name) // e.g., ["HR_ADMIN"] instead of [{role: {name: "HR_ADMIN"}}]
-    }));
+    const { users, total } = await userService.listUsersFromDB(page, limit);
 
     const meta = {
       total,
@@ -61,43 +36,47 @@ export const listUsers = async (req: AuthRequest, res: Response) => {
 
     return sendSuccess(res, { users }, 'Users retrieved successfully', meta);
   } catch (error) {
-    return sendError(res, 'Internal server error', 500);
+    next(error);
   }
 };
 
-export const activateUser = async (req: AuthRequest, res: Response) => {
+export const activateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id);
-    await prisma.user.update({ where: { id }, data: { isActive: true } });
+    if (isNaN(id)) throw new AppError('Invalid user ID', 400);
+
+    await userService.updateUserStatusInDB(id, true);
     await logAudit('USER_ACTIVATED', req.user?.id || null, { targetUserId: id });
     return sendSuccess(res, null, 'User activated successfully');
   } catch (error) {
-    return sendError(res, 'Internal server error', 500);
+    next(error);
   }
 };
 
-export const deactivateUser = async (req: AuthRequest, res: Response) => {
+export const deactivateUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id);
-    await prisma.user.update({ where: { id }, data: { isActive: false } });
+    if (isNaN(id)) throw new AppError('Invalid user ID', 400);
+
+    await userService.updateUserStatusInDB(id, false);
     await logAudit('USER_DEACTIVATED', req.user?.id || null, { targetUserId: id });
     return sendSuccess(res, null, 'User deactivated successfully');
   } catch (error) {
-    return sendError(res, 'Internal server error', 500);
+    next(error);
   }
 };
 
-export const assignRole = async (req: AuthRequest, res: Response) => {
+export const assignRole = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const userId = parseInt(req.params.id);
+    if (isNaN(userId)) throw new AppError('Invalid user ID', 400);
     const { roleId } = req.body;
     
-    await prisma.userRole.deleteMany({ where: { userId } });
-    await prisma.userRole.create({ data: { userId, roleId } });
+    await userService.assignRoleToUserInDB(userId, roleId);
     
     await logAudit('ROLE_ASSIGNED', req.user?.id || null, { targetUserId: userId, roleId });
     return sendSuccess(res, null, 'Role assigned successfully');
   } catch (error) {
-    return sendError(res, 'Internal server error', 500);
+    next(error);
   }
 };

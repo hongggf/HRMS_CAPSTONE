@@ -4,19 +4,24 @@ import { validate } from '../middlewares/validate';
 import { loginSchema, refreshSchema, changePasswordSchema } from '../validators/authValidators';
 import { requireAuth } from '../middlewares/auth';
 import rateLimit from 'express-rate-limit';
+import { sendError } from '../utils/response';
 
 const router = Router();
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  message: { error: 'Too many login attempts from this IP, please try again after 15 minutes' },
+  handler: (req, res) => {
+    return sendError(res, 'Too many login attempts from this IP, please try again after 15 minutes', 429);
+  }
 });
 
 const changePasswordLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3,
-  message: { error: 'Too many password change attempts, please try again later' },
+  handler: (req, res) => {
+    return sendError(res, 'Too many password change attempts, please try again later', 429);
+  }
 });
 
 router.post('/login', loginLimiter, validate(loginSchema), login as any);

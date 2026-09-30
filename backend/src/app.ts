@@ -5,8 +5,10 @@ import helmet from 'helmet';
 import healthRouter from './routes/health';
 import authRouter from './routes/authRoutes';
 import userRouter from './routes/userRoutes';
+import roleRouter from './routes/roleRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { sendError } from './utils/response';
+import { env } from './config/env';
 
 const app: Application = express();
 
@@ -15,7 +17,7 @@ app.use(helmet());
 
 // CORS Configuration
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*'
+  origin: env.CORS_ORIGIN,
 }));
 
 // Request body size limits
@@ -29,6 +31,7 @@ app.use(morgan('combined'));
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/roles', roleRouter);
 
 // Unknown endpoint / 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
