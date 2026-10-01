@@ -9,7 +9,7 @@
     "build": "tsc",
     "lint": "eslint src/**/*.ts",
     "format": "prettier --write \"src/**/*.ts\"",
-    "test": "dotenv -e .env.test -- jest"
+    "test": "jest"
   },
   "dependencies": {
     "@prisma/client": "^5.10.2",

@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "HRMS API - Enterprise Edition",
-    "description": "Production-grade API collection for the HRMS backend.\n\n### Features:\n- **Automated Token Management:** Logging in automatically sets the `{{accessToken}}` and `{{refreshToken}}` for the entire collection.\n- **Inherited Authorization:** All protected folders automatically inherit the Bearer token—no need to set headers manually.\n- **Standardized Responses:** Every endpoint follows a strict `{ success, message, data, meta }` format.",
+    "description": "Production-grade API collection for the HRMS backend.\n\n### Features:\n- **Automated Token Management:** Logging in automatically sets the `{{accessToken}}` and `{{refreshToken}}` for the entire collection.\n- **Inherited Authorization:** All protected folders automatically inherit the Bearer token\u2014no need to set headers manually.\n- **Standardized Responses:** Every endpoint follows a strict `{ success, message, data, meta }` format.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -73,9 +73,9 @@
                   "if (res.success && res.data) {",
                   "    if (res.data.accessToken) pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
                   "    if (res.data.refreshToken) pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken);",
-                  "    console.log(\"✅ Tokens successfully extracted and saved to environment!\");",
+                  "    console.log(\"\u2705 Tokens successfully extracted and saved to environment!\");",
                   "} else {",
-                  "    console.error(\"❌ Login failed. Check credentials.\");",
+                  "    console.error(\"\u274c Login failed. Check credentials.\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -138,7 +138,7 @@
                   "const res = pm.response.json();",
                   "if (res.success && res.data && res.data.accessToken) {",
                   "    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
-                  "    console.log(\"✅ Access Token successfully refreshed!\");",
+                  "    console.log(\"\u2705 Access Token successfully refreshed!\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -389,6 +389,759 @@
               ]
             },
             "description": "Requires authentication. Returns a list of all roles and their permissions."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Departments",
+      "description": "Organization structure management. Requires `DEPARTMENT_*` permissions. Only `HEAD_OF_HR` can delete.",
+      "item": [
+        {
+          "name": "Create Department",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Engineering\",\n  \"code\": \"ENG\",\n  \"description\": \"Software engineering department\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/departments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments"
+              ]
+            },
+            "description": "Requires `DEPARTMENT_CREATE` permission. Name and code must be unique. Code must be uppercase alphanumeric."
+          }
+        },
+        {
+          "name": "List Departments (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments?page=1&limit=10&status=ACTIVE",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Records per page"
+                },
+                {
+                  "key": "status",
+                  "value": "ACTIVE",
+                  "description": "Filter by status: ACTIVE or INACTIVE"
+                }
+              ]
+            },
+            "description": "Requires `DEPARTMENT_READ` permission. Returns paginated departments with position count."
+          }
+        },
+        {
+          "name": "Get Department by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "1"
+              ]
+            },
+            "description": "Requires `DEPARTMENT_READ` permission. Returns department details including its positions."
+          }
+        },
+        {
+          "name": "Update Department",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated department description\",\n  \"status\": \"ACTIVE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/departments/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "1"
+              ]
+            },
+            "description": "Requires `DEPARTMENT_UPDATE` permission. All fields are optional."
+          }
+        },
+        {
+          "name": "Delete Department",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/departments/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "departments",
+                "1"
+              ]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Cannot delete departments that have positions or workforce requests."
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Positions",
+      "description": "Position management within departments. Requires `POSITION_*` permissions. Only `HEAD_OF_HR` can delete.",
+      "item": [
+        {
+          "name": "Create Position",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Software Engineer\",\n  \"code\": \"SWE-001\",\n  \"departmentId\": 1,\n  \"description\": \"Backend developer role\",\n  \"employmentType\": \"FULL_TIME\",\n  \"salaryMin\": 5000,\n  \"salaryMax\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/positions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "positions"
+              ]
+            },
+            "description": "Requires `POSITION_CREATE` permission. Department must exist and be ACTIVE. Code must be unique. salaryMax must be >= salaryMin. Employment types: FULL_TIME, PART_TIME, CONTRACT, INTERNSHIP."
+          }
+        },
+        {
+          "name": "List Positions (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/positions?page=1&limit=10&departmentId=1&status=OPEN",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "positions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Records per page"
+                },
+                {
+                  "key": "departmentId",
+                  "value": "1",
+                  "description": "Filter by department ID"
+                },
+                {
+                  "key": "status",
+                  "value": "OPEN",
+                  "description": "Filter by status: OPEN, CLOSED, or FROZEN"
+                }
+              ]
+            },
+            "description": "Requires `POSITION_READ` permission. Returns positions with their department info."
+          }
+        },
+        {
+          "name": "Get Position by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/positions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "positions",
+                "1"
+              ]
+            },
+            "description": "Requires `POSITION_READ` permission. Returns position details with department info."
+          }
+        },
+        {
+          "name": "Update Position",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Updated position description\",\n  \"salaryMin\": 6000,\n  \"salaryMax\": 12000,\n  \"status\": \"OPEN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/positions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "positions",
+                "1"
+              ]
+            },
+            "description": "Requires `POSITION_UPDATE` permission. All fields are optional. Statuses: OPEN, CLOSED, FROZEN."
+          }
+        },
+        {
+          "name": "Delete Position",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/positions/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "positions",
+                "1"
+              ]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Cannot delete positions that have workforce requests."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. Workforce Requests",
+      "description": "Workforce planning workflow. HR creates requests \u2192 submits \u2192 HEAD_OF_HR approves/rejects.\n\n### Workflow:\n`DRAFT` \u2192 `PENDING_APPROVAL` (submit) \u2192 `APPROVED` or `REJECTED` (HEAD_OF_HR only)\n\nRequests can be cancelled from DRAFT or PENDING_APPROVAL states.",
+      "item": [
+        {
+          "name": "Create Workforce Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"departmentId\": 1,\n  \"positionId\": 1,\n  \"headcount\": 3,\n  \"justification\": \"Team expansion for Q1 2027 projects\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests"
+              ]
+            },
+            "description": "Requires `WORKFORCE_CREATE` permission. Creates a new request in DRAFT status. Department must be ACTIVE, position must be OPEN and belong to the specified department. Headcount must be a positive integer."
+          }
+        },
+        {
+          "name": "List Workforce Requests (Paginated)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests?page=1&limit=10&status=PENDING_APPROVAL&departmentId=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Page number"
+                },
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "Records per page"
+                },
+                {
+                  "key": "status",
+                  "value": "PENDING_APPROVAL",
+                  "description": "Filter: DRAFT, SUBMITTED, PENDING_APPROVAL, APPROVED, REJECTED, CANCELLED"
+                },
+                {
+                  "key": "departmentId",
+                  "value": "1",
+                  "description": "Filter by department ID"
+                }
+              ]
+            },
+            "description": "Requires `WORKFORCE_READ` permission. Returns requests with department, position, and requester info."
+          }
+        },
+        {
+          "name": "Get Workforce Request by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1"
+              ]
+            },
+            "description": "Requires `WORKFORCE_READ` permission. Returns full request details with department, position, requester, approver, and rejector info."
+          }
+        },
+        {
+          "name": "Update Workforce Request (DRAFT only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"headcount\": 5,\n  \"justification\": \"Updated: larger team needed for expanded scope\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1"
+              ]
+            },
+            "description": "Requires `WORKFORCE_CREATE` permission. Only DRAFT requests can be edited."
+          }
+        },
+        {
+          "name": "Delete Workforce Request (DRAFT only)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1"
+              ]
+            },
+            "description": "Requires `WORKFORCE_CREATE` permission. Only DRAFT requests can be deleted."
+          }
+        },
+        {
+          "name": "Submit Workforce Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1",
+                "submit"
+              ]
+            },
+            "description": "Requires `WORKFORCE_CREATE` permission. Transitions from DRAFT \u2192 PENDING_APPROVAL. Only DRAFT requests can be submitted."
+          }
+        },
+        {
+          "name": "Approve Workforce Request (HEAD_OF_HR)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1",
+                "approve"
+              ]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL \u2192 APPROVED. Records approver and timestamp."
+          }
+        },
+        {
+          "name": "Reject Workforce Request (HEAD_OF_HR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"Budget constraints for Q1 - please resubmit with reduced headcount\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1",
+                "reject"
+              ]
+            },
+            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL \u2192 REJECTED. Rejection reason is required."
+          }
+        },
+        {
+          "name": "Cancel Workforce Request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/workforce-requests/1/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "workforce-requests",
+                "1",
+                "cancel"
+              ]
+            },
+            "description": "Requires `WORKFORCE_CREATE` permission. Can cancel DRAFT or PENDING_APPROVAL requests. Cannot cancel APPROVED or REJECTED requests."
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Recruitment (Phase 4)",
+      "description": "End-to-end recruitment lifecycle endpoints: Requisitions -> Postings -> Applications -> Interviews -> Final Approval.",
+      "item": [
+        {
+          "name": "1. Create Job Requisition",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workforceRequestId\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/requisitions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "requisitions"
+              ]
+            },
+            "description": "Creates a draft job requisition from an APPROVED workforce request. Requires RECRUITMENT_CREATE permission."
+          }
+        },
+        {
+          "name": "2. Update Requisition Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/requisitions/1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "requisitions",
+                "1",
+                "status"
+              ]
+            },
+            "description": "Move requisition to APPROVED status."
+          }
+        },
+        {
+          "name": "3. Create Job Posting",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requisitionId\": 1,\n  \"title\": \"Senior Software Engineer\",\n  \"description\": \"Great backend role.\",\n  \"requirements\": \"Node.js, TypeScript\",\n  \"location\": \"Remote\",\n  \"employmentType\": \"FULL_TIME\",\n  \"openingDate\": \"2026-11-01T00:00:00.000Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/postings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "postings"
+              ]
+            }
+          }
+        },
+        {
+          "name": "4. Publish Job Posting",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PUBLISHED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/postings/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "postings",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "5. Submit Application (Candidate)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"jobPostingId\": 1,\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Smith\",\n  \"email\": \"alice@example.com\",\n  \"phone\": \"+1234567890\",\n  \"resumeUrl\": \"https://example.com/alice_resume.pdf\",\n  \"source\": \"LinkedIn\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/applications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "applications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "6. Update Application Status (SCREENING/SHORTLISTED/SELECTED)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"SHORTLISTED\",\n  \"notes\": \"Strong resume.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/applications/1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "applications",
+                "1",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "7. Schedule Interview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": 1,\n  \"interviewerId\": 1,\n  \"scheduledAt\": \"2026-12-01T10:00:00.000Z\",\n  \"type\": \"TECHNICAL\",\n  \"location\": \"Google Meet\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/interviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "interviews"
+              ]
+            }
+          }
+        },
+        {
+          "name": "8. Submit Interview Evaluation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"score\": 95,\n  \"strengths\": \"Excellent technical skills\",\n  \"weaknesses\": \"N/A\",\n  \"recommendation\": \"Strong Hire\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/interviews/1/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "interviews",
+                "1",
+                "evaluate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "9. Forward to Head of HR Approval",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"PENDING_HEAD_OF_HR_APPROVAL\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/applications/1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "applications",
+                "1",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "10. Approve Candidate (HEAD_OF_HR Only)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recruitment/applications/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recruitment",
+                "applications",
+                "1",
+                "approve"
+              ]
+            },
+            "description": "Requires HEAD_OF_HR role."
           }
         }
       ]

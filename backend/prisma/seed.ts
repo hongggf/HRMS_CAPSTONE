@@ -35,8 +35,17 @@ async function main() {
     'USER_UPDATE',
     'USER_ROLE_ASSIGN',
     'WORKFORCE_CREATE',
+    'WORKFORCE_READ',
     'WORKFORCE_APPROVE',
+    'DEPARTMENT_CREATE',
+    'DEPARTMENT_READ',
+    'DEPARTMENT_UPDATE',
+    'POSITION_CREATE',
+    'POSITION_READ',
+    'POSITION_UPDATE',
     'RECRUITMENT_CREATE',
+    'RECRUITMENT_READ',
+    'RECRUITMENT_UPDATE',
     'PAYROLL_APPROVE',
   ];
 
@@ -67,6 +76,40 @@ async function main() {
           roleId: headOfHrRole.id,
           permissionId: perm.id,
         },
+      });
+    }
+  }
+
+  
+  // 3b. Assign specific permissions to HR_ADMIN (can create/manage org structure)
+  const hrAdminRole = roles.find((r) => r.name === 'HR_ADMIN');
+  if (hrAdminRole) {
+    const adminPerms = permissions.filter(p => [
+      'DEPARTMENT_CREATE', 'DEPARTMENT_READ', 'DEPARTMENT_UPDATE',
+      'POSITION_CREATE', 'POSITION_READ', 'POSITION_UPDATE',
+      'WORKFORCE_READ', 'WORKFORCE_CREATE'
+    ].includes(p.action));
+    
+    for (const perm of adminPerms) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: hrAdminRole.id, permissionId: perm.id } },
+        update: {}, create: { roleId: hrAdminRole.id, permissionId: perm.id },
+      });
+    }
+  }
+
+  // 3c. Assign specific permissions to HR_RECRUITMENT (can view org, create workforce requests)
+  const hrRecruitmentRole = roles.find((r) => r.name === 'HR_RECRUITMENT');
+  if (hrRecruitmentRole) {
+    const recPerms = permissions.filter(p => [
+      'DEPARTMENT_READ', 'POSITION_READ', 
+      'WORKFORCE_CREATE', 'WORKFORCE_READ', 'RECRUITMENT_CREATE', 'RECRUITMENT_READ', 'RECRUITMENT_UPDATE'
+    ].includes(p.action));
+    
+    for (const perm of recPerms) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: hrRecruitmentRole.id, permissionId: perm.id } },
+        update: {}, create: { roleId: hrRecruitmentRole.id, permissionId: perm.id },
       });
     }
   }

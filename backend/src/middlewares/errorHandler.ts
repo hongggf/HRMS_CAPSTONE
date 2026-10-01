@@ -4,6 +4,9 @@ import { sendError } from '../utils/response';
 import { AppError } from '../utils/AppError';
 
 export const errorHandler = (err: any, req: Request, res: Response, _next: NextFunction) => {
+  if (res.headersSent) {
+    return _next(err);
+  }
   if (err instanceof AppError) {
     if (!err.isOperational) {
       logger.error('CRITICAL ERROR:', err);

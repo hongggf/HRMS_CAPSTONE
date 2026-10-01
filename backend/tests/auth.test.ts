@@ -11,7 +11,7 @@ describe('Auth & User Management & RBAC Tests', () => {
   let testRefreshToken: string;
   let headOfHrRoleId: number;
 
-  const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
+  const JWT_SECRET = process.env.JWT_SECRET!;
 
   beforeAll(async () => {
     await prisma.auditLog.deleteMany();

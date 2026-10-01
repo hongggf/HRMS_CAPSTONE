@@ -2,6 +2,8 @@ import { z } from 'zod';
 import dotenv from 'dotenv';
 import { logger } from '../utils/logger';
 
+// Load .env file. In test environment, jest.config.js sets process.env
+// BEFORE this module loads, so dotenv won't overwrite test values.
 dotenv.config();
 
 const envSchema = z.object({
