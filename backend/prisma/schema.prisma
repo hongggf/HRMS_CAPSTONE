@@ -22,26 +22,47 @@ model User {
   workforceRequestsCreated  WorkforceRequest[] @relation("WorkforceRequestedBy")
   workforceRequestsApproved WorkforceRequest[] @relation("WorkforceApprovedBy")
   workforceRequestsRejected WorkforceRequest[] @relation("WorkforceRejectedBy")
-  
-  jobRequisitionsRequested  JobRequisition[]   @relation("RequisitionRequestedBy")
-  interviewsConducted       Interview[]        @relation("InterviewInterviewer")
-  statusHistoryChanges      CandidateStatusHistory[] @relation("StatusHistoryChangedBy")
+
+  jobRequisitionsRequested JobRequisition[]         @relation("RequisitionRequestedBy")
+  interviewsConducted      Interview[]              @relation("InterviewInterviewer")
+  statusHistoryChanges     CandidateStatusHistory[] @relation("StatusHistoryChangedBy")
+
+  // Phase 5 Relations
+  employeeProfile         Employee?
+  uploadedDocuments       EmployeeDocument[]        @relation("DocumentUploadedBy")
+  employeeStatusChanges   EmployeeStatusHistory[]   @relation("EmployeeStatusChangedBy")
+  employeePositionChanges EmployeePositionHistory[] @relation("EmployeePositionChangedBy")
+  employeeSalaryChanges   EmployeeSalaryHistory[]   @relation("EmployeeSalaryChangedBy")
+  // Phase 6 Relations
+  leaveApprovals          LeaveRequest[]            @relation("LeaveApprovedBy")
+  overtimeApprovals       OvertimeRequest[]         @relation("OvertimeApprovedBy")
+
+  // Phase 7 Relations
+  payrollApprovals   PayrollApproval[]   @relation("PayrollApprovedBy")
+  payrollAdjustments PayrollAdjustment[] @relation("PayrollAdjustedBy")
+
+  // Phase 8 Relations
+  feedbacksProvided Feedback[]
+
+  // Phase 9 Relations
+  promotionsRequested PromotionRequest[] @relation("PromotionRequestedBy")
+  promotionsApproved  PromotionRequest[] @relation("PromotionApprovedBy")
 }
 
 model Role {
-  id          Int      @id @default(autoincrement())
-  name        String   @unique
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
   description String?
-  
+
   users       UserRole[]
   permissions RolePermission[]
 }
 
 model Permission {
-  id          Int      @id @default(autoincrement())
-  action      String   @unique
-  
-  roles       RolePermission[]
+  id     Int    @id @default(autoincrement())
+  action String @unique
+
+  roles RolePermission[]
 }
 
 model UserRole {
@@ -49,6 +70,7 @@ model UserRole {
   roleId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
   @@id([userId, roleId])
 }
 
@@ -57,6 +79,7 @@ model RolePermission {
   permissionId Int
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
   @@id([roleId, permissionId])
 }
 
@@ -67,9 +90,9 @@ model RefreshToken {
   expiresAt DateTime
   revoked   Boolean  @default(false)
   createdAt DateTime @default(now())
-  
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([token])
 }
@@ -81,8 +104,8 @@ model AuditLog {
   details   String?
   createdAt DateTime @default(now())
 
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
   @@index([userId])
   @@index([action])
 }
@@ -125,8 +148,10 @@ model Department {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  positions         Position[]
-  workforceRequests  WorkforceRequest[]
+  positions               Position[]
+  workforceRequests       WorkforceRequest[]
+  Employee                Employee[]
+  EmployeePositionHistory EmployeePositionHistory[]
 
   @@index([code])
 }
@@ -144,8 +169,14 @@ model Position {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  department        Department         @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  workforceRequests  WorkforceRequest[]
+  department              Department                @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  workforceRequests       WorkforceRequest[]
+  Employee                Employee[]
+  EmployeePositionHistory EmployeePositionHistory[]
+
+  // Phase 9 Relations
+  promotionsFrom PromotionRequest[] @relation("PromotionCurrentPos")
+  promotionsTo   PromotionRequest[] @relation("PromotionProposedPos")
 
   @@index([departmentId])
   @@index([code])
@@ -167,12 +198,12 @@ model WorkforceRequest {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
-  department  Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
-  position    Position   @relation(fields: [positionId], references: [id], onDelete: Restrict)
-  requester   User       @relation("WorkforceRequestedBy", fields: [requestedBy], references: [id], onDelete: Restrict)
-  approver    User?      @relation("WorkforceApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
-  rejector    User?      @relation("WorkforceRejectedBy", fields: [rejectedBy], references: [id], onDelete: SetNull)
-  
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  position   Position   @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  requester  User       @relation("WorkforceRequestedBy", fields: [requestedBy], references: [id], onDelete: Restrict)
+  approver   User?      @relation("WorkforceApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+  rejector   User?      @relation("WorkforceRejectedBy", fields: [rejectedBy], references: [id], onDelete: SetNull)
+
   jobRequisition JobRequisition?
 
   @@index([departmentId])
@@ -232,9 +263,9 @@ model JobRequisition {
   createdAt          DateTime          @default(now())
   updatedAt          DateTime          @updatedAt
 
-  workforceRequest   WorkforceRequest  @relation(fields: [workforceRequestId], references: [id], onDelete: Restrict)
-  requester          User              @relation("RequisitionRequestedBy", fields: [requestedBy], references: [id], onDelete: Restrict)
-  jobPosting         JobPosting?
+  workforceRequest WorkforceRequest @relation(fields: [workforceRequestId], references: [id], onDelete: Restrict)
+  requester        User             @relation("RequisitionRequestedBy", fields: [requestedBy], references: [id], onDelete: Restrict)
+  jobPosting       JobPosting?
 }
 
 model JobPosting {
@@ -251,8 +282,8 @@ model JobPosting {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 
-  requisition    JobRequisition   @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
-  applications   Application[]
+  requisition  JobRequisition @relation(fields: [requisitionId], references: [id], onDelete: Cascade)
+  applications Application[]
 }
 
 model Candidate {
@@ -270,12 +301,12 @@ model Candidate {
 }
 
 model Application {
-  id            Int               @id @default(autoincrement())
-  candidateId   Int
-  jobPostingId  Int
-  status        ApplicationStatus @default(APPLIED)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id           Int               @id @default(autoincrement())
+  candidateId  Int
+  jobPostingId Int
+  status       ApplicationStatus @default(APPLIED)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   candidate     Candidate                @relation(fields: [candidateId], references: [id], onDelete: Cascade)
   jobPosting    JobPosting               @relation(fields: [jobPostingId], references: [id], onDelete: Cascade)
@@ -296,9 +327,9 @@ model Interview {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  application   Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  interviewer   User                 @relation("InterviewInterviewer", fields: [interviewerId], references: [id], onDelete: Restrict)
-  evaluation    InterviewEvaluation?
+  application Application          @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  interviewer User                 @relation("InterviewInterviewer", fields: [interviewerId], references: [id], onDelete: Restrict)
+  evaluation  InterviewEvaluation?
 }
 
 model InterviewEvaluation {
@@ -312,7 +343,7 @@ model InterviewEvaluation {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  interview      Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  interview Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
 }
 
 model CandidateStatusHistory {
@@ -323,6 +354,656 @@ model CandidateStatusHistory {
   notes         String?
   createdAt     DateTime          @default(now())
 
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  changedBy     User?       @relation("StatusHistoryChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  changedBy   User?       @relation("StatusHistoryChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}
+
+// ========== Phase 5: Employee Management & Onboarding ==========
+
+enum EmployeeStatus {
+  PENDING_ONBOARDING
+  ACTIVE
+  INACTIVE
+  TERMINATED
+}
+
+enum OnboardingStatus {
+  PENDING_ONBOARDING
+  DOCUMENT_COLLECTION
+  PROFILE_COMPLETED
+  ACTIVE
+}
+
+model Employee {
+  id               Int              @id @default(autoincrement())
+  employeeId       String           @unique
+  firstName        String
+  lastName         String
+  dateOfBirth      DateTime?
+  gender           String?
+  email            String           @unique
+  phone            String?
+  departmentId     Int
+  positionId       Int
+  managerId        Int?
+  employmentType   EmploymentType   @default(FULL_TIME)
+  hireDate         DateTime?
+  status           EmployeeStatus   @default(PENDING_ONBOARDING)
+  onboardingStatus OnboardingStatus @default(PENDING_ONBOARDING)
+  userId           Int?             @unique
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  department   Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  position     Position   @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  manager      Employee?  @relation("EmployeeManager", fields: [managerId], references: [id], onDelete: SetNull)
+  subordinates Employee[] @relation("EmployeeManager")
+  user         User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  documents         EmployeeDocument[]
+  contacts          EmployeeContact[]
+  emergencyContacts EmployeeEmergencyContact[]
+  statusHistory     EmployeeStatusHistory[]
+  positionHistory   EmployeePositionHistory[]
+  salaryHistory     EmployeeSalaryHistory[]
+  EmployeeShift     EmployeeShift?
+  Attendance        Attendance[]
+  LeaveBalance      LeaveBalance[]
+  LeaveRequest      LeaveRequest[]
+  OvertimeRequest   OvertimeRequest[]
+  Timesheet         Timesheet[]
+
+  // Phase 7 Relations
+  compensation     EmployeeCompensation?
+  salaryComponents EmployeeSalaryComponent[]
+  payrolls         Payroll[]
+
+  // Phase 8 Relations
+  goals           Goal[]
+  reviewsReceived PerformanceReview[] @relation("ReviewEmployee")
+  reviewsGiven    PerformanceReview[] @relation("ReviewReviewer")
+
+  // Phase 9 Relations
+  promotionRequests PromotionRequest[] @relation("PromotionEmployee")
+  improvementPlans  ImprovementPlan[]
+}
+
+model EmployeeDocument {
+  id                 Int      @id @default(autoincrement())
+  employeeId         Int
+  documentType       String
+  fileName           String
+  storageKey         String
+  uploadedById       Int
+  uploadedAt         DateTime @default(now())
+  verificationStatus String   @default("PENDING")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  uploadedBy User     @relation("DocumentUploadedBy", fields: [uploadedById], references: [id], onDelete: Restrict)
+}
+
+model EmployeeContact {
+  id         Int      @id @default(autoincrement())
+  employeeId Int
+  type       String
+  value      String
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeEmergencyContact {
+  id           Int      @id @default(autoincrement())
+  employeeId   Int
+  name         String
+  relationship String
+  phone        String
+  email        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeStatusHistory {
+  id          Int            @id @default(autoincrement())
+  employeeId  Int
+  status      EmployeeStatus
+  changedById Int?
+  notes       String?
+  createdAt   DateTime       @default(now())
+
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  changedBy User?    @relation("EmployeeStatusChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}
+
+model EmployeePositionHistory {
+  id           Int       @id @default(autoincrement())
+  employeeId   Int
+  positionId   Int
+  departmentId Int
+  startDate    DateTime
+  endDate      DateTime?
+  changedById  Int?
+  notes        String?
+  createdAt    DateTime  @default(now())
+
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  position   Position   @relation(fields: [positionId], references: [id], onDelete: Restrict)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Restrict)
+  changedBy  User?      @relation("EmployeePositionChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}
+
+model EmployeeSalaryHistory {
+  id            Int       @id @default(autoincrement())
+  employeeId    Int
+  baseSalary    Float
+  currency      String    @default("USD")
+  effectiveDate DateTime
+  endDate       DateTime?
+  changeReason  String?
+  changedById   Int?
+  createdAt     DateTime  @default(now())
+
+  employee  Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  changedBy User?    @relation("EmployeeSalaryChangedBy", fields: [changedById], references: [id], onDelete: SetNull)
+}
+
+// ========== Phase 6: Attendance & Leave Management ==========
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EARLY_LEAVE
+  LEAVE
+  HOLIDAY
+  WEEKEND
+}
+
+enum RequestStatus {
+  DRAFT
+  SUBMITTED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model Shift {
+  id            Int      @id @default(autoincrement())
+  name          String   @unique
+  startTime     String // e.g. "09:00"
+  endTime       String // e.g. "17:00"
+  breakDuration Int // in minutes
+  workingDays   String // e.g. "1,2,3,4,5" for Mon-Fri
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  employeeShifts EmployeeShift[]
+}
+
+model EmployeeShift {
+  id         Int       @id @default(autoincrement())
+  employeeId Int       @unique // one active shift per employee for simplicity, or history
+  shiftId    Int
+  startDate  DateTime
+  endDate    DateTime?
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  shift    Shift    @relation(fields: [shiftId], references: [id], onDelete: Restrict)
+}
+
+model Attendance {
+  id             Int              @id @default(autoincrement())
+  employeeId     Int
+  date           DateTime         @db.Date
+  checkIn        DateTime?
+  checkOut       DateTime?
+  status         AttendanceStatus @default(ABSENT)
+  lateMinutes    Int              @default(0)
+  earlyDeparture Int              @default(0) // minutes
+  workingMinutes Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+}
+
+model LeaveType {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique
+  description     String?
+  daysAllowed     Float
+  isPaid          Boolean  @default(true)
+  requiresBalance Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  balances LeaveBalance[]
+  requests LeaveRequest[]
+}
+
+model LeaveBalance {
+  id          Int      @id @default(autoincrement())
+  employeeId  Int
+  leaveTypeId Int
+  year        Int
+  balance     Float
+  used        Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employee  Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
+
+  @@unique([employeeId, leaveTypeId, year])
+}
+
+model LeaveRequest {
+  id          Int           @id @default(autoincrement())
+  employeeId  Int
+  leaveTypeId Int
+  startDate   DateTime      @db.Date
+  endDate     DateTime      @db.Date
+  status      RequestStatus @default(DRAFT)
+  reason      String
+  approvedBy  Int?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  employee  Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  leaveType LeaveType @relation(fields: [leaveTypeId], references: [id], onDelete: Restrict)
+  approver  User?     @relation("LeaveApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+}
+
+model OvertimeRequest {
+  id         Int           @id @default(autoincrement())
+  employeeId Int
+  date       DateTime      @db.Date
+  hours      Float
+  reason     String
+  status     RequestStatus @default(DRAFT)
+  approvedBy Int?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  approver User?    @relation("OvertimeApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+}
+
+model Timesheet {
+  id            Int      @id @default(autoincrement())
+  employeeId    Int
+  startDate     DateTime @db.Date
+  endDate       DateTime @db.Date
+  regularHours  Float    @default(0)
+  overtimeHours Float    @default(0)
+  totalHours    Float    @default(0)
+  leaveHours    Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, startDate, endDate])
+}
+
+model Holiday {
+  id        Int      @id @default(autoincrement())
+  name      String
+  date      DateTime @unique @db.Date
+  createdAt DateTime @default(now())
+}
+
+// ========== Phase 7: Payroll Management ==========
+
+enum PayFrequency {
+  MONTHLY
+  BI_WEEKLY
+  WEEKLY
+}
+
+enum ComponentType {
+  ALLOWANCE
+  DEDUCTION
+  BONUS
+  OTHER
+}
+
+enum ComponentValueType {
+  FIXED
+  PERCENTAGE
+}
+
+enum PayrollPeriodStatus {
+  DRAFT
+  CALCULATING
+  CALCULATED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  LOCKED
+  PAID
+}
+
+model EmployeeCompensation {
+  id            Int          @id @default(autoincrement())
+  employeeId    Int          @unique
+  basicSalary   Float
+  currency      String       @default("USD")
+  payFrequency  PayFrequency @default(MONTHLY)
+  effectiveDate DateTime     @db.Date
+  status        String       @default("ACTIVE")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+}
+
+model SalaryComponent {
+  id          Int           @id @default(autoincrement())
+  name        String        @unique
+  type        ComponentType
+  description String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  employeeComponents EmployeeSalaryComponent[]
+}
+
+model EmployeeSalaryComponent {
+  id            Int                @id @default(autoincrement())
+  employeeId    Int
+  componentId   Int
+  amount        Float
+  type          ComponentValueType @default(FIXED)
+  effectiveDate DateTime           @db.Date
+  endDate       DateTime?          @db.Date
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  employee  Employee        @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  component SalaryComponent @relation(fields: [componentId], references: [id], onDelete: Restrict)
+}
+
+model PayrollPeriod {
+  id        Int                 @id @default(autoincrement())
+  name      String
+  startDate DateTime            @db.Date
+  endDate   DateTime            @db.Date
+  status    PayrollPeriodStatus @default(DRAFT)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  payrolls  Payroll[]
+  approvals PayrollApproval[]
+
+  @@unique([startDate, endDate])
+}
+
+model Payroll {
+  id              Int                 @id @default(autoincrement())
+  payrollPeriodId Int
+  employeeId      Int
+  basicSalary     Float
+  totalAllowances Float
+  totalDeductions Float
+  totalOvertime   Float
+  netSalary       Float
+  status          PayrollPeriodStatus @default(DRAFT)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  payrollPeriod PayrollPeriod       @relation(fields: [payrollPeriodId], references: [id], onDelete: Restrict)
+  employee      Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  items         PayrollItem[]
+  adjustments   PayrollAdjustment[]
+
+  @@unique([payrollPeriodId, employeeId])
+}
+
+model PayrollItem {
+  id            Int           @id @default(autoincrement())
+  payrollId     Int
+  componentName String
+  componentType ComponentType
+  amount        Float
+  description   String?
+
+  payroll Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+}
+
+model PayrollApproval {
+  id              Int                 @id @default(autoincrement())
+  payrollPeriodId Int
+  approvedById    Int
+  status          PayrollPeriodStatus
+  comments        String?
+  date            DateTime            @default(now())
+
+  payrollPeriod PayrollPeriod @relation(fields: [payrollPeriodId], references: [id], onDelete: Cascade)
+  approvedBy    User          @relation("PayrollApprovedBy", fields: [approvedById], references: [id], onDelete: Restrict)
+}
+
+model PayrollAdjustment {
+  id           Int      @id @default(autoincrement())
+  payrollId    Int
+  adjustedById Int
+  amount       Float
+  type         String // ADDITION or DEDUCTION
+  reason       String
+  date         DateTime @default(now())
+
+  payroll    Payroll @relation(fields: [payrollId], references: [id], onDelete: Cascade)
+  adjustedBy User    @relation("PayrollAdjustedBy", fields: [adjustedById], references: [id], onDelete: Restrict)
+}
+
+// ========== Phase 8: Performance Management ==========
+
+enum CycleStatus {
+  DRAFT
+  OPEN
+  IN_REVIEW
+  CLOSED
+}
+
+enum GoalStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ReviewStatus {
+  DRAFT
+  SUBMITTED
+  UNDER_REVIEW
+  HEAD_OF_HR_REVIEW
+  FINALIZED
+  REJECTED
+}
+
+model PerformanceCycle {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  startDate   DateTime    @db.Date
+  endDate     DateTime    @db.Date
+  status      CycleStatus @default(DRAFT)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reviews PerformanceReview[]
+  goals   Goal[]
+}
+
+model KPI {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  metric      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  employeeGoals EmployeeGoal[]
+}
+
+model Goal {
+  id          Int        @id @default(autoincrement())
+  cycleId     Int
+  employeeId  Int
+  title       String
+  description String?
+  weight      Float
+  target      String?
+  measurement String?
+  dueDate     DateTime   @db.Date
+  status      GoalStatus @default(DRAFT)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  cycle    PerformanceCycle    @relation(fields: [cycleId], references: [id], onDelete: Restrict)
+  employee Employee            @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  kpis     EmployeeGoal[]
+  ratings  PerformanceRating[]
+}
+
+model EmployeeGoal {
+  id          Int      @id @default(autoincrement())
+  goalId      Int
+  kpiId       Int
+  targetValue Float?
+  actualValue Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  kpi  KPI  @relation(fields: [kpiId], references: [id], onDelete: Restrict)
+}
+
+model PerformanceReview {
+  id               Int          @id @default(autoincrement())
+  cycleId          Int
+  employeeId       Int
+  reviewerId       Int?
+  status           ReviewStatus @default(DRAFT)
+  overallScore     Float?
+  comments         String?
+  employeeFeedback String?
+  managerFeedback  String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  cycle     PerformanceCycle    @relation(fields: [cycleId], references: [id], onDelete: Restrict)
+  employee  Employee            @relation("ReviewEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  reviewer  Employee?           @relation("ReviewReviewer", fields: [reviewerId], references: [id], onDelete: SetNull)
+  ratings   PerformanceRating[]
+  feedbacks Feedback[]
+
+  // Phase 9 Relations
+  promotionRequests PromotionRequest[]
+}
+
+model PerformanceRating {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  goalId    Int
+  rating    Float
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  review PerformanceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  goal   Goal              @relation(fields: [goalId], references: [id], onDelete: Restrict)
+}
+
+model Feedback {
+  id         Int      @id @default(autoincrement())
+  reviewId   Int
+  providerId Int
+  content    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  review   PerformanceReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  provider User              @relation(fields: [providerId], references: [id], onDelete: Restrict)
+}
+
+// ========== Phase 9: Promotion & Improvement ==========
+
+enum PromotionStatus {
+  DRAFT
+  SUBMITTED
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum PIPStatus {
+  ACTIVE
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model PromotionRequest {
+  id                  Int             @id @default(autoincrement())
+  employeeId          Int
+  currentPositionId   Int
+  proposedPositionId  Int
+  currentSalary       Float?
+  proposedSalary      Float?
+  reason              String
+  performanceReviewId Int?
+  effectiveDate       DateTime        @db.Date
+  status              PromotionStatus @default(DRAFT)
+  requestedById       Int
+  approvedById        Int?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  employee          Employee           @relation("PromotionEmployee", fields: [employeeId], references: [id], onDelete: Cascade)
+  currentPosition   Position           @relation("PromotionCurrentPos", fields: [currentPositionId], references: [id], onDelete: Restrict)
+  proposedPosition  Position           @relation("PromotionProposedPos", fields: [proposedPositionId], references: [id], onDelete: Restrict)
+  performanceReview PerformanceReview? @relation(fields: [performanceReviewId], references: [id], onDelete: SetNull)
+  requestedBy       User               @relation("PromotionRequestedBy", fields: [requestedById], references: [id], onDelete: Restrict)
+  approvedBy        User?              @relation("PromotionApprovedBy", fields: [approvedById], references: [id], onDelete: SetNull)
+}
+
+model ImprovementPlan {
+  id         Int       @id @default(autoincrement())
+  employeeId Int
+  reason     String
+  startDate  DateTime  @db.Date
+  endDate    DateTime  @db.Date
+  objective  String
+  status     PIPStatus @default(ACTIVE)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  employee Employee              @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  items    ImprovementPlanItem[]
+}
+
+model ImprovementPlanItem {
+  id             Int       @id @default(autoincrement())
+  planId         Int
+  action         String
+  target         String
+  owner          String
+  dueDate        DateTime  @db.Date
+  progress       Float     @default(0)
+  completionDate DateTime? @db.Date
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  plan ImprovementPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 }

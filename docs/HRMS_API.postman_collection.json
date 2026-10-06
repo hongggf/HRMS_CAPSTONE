@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "HRMS API - Enterprise Edition",
-    "description": "Production-grade API collection for the HRMS backend.\n\n### Features:\n- **Automated Token Management:** Logging in automatically sets the `{{accessToken}}` and `{{refreshToken}}` for the entire collection.\n- **Inherited Authorization:** All protected folders automatically inherit the Bearer token\u2014no need to set headers manually.\n- **Standardized Responses:** Every endpoint follows a strict `{ success, message, data, meta }` format.",
+    "description": "Production-grade API collection for the HRMS backend.\n\n### Features:\n- **Automated Token Management:** Logging in automatically sets the `{{accessToken}}` and `{{refreshToken}}` for the entire collection.\n- **Inherited Authorization:** All protected folders automatically inherit the Bearer token—no need to set headers manually.\n- **Standardized Responses:** Every endpoint follows a strict `{ success, message, data, meta }` format.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -73,9 +73,9 @@
                   "if (res.success && res.data) {",
                   "    if (res.data.accessToken) pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
                   "    if (res.data.refreshToken) pm.collectionVariables.set(\"refreshToken\", res.data.refreshToken);",
-                  "    console.log(\"\u2705 Tokens successfully extracted and saved to environment!\");",
+                  "    console.log(\"✅ Tokens successfully extracted and saved to environment!\");",
                   "} else {",
-                  "    console.error(\"\u274c Login failed. Check credentials.\");",
+                  "    console.error(\"❌ Login failed. Check credentials.\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -138,7 +138,7 @@
                   "const res = pm.response.json();",
                   "if (res.success && res.data && res.data.accessToken) {",
                   "    pm.collectionVariables.set(\"accessToken\", res.data.accessToken);",
-                  "    console.log(\"\u2705 Access Token successfully refreshed!\");",
+                  "    console.log(\"✅ Access Token successfully refreshed!\");",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -658,7 +658,7 @@
     },
     {
       "name": "07. Workforce Requests",
-      "description": "Workforce planning workflow. HR creates requests \u2192 submits \u2192 HEAD_OF_HR approves/rejects.\n\n### Workflow:\n`DRAFT` \u2192 `PENDING_APPROVAL` (submit) \u2192 `APPROVED` or `REJECTED` (HEAD_OF_HR only)\n\nRequests can be cancelled from DRAFT or PENDING_APPROVAL states.",
+      "description": "Workforce planning workflow. HR creates requests → submits → HEAD_OF_HR approves/rejects.\n\n### Workflow:\n`DRAFT` → `PENDING_APPROVAL` (submit) → `APPROVED` or `REJECTED` (HEAD_OF_HR only)\n\nRequests can be cancelled from DRAFT or PENDING_APPROVAL states.",
       "item": [
         {
           "name": "Create Workforce Request",
@@ -804,7 +804,7 @@
                 "submit"
               ]
             },
-            "description": "Requires `WORKFORCE_CREATE` permission. Transitions from DRAFT \u2192 PENDING_APPROVAL. Only DRAFT requests can be submitted."
+            "description": "Requires `WORKFORCE_CREATE` permission. Transitions from DRAFT → PENDING_APPROVAL. Only DRAFT requests can be submitted."
           }
         },
         {
@@ -823,7 +823,7 @@
                 "approve"
               ]
             },
-            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL \u2192 APPROVED. Records approver and timestamp."
+            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL → APPROVED. Records approver and timestamp."
           }
         },
         {
@@ -851,7 +851,7 @@
                 "reject"
               ]
             },
-            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL \u2192 REJECTED. Rejection reason is required."
+            "description": "Requires `HEAD_OF_HR` role. Transitions from PENDING_APPROVAL → REJECTED. Rejection reason is required."
           }
         },
         {
@@ -1142,6 +1142,814 @@
               ]
             },
             "description": "Requires HEAD_OF_HR role."
+          }
+        }
+      ]
+    },
+    {
+      "name": "09. Employees & Onboarding (Phase 5)",
+      "description": "Employee creation, document collection, and onboarding workflows.",
+      "item": [
+        {
+          "name": "Create Employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": 1,\n  \"employeeId\": \"EMP_001\",\n  \"firstName\": \"Alice\",\n  \"lastName\": \"Wonder\",\n  \"email\": \"alice.w@company.local\",\n  \"departmentId\": 1,\n  \"positionId\": 1,\n  \"baseSalary\": 6000\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees"
+              ]
+            },
+            "description": "Requires `EMPLOYEE_CREATE` permission. Application must be APPROVED by HEAD_OF_HR."
+          }
+        },
+        {
+          "name": "Upload Document",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "documentType",
+                  "value": "ID_CARD",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/1/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "1",
+                "documents"
+              ]
+            },
+            "description": "Requires `DOCUMENT_UPLOAD` permission."
+          }
+        },
+        {
+          "name": "Complete Onboarding",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/1/onboarding/complete",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "1",
+                "onboarding",
+                "complete"
+              ]
+            },
+            "description": "Requires `EMPLOYEE_UPDATE` permission."
+          }
+        },
+        {
+          "name": "Activate Employee",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/1/activate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "1",
+                "activate"
+              ]
+            },
+            "description": "Requires `EMPLOYEE_ACTIVATE` permission. Employee must have documents and PROFILE_COMPLETED status."
+          }
+        },
+        {
+          "name": "Update Employee Position",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"positionId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/employees/1/position",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "1",
+                "position"
+              ]
+            },
+            "description": "Requires `EMPLOYEE_UPDATE` permission. Creates a new position history record."
+          }
+        },
+        {
+          "name": "Get Employee by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/employees/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "employees",
+                "1"
+              ]
+            },
+            "description": "Requires `EMPLOYEE_READ` permission."
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Attendance & Leave (Phase 6)",
+      "description": "Attendance, Leaves, Overtime, and Timesheets",
+      "item": [
+        {
+          "name": "Create Shift",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Morning Shift\",\n  \"startTime\": \"09:00\",\n  \"endTime\": \"17:00\",\n  \"breakDuration\": 60,\n  \"workingDays\": \"1,2,3,4,5\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/shifts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "shifts"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check-In",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"date\": \"2026-10-06T00:00:00Z\",\n  \"time\": \"2026-10-06T09:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/check-in",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "check-in"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check-Out",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time\": \"2026-10-06T17:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/attendance/1/check-out",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "attendance",
+                "1",
+                "check-out"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Leave Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"leaveTypeId\": 1,\n  \"startDate\": \"2026-12-01T00:00:00Z\",\n  \"endDate\": \"2026-12-05T00:00:00Z\",\n  \"reason\": \"Vacation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Leave",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/leave/1/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "leave",
+                "1",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Timesheet",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"startDate\": \"2026-10-01T00:00:00Z\",\n  \"endDate\": \"2026-10-31T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/timesheets/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "timesheets",
+                "generate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Payroll Management (Phase 7)",
+      "description": "Payroll periods, component calculation, submission, and locking.",
+      "item": [
+        {
+          "name": "Create Payroll Period",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"September 2026\",\n  \"startDate\": \"2026-09-01T00:00:00Z\",\n  \"endDate\": \"2026-09-30T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/periods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "periods"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Calculate Payroll",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1/calculate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1",
+                "calculate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Submit Payroll",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1",
+                "submit"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Payroll",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Lock Payroll",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1/lock",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1",
+                "lock"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Payroll Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Payroll Adjustment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"type\": \"ADDITION\",\n  \"reason\": \"Missed commission from August\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payroll/1/adjustments",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll",
+                "1",
+                "adjustments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get All Payrolls",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/payroll",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "payroll"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Performance Management (Phase 8)",
+      "description": "Cycles, Goals, KPIs, and Performance Reviews.",
+      "item": [
+        {
+          "name": "Create Cycle",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Q1 2026\",\n  \"startDate\": \"2026-01-01T00:00:00Z\",\n  \"endDate\": \"2026-03-31T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/performance/cycles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "cycles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Goal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cycleId\": 1,\n  \"employeeId\": 1,\n  \"title\": \"Ship Phase 8\",\n  \"weight\": 60,\n  \"dueDate\": \"2026-03-31T23:59:59Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/performance/goals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "goals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Assign KPI",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kpiId\": 1,\n  \"targetValue\": 10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/performance/goals/1/kpi",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "goals",
+                "1",
+                "kpi"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cycleId\": 1,\n  \"employeeId\": 1,\n  \"reviewerId\": 2\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/performance/reviews",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "reviews"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Evaluate Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ratings\": [\n    { \"goalId\": 1, \"rating\": 4, \"comment\": \"Great job\" },\n    { \"goalId\": 2, \"rating\": 3 }\n  ],\n  \"comments\": \"Solid quarter.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/performance/reviews/1/evaluate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "reviews",
+                "1",
+                "evaluate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/performance/reviews/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "reviews",
+                "1",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Finalize Review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/performance/reviews/1/finalize",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "performance",
+                "reviews",
+                "1",
+                "finalize"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "13. Promotions & PIPs (Phase 9)",
+      "description": "Promotion requests, approval workflows, and Performance Improvement Plans.",
+      "item": [
+        {
+          "name": "Request Promotion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"proposedPositionId\": 2,\n  \"proposedSalary\": 75000,\n  \"reason\": \"Outstanding performance over the past year\",\n  \"effectiveDate\": \"2026-12-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/promotions/requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "requests"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Promotion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/promotions/requests/1/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "requests",
+                "1",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Promotion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/promotions/requests/1/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "requests",
+                "1",
+                "reject"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create PIP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": 1,\n  \"reason\": \"Consistent delays in deliverables\",\n  \"startDate\": \"2026-10-01T00:00:00Z\",\n  \"endDate\": \"2026-12-31T23:59:59Z\",\n  \"objective\": \"Improve delivery timelines by 50%\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/promotions/pips",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "pips"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add PIP Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"Daily Standups\",\n  \"target\": \"100% Attendance\",\n  \"owner\": \"Employee\",\n  \"dueDate\": \"2026-11-01T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/promotions/pips/1/items",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "pips",
+                "1",
+                "items"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update PIP Progress",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"progress\": 100,\n  \"completionDate\": \"2026-10-25T00:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/promotions/pips/items/1/progress",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "promotions",
+                "pips",
+                "items",
+                "1",
+                "progress"
+              ]
+            }
           }
         }
       ]

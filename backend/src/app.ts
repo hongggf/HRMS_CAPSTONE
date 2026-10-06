@@ -10,6 +10,11 @@ import departmentRouter from './routes/departmentRoutes';
 import positionRouter from './routes/positionRoutes';
 import workforceRouter from './routes/workforceRoutes';
 import recruitmentRouter from './routes/recruitmentRoutes';
+import employeeRouter from './routes/employeeRoutes';
+import attendanceRouter from './routes/attendanceRoutes';
+import payrollRouter from './routes/payrollRoutes';
+import performanceRouter from './routes/performanceRoutes';
+import promotionRouter from './routes/promotionRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { sendError } from './utils/response';
 import { env } from './config/env';
@@ -43,6 +48,11 @@ app.use('/api/v1/departments', departmentRouter);
 app.use('/api/v1/positions', positionRouter);
 app.use('/api/v1/workforce-requests', workforceRouter);
 app.use('/api/v1/recruitment', recruitmentRouter);
+app.use('/api/v1/employees', employeeRouter);
+app.use('/api/v1', attendanceRouter);
+app.use('/api/v1/payroll', payrollRouter);
+app.use('/api/v1/performance', performanceRouter);
+app.use('/api/v1/promotions', promotionRouter);
 
 // Unknown endpoint / 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {
