@@ -20,19 +20,6 @@ describe('Phase 6: Attendance & Leave Management Integration Tests', () => {
 
   beforeAll(async () => {
     // Clear relevant tables
-    await prisma.timesheet.deleteMany();
-    await prisma.overtimeRequest.deleteMany();
-    await prisma.leaveRequest.deleteMany();
-    await prisma.leaveBalance.deleteMany();
-    await prisma.leaveType.deleteMany();
-    await prisma.attendance.deleteMany();
-    await prisma.employeeShift.deleteMany();
-    await prisma.shift.deleteMany();
-    await prisma.employee.deleteMany();
-    await prisma.jobPosting.deleteMany(); await prisma.jobRequisition.deleteMany(); await prisma.workforceRequest.deleteMany(); await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-    await prisma.permission.deleteMany();
-
     const perms = ['ATTENDANCE_CREATE', 'ATTENDANCE_READ', 'ATTENDANCE_UPDATE', 'LEAVE_CREATE', 'LEAVE_READ', 'LEAVE_UPDATE', 'OVERTIME_CREATE', 'OVERTIME_READ', 'OVERTIME_UPDATE', 'TIMESHEET_READ', 'SHIFT_CREATE', 'SHIFT_READ'];
     for (const p of perms) {
       await prisma.permission.upsert({ where: { action: p }, update: {}, create: { action: p } });

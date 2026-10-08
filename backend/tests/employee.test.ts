@@ -21,23 +21,6 @@ describe('Phase 5: Employee & Onboarding Integration Tests', () => {
 
   beforeAll(async () => {
     // Clear relevant tables
-    await prisma.employeeDocument.deleteMany();
-    await prisma.employeeSalaryHistory.deleteMany();
-    await prisma.employeePositionHistory.deleteMany();
-    await prisma.employeeStatusHistory.deleteMany();
-    await prisma.employeeContact.deleteMany();
-    await prisma.employeeEmergencyContact.deleteMany();
-    await prisma.employee.deleteMany();
-    await prisma.application.deleteMany();
-    await prisma.candidate.deleteMany();
-    await prisma.jobPosting.deleteMany();
-    await prisma.jobRequisition.deleteMany();
-    await prisma.workforceRequest.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.role.deleteMany();
-    await prisma.user.deleteMany();
-
     const perms = ['EMPLOYEE_CREATE', 'EMPLOYEE_READ', 'EMPLOYEE_UPDATE', 'EMPLOYEE_ACTIVATE', 'DOCUMENT_UPLOAD'];
     for (const p of perms) {
       await prisma.permission.upsert({ where: { action: p }, update: {}, create: { action: p } });

@@ -3,6 +3,8 @@ import { AuthRequest } from '../middlewares/auth';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/AppError';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
+import { prisma } from '../config/db';
 import * as recruitmentService from '../services/recruitmentService';
 
 // ========== Job Requisitions ==========
@@ -81,9 +83,8 @@ export const updateApplicationStatus = async (req: AuthRequest, res: Response, n
     if (status === 'SELECTED' && !req.user!.roles.includes('HR_RECRUITMENT') && !req.user!.roles.includes('HEAD_OF_HR')) {
       throw new AppError('Only HR_RECRUITMENT or HEAD_OF_HR can select a candidate', 403);
     }
-    if ((status === 'APPROVED' || status === 'REJECTED') && !req.user!.roles.includes('HEAD_OF_HR')) {
-      // Allow general rejections by HR, but final head approval requires HEAD_OF_HR
-      const app = await recruitmentService.updateApplicationStatus(id, status, req.user!.id, notes); // wait, we need to check current status first
+    if (status === 'APPROVED' && !req.user!.roles.includes('HEAD_OF_HR')) {
+      throw new AppError('Only HEAD_OF_HR can approve a final candidate', 403);
     }
 
     const app = await recruitmentService.updateApplicationStatus(id, status, req.user!.id, notes);
@@ -98,6 +99,10 @@ export const approveCandidate = async (req: AuthRequest, res: Response, next: Ne
     const id = parseInt(req.params.id);
     const app = await recruitmentService.updateApplicationStatus(id, 'APPROVED', req.user!.id, 'Approved by Head of HR');
     await logAudit('CANDIDATE_APPROVED', req.user!.id, { applicationId: id });
+    const fullApp = await prisma.application.findUnique({ where: { id }, include: { jobPosting: { include: { requisition: true } } } });
+    if (fullApp?.jobPosting?.requisition?.requestedBy) {
+      await notifyUser(fullApp.jobPosting.requisition.requestedBy, 'Candidate Approved', `Candidate for ${fullApp.jobPosting.title} approved.`, 'SUCCESS', 'Application', String(id));
+    }
     return sendSuccess(res, { application: app }, 'Candidate approved by Head of HR');
   } catch (error) { next(error); }
 };
@@ -107,6 +112,10 @@ export const rejectCandidate = async (req: AuthRequest, res: Response, next: Nex
     const id = parseInt(req.params.id);
     const app = await recruitmentService.updateApplicationStatus(id, 'REJECTED', req.user!.id, 'Rejected by Head of HR');
     await logAudit('CANDIDATE_REJECTED', req.user!.id, { applicationId: id });
+    const fullAppRej = await prisma.application.findUnique({ where: { id }, include: { jobPosting: { include: { requisition: true } } } });
+    if (fullAppRej?.jobPosting?.requisition?.requestedBy) {
+      await notifyUser(fullAppRej.jobPosting.requisition.requestedBy, 'Candidate Rejected', `Candidate for ${fullAppRej.jobPosting.title} rejected.`, 'ALERT', 'Application', String(id));
+    }
     return sendSuccess(res, { application: app }, 'Candidate rejected by Head of HR');
   } catch (error) { next(error); }
 };

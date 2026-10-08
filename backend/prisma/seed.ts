@@ -47,6 +47,9 @@ async function main() {
     'RECRUITMENT_READ',
     'RECRUITMENT_UPDATE',
     'PAYROLL_APPROVE',
+    'LND_READ',
+    'LND_CREATE',
+    'LND_UPDATE',
   ];
 
   const permissions = [];
@@ -110,6 +113,21 @@ async function main() {
       await prisma.rolePermission.upsert({
         where: { roleId_permissionId: { roleId: hrRecruitmentRole.id, permissionId: perm.id } },
         update: {}, create: { roleId: hrRecruitmentRole.id, permissionId: perm.id },
+      });
+    }
+  }
+
+  // 3d. Assign specific permissions to HR_LND
+  const hrLndRole = roles.find((r) => r.name === 'HR_LND');
+  if (hrLndRole) {
+    const lndPerms = permissions.filter(p => [
+      'LND_READ', 'LND_CREATE', 'LND_UPDATE', 'USER_READ'
+    ].includes(p.action));
+    
+    for (const perm of lndPerms) {
+      await prisma.rolePermission.upsert({
+        where: { roleId_permissionId: { roleId: hrLndRole.id, permissionId: perm.id } },
+        update: {}, create: { roleId: hrLndRole.id, permissionId: perm.id },
       });
     }
   }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { requireAuth, requirePermission } from '../middlewares/auth';
+import { requireAuth, requirePermission, requireRole } from '../middlewares/auth';
 import { 
   createPayrollPeriod, 
   calculatePayroll, 
@@ -23,8 +23,8 @@ router.get('/:id', requirePermission(['PAYROLL_READ']), getPayrollByPeriod);
 
 router.post('/:id/calculate', requirePermission(['PAYROLL_CREATE']), calculatePayroll);
 router.post('/:id/submit', requirePermission(['PAYROLL_CREATE']), submitPayroll);
-router.post('/:id/approve', requirePermission(['PAYROLL_APPROVE']), approvePayroll);
-router.post('/:id/reject', requirePermission(['PAYROLL_APPROVE']), rejectPayroll);
+router.post('/:id/approve', requireRole(['HEAD_OF_HR']), approvePayroll);
+router.post('/:id/reject', requireRole(['HEAD_OF_HR']), rejectPayroll);
 router.post('/:id/lock', requirePermission(['PAYROLL_LOCK']), lockPayroll);
 
 router.post('/:payrollId/adjustments', requirePermission(['PAYROLL_CREATE']), createAdjustment);

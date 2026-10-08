@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createPromotionSchema, createPipSchema, addPipItemSchema, updatePipProgressSchema } from '../validators/promotionValidator';
 import { logAudit } from '../services/auditService';
 
-const prisma = new PrismaClient();
 
 // ======================= PROMOTIONS =======================
 
@@ -67,15 +66,27 @@ export const approvePromotion = async (req: Request, res: Response) => {
         data: { status: 'APPROVED', approvedById: userId }
       });
 
-      // 2. Create position history
+      // 2. End current position history
+      const currentPos = await tx.employeePositionHistory.findFirst({
+        where: { employeeId: promotion.employeeId, endDate: null },
+        orderBy: { startDate: 'desc' }
+      });
+      if (currentPos) {
+        await tx.employeePositionHistory.update({
+          where: { id: currentPos.id },
+          data: { endDate: new Date() }
+        });
+      }
+      
+      // Create new position history
       await tx.employeePositionHistory.create({
         data: {
           employeeId: promotion.employeeId,
-          positionId: promotion.currentPositionId,
-          departmentId: promotion.employee.departmentId, // previous dept
-          startDate: promotion.employee.createdAt, // approximation
-          endDate: new Date(),
-          changedById: userId
+          positionId: promotion.proposedPositionId,
+          departmentId: proposedPos.departmentId,
+          startDate: new Date(),
+          changedById: userId,
+          notes: 'PROMOTION'
         }
       });
 
@@ -90,18 +101,25 @@ export const approvePromotion = async (req: Request, res: Response) => {
 
       // 4. Update salary if provided
       if (promotion.proposedSalary) {
-        if (promotion.currentSalary) {
-          await tx.employeeSalaryHistory.create({
-            data: {
-              employeeId: promotion.employeeId,
-              baseSalary: promotion.currentSalary,
-              effectiveDate: new Date(),
-              endDate: new Date(),
-              changedById: userId,
-              changeReason: 'PROMOTION'
-            }
+        const currentSal = await tx.employeeSalaryHistory.findFirst({
+          where: { employeeId: promotion.employeeId, endDate: null },
+          orderBy: { effectiveDate: 'desc' }
+        });
+        if (currentSal) {
+          await tx.employeeSalaryHistory.update({
+            where: { id: currentSal.id },
+            data: { endDate: new Date() }
           });
         }
+        await tx.employeeSalaryHistory.create({
+          data: {
+            employeeId: promotion.employeeId,
+            baseSalary: promotion.proposedSalary,
+            effectiveDate: new Date(),
+            changedById: userId,
+            changeReason: 'PROMOTION'
+          }
+        });
         await tx.employeeCompensation.upsert({
           where: { employeeId: promotion.employeeId },
           update: { basicSalary: promotion.proposedSalary },

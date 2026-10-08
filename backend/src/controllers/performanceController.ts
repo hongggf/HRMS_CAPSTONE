@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient, ReviewStatus } from '@prisma/client';
+import { ReviewStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createCycleSchema, createGoalSchema, createReviewSchema, submitReviewSchema } from '../validators/performanceValidator';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 
-const prisma = new PrismaClient();
+
 
 // Cycle Management
 export const createCycle = async (req: Request, res: Response) => {
@@ -192,6 +194,8 @@ export const finalizeReview = async (req: Request, res: Response) => {
     });
 
     await logAudit('PERFORMANCE_REVIEW_FINALIZED', userId, { reviewId: id });
+    const uEmp = await prisma.employee.findUnique({ where: { id: review.employeeId } });
+    if (uEmp?.userId) await notifyUser(uEmp.userId, 'Performance Review Finalized', `Your performance review has been finalized.`, 'INFO', 'PerformanceReview', String(id));
     res.json(updated);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

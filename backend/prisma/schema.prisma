@@ -18,6 +18,8 @@ model User {
   roles         UserRole[]
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
+  notifications Notification[]
+  notificationPref NotificationPreference?
 
   workforceRequestsCreated  WorkforceRequest[] @relation("WorkforceRequestedBy")
   workforceRequestsApproved WorkforceRequest[] @relation("WorkforceApprovedBy")
@@ -98,15 +100,20 @@ model RefreshToken {
 }
 
 model AuditLog {
-  id        Int      @id @default(autoincrement())
-  action    String
-  userId    Int?
-  details   String?
-  createdAt DateTime @default(now())
+  id         Int      @id @default(autoincrement())
+  actorId    Int?
+  action     String
+  module     String
+  entityType String
+  entityId   String?
+  oldValues  Json?
+  newValues  Json?
+  requestId  String?
+  timestamp  DateTime @default(now())
 
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
 
-  @@index([userId])
+  @@index([actorId])
   @@index([action])
 }
 
@@ -426,6 +433,12 @@ model Employee {
   // Phase 9 Relations
   promotionRequests PromotionRequest[] @relation("PromotionEmployee")
   improvementPlans  ImprovementPlan[]
+
+  // Phase 10 Relations
+  trainingAssignments TrainingAssignment[]
+  trainingAttendances TrainingAttendance[]
+  trainingEvaluations TrainingEvaluation[]
+  skills              EmployeeSkill[]
 }
 
 model EmployeeDocument {
@@ -1006,4 +1019,179 @@ model ImprovementPlanItem {
   updatedAt      DateTime  @updatedAt
 
   plan ImprovementPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+}
+// ========== Phase 10: Learning & Development ==========
+
+enum TrainingType {
+  INTERNAL
+  EXTERNAL
+  ONLINE
+  CLASSROOM
+}
+
+enum TrainingStatus {
+  DRAFT
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum TrainingPlanStatus {
+  DRAFT
+  APPROVED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum TrainingAttendanceStatus {
+  REGISTERED
+  ATTENDED
+  ABSENT
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+model TrainingCategory {
+  id          Int        @id @default(autoincrement())
+  name        String     @unique
+  description String?
+  trainings   Training[]
+}
+
+model Training {
+  id           Int              @id @default(autoincrement())
+  title        String
+  description  String?
+  categoryId   Int
+  provider     String?
+  type         TrainingType
+  startDate    DateTime?        @db.Date
+  endDate      DateTime?        @db.Date
+  capacity     Int?
+  cost         Float?
+  status       TrainingStatus   @default(DRAFT)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  category     TrainingCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  plans        TrainingPlan[]
+  assignments  TrainingAssignment[]
+  sessions     TrainingSession[]
+  evaluations  TrainingEvaluation[]
+}
+
+model TrainingPlan {
+  id              Int                @id @default(autoincrement())
+  trainingId      Int
+  identifiedNeed  String
+  objective       String
+  targetEmployees String? 
+  priority        String?
+  budget          Float?
+  plannedDate     DateTime?          @db.Date
+  status          TrainingPlanStatus @default(DRAFT)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  training        Training           @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+}
+
+model TrainingAssignment {
+  id         Int      @id @default(autoincrement())
+  trainingId Int
+  employeeId Int
+  assignedAt DateTime @default(now())
+  
+  training   Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([trainingId, employeeId])
+}
+
+model TrainingSession {
+  id          Int      @id @default(autoincrement())
+  trainingId  Int
+  title       String
+  date        DateTime
+  location    String?
+  
+  training    Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  attendances TrainingAttendance[]
+}
+
+model TrainingAttendance {
+  id         Int                      @id @default(autoincrement())
+  sessionId  Int
+  employeeId Int
+  status     TrainingAttendanceStatus @default(REGISTERED)
+  attendedAt DateTime?
+  
+  session    TrainingSession          @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  employee   Employee                 @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, employeeId])
+}
+
+model TrainingEvaluation {
+  id          Int      @id @default(autoincrement())
+  trainingId  Int
+  evaluatorId Int 
+  rating      Int
+  feedback    String?
+  comments    String?
+  createdAt   DateTime @default(now())
+  
+  training    Training @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  evaluator   Employee @relation(fields: [evaluatorId], references: [id], onDelete: Cascade)
+}
+
+model EmployeeSkill {
+  id         Int        @id @default(autoincrement())
+  employeeId Int
+  skillName  String
+  level      SkillLevel @default(BEGINNER)
+  acquiredAt DateTime   @default(now())
+  
+  employee   Employee   @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, skillName])
+}
+
+
+// ========== Phase 11: Notifications & Audit ==========
+
+enum NotificationType {
+  INFO
+  WARNING
+  SUCCESS
+  ALERT
+}
+
+model Notification {
+  id         Int              @id @default(autoincrement())
+  recipientId Int
+  type       NotificationType @default(INFO)
+  title      String
+  message    String
+  entityType String?
+  entityId   String?
+  isRead     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+
+  recipient  User             @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+}
+
+model NotificationPreference {
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  email      Boolean @default(true)
+  inApp      Boolean @default(true)
+  
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

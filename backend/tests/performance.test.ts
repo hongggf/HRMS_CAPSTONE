@@ -19,32 +19,18 @@ describe('Phase 8: Performance Management Integration Tests', () => {
 
   beforeAll(async () => {
     // Cleanup Phase 8 tables
-    await prisma.feedback.deleteMany();
-    await prisma.performanceRating.deleteMany();
-    await prisma.performanceReview.deleteMany();
-    await prisma.employeeGoal.deleteMany();
-    await prisma.goal.deleteMany();
-    await prisma.kPI.deleteMany();
-    await prisma.performanceCycle.deleteMany();
-
     // Cleanup Employee, Department, User roles
-    await prisma.employee.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.payrollAdjustment.deleteMany(); await prisma.payrollApproval.deleteMany(); await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-
     // Setup Roles
-    const headOfHrRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR_P8' } });
-    const hrPerfRole = await prisma.role.create({ data: { name: 'HR_PERFORMANCE_P8' } });
+    const headOfHrRole = (await prisma.role.upsert({ where: { name: 'HEAD_OF_HR' }, update: {}, create: { name: 'HEAD_OF_HR' } }))!;
+    const hrPerfRole = (await prisma.role.upsert({ where: { name: 'HR_PERFORMANCE_P8' }, update: {}, create: { name: 'HR_PERFORMANCE_P8' } }))!;
 
     const perms = ['PERFORMANCE_CREATE', 'PERFORMANCE_READ', 'PERFORMANCE_UPDATE', 'PERFORMANCE_APPROVE'];
     for (const p of perms) {
       const perm = await prisma.permission.upsert({ where: { action: p }, update: {}, create: { action: p } });
       if (p !== 'PERFORMANCE_APPROVE') {
-        await prisma.rolePermission.create({ data: { roleId: hrPerfRole.id, permissionId: perm.id } });
+        await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: hrPerfRole.id, permissionId: perm.id } }, update: {}, create: { roleId: hrPerfRole.id, permissionId: perm.id } });
       }
-      await prisma.rolePermission.create({ data: { roleId: headOfHrRole.id, permissionId: perm.id } });
+      await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: headOfHrRole.id, permissionId: perm.id } }, update: {}, create: { roleId: headOfHrRole.id, permissionId: perm.id } });
     }
 
     const headUser = await prisma.user.create({ data: { email: 'head_p8@test.com', password: 'hash', roles: { create: { roleId: headOfHrRole.id } } } });

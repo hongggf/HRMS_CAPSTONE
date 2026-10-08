@@ -5,10 +5,6 @@ module.exports = {
   testMatch: ['**/*.test.ts'],
   clearMocks: true,
   setupFiles: ['./tests/setup.ts'],
+  setupFilesAfterEnv: ['./tests/setupAfterEnv.ts'],
+  globalSetup: './tests/globalSetup.ts'
 };
-
-// Override DATABASE_URL at the Node.js process level BEFORE any module loads.
-// This is the only reliable way to ensure Prisma connects to the test database.
-process.env.DATABASE_URL = 'postgresql://postgres:password@localhost:5432/hrms_test?schema=public';
-process.env.JWT_SECRET = 'test-jwt-secret-do-not-use-in-production';
-process.env.NODE_ENV = 'test';

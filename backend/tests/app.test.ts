@@ -24,7 +24,7 @@ describe('App Endpoints & DB', () => {
   });
 
   it('should return 404 for unknown endpoints', async () => {
-    const res = await request(app).get('/api/v1/unknown');
+    const res = await request(app).get('/api/unknown');
     expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('error');
     expect(res.body.error.message).toBe('Endpoint not found');

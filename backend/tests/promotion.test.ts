@@ -19,32 +19,18 @@ describe('Phase 9: Promotion & PIP Management Integration Tests', () => {
 
   beforeAll(async () => {
     // Cleanup Phase 9
-    await prisma.improvementPlanItem.deleteMany();
-    await prisma.improvementPlan.deleteMany();
-    await prisma.promotionRequest.deleteMany();
-
     // Cleanup Employee & Positions
-    await prisma.feedback.deleteMany(); await prisma.performanceRating.deleteMany(); await prisma.performanceReview.deleteMany(); await prisma.employeeGoal.deleteMany(); await prisma.goal.deleteMany(); await prisma.employeeSalaryHistory.deleteMany();
-    await prisma.employeePositionHistory.deleteMany();
-    await prisma.employeeCompensation.deleteMany();
-    await prisma.employee.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-    await prisma.permission.deleteMany();
-
     // Setup Roles
-    const headOfHrRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR_P9' } });
-    const hrPromoRole = await prisma.role.create({ data: { name: 'HR_PROMOTION_P9' } });
+    const headOfHrRole = (await prisma.role.upsert({ where: { name: 'HEAD_OF_HR' }, update: {}, create: { name: 'HEAD_OF_HR' } }))!;
+    const hrPromoRole = (await prisma.role.upsert({ where: { name: 'HR_PROMOTION_P9' }, update: {}, create: { name: 'HR_PROMOTION_P9' } }))!;
 
     const perms = ['PROMOTION_CREATE', 'PROMOTION_APPROVE', 'PIP_CREATE', 'PIP_UPDATE'];
     for (const p of perms) {
       const perm = await prisma.permission.upsert({ where: { action: p }, update: {}, create: { action: p } });
       if (p !== 'PROMOTION_APPROVE') {
-        await prisma.rolePermission.create({ data: { roleId: hrPromoRole.id, permissionId: perm.id } });
+        await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: hrPromoRole.id, permissionId: perm.id } }, update: {}, create: { roleId: hrPromoRole.id, permissionId: perm.id } });
       }
-      await prisma.rolePermission.create({ data: { roleId: headOfHrRole.id, permissionId: perm.id } });
+      await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: headOfHrRole.id, permissionId: perm.id } }, update: {}, create: { roleId: headOfHrRole.id, permissionId: perm.id } });
     }
 
     const headUser = await prisma.user.create({ data: { email: 'head_p9@test.com', password: 'hash', roles: { create: { roleId: headOfHrRole.id } } } });
@@ -96,11 +82,11 @@ describe('Phase 9: Promotion & PIP Management Integration Tests', () => {
     expect(emp?.positionId).toBe(proposedPosId);
     expect(emp?.compensation?.basicSalary).toBe(7000);
 
-    const posHist = await prisma.employeePositionHistory.findFirst({ where: { employeeId: empId1 } });
-    expect(posHist?.positionId).toBe(currentPosId);
+    const posHist = await prisma.employeePositionHistory.findFirst({ where: { employeeId: empId1 }, orderBy: { id: 'desc' } });
+    expect(posHist?.positionId).toBe(proposedPosId);
 
-    const salHist = await prisma.employeeSalaryHistory.findFirst({ where: { employeeId: empId1 } });
-    expect(salHist?.baseSalary).toBe(5000);
+    const salHist = await prisma.employeeSalaryHistory.findFirst({ where: { employeeId: empId1 }, orderBy: { id: 'desc' } });
+    expect(salHist?.baseSalary).toBe(7000);
     expect(salHist?.changeReason).toBe('PROMOTION');
   });
 

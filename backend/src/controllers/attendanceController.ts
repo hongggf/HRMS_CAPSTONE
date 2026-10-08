@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import { PrismaClient, AttendanceStatus } from '@prisma/client';
+import { AttendanceStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { checkInSchema, checkOutSchema, createShiftSchema, assignShiftSchema, generateTimesheetSchema } from '../validators/attendanceValidator';
 import { logAudit } from '../services/auditService';
 
-const prisma = new PrismaClient();
 
 export const createShift = async (req: Request, res: Response) => {
   try {

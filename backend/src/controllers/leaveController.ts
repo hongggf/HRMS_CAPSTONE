@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient, RequestStatus } from '@prisma/client';
+import { RequestStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createLeaveRequestSchema, updateRequestStatusSchema } from '../validators/attendanceValidator';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 
-const prisma = new PrismaClient();
+
 
 export const createLeaveRequest = async (req: Request, res: Response) => {
   try {
@@ -35,7 +37,8 @@ export const approveLeaveRequest = async (req: Request, res: Response) => {
     const userId = (req as any).user!.id;
 
     if (status !== 'APPROVED') {
-      const updated = await prisma.leaveRequest.update({ where: { id: parseInt(id) }, data: { status: status as RequestStatus } });
+      const updated = await prisma.leaveRequest.update({ where: { id: parseInt(id) }, data: { status: status as RequestStatus }, include: { employee: true } });
+      if (updated.employee?.userId) await notifyUser(updated.employee.userId, `Leave ${status}`, `Your leave request has been ${status.toLowerCase()}.`, status === 'REJECTED' ? 'ALERT' : 'INFO', 'LeaveRequest', String(updated.id));
       return res.json(updated);
     }
 
@@ -79,6 +82,8 @@ export const approveLeaveRequest = async (req: Request, res: Response) => {
     });
 
     await logAudit('LEAVE_APPROVED', userId, { leaveRequestId: id });
+    const uEmp = await prisma.employee.findUnique({ where: { id: leaveRequest.employeeId } });
+    if (uEmp?.userId) await notifyUser(uEmp.userId, 'Leave APPROVED', `Your leave request has been approved.`, 'SUCCESS', 'LeaveRequest', String(id));
     res.json(result);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

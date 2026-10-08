@@ -15,6 +15,10 @@ import attendanceRouter from './routes/attendanceRoutes';
 import payrollRouter from './routes/payrollRoutes';
 import performanceRouter from './routes/performanceRoutes';
 import promotionRouter from './routes/promotionRoutes';
+import lndRouter from './routes/lndRoutes';
+import notificationRouter from './routes/notificationRoutes';
+import auditRouter from './routes/auditRoutes';
+import reportRouter from './routes/reportRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { sendError } from './utils/response';
 import { env } from './config/env';
@@ -53,6 +57,10 @@ app.use('/api/v1', attendanceRouter);
 app.use('/api/v1/payroll', payrollRouter);
 app.use('/api/v1/performance', performanceRouter);
 app.use('/api/v1/promotions', promotionRouter);
+app.use('/api/v1/lnd', lndRouter);
+app.use('/api/v1/notifications', notificationRouter);
+app.use('/api/v1/audit-logs', auditRouter);
+app.use('/api/v1/reports', reportRouter);
 
 // Unknown endpoint / 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {

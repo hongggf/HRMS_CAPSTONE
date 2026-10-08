@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
-import { PrismaClient, EmployeeStatus, OnboardingStatus, ApplicationStatus } from '@prisma/client';
+import { EmployeeStatus, OnboardingStatus, ApplicationStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createEmployeeSchema, updateEmployeeSchema } from '../validators/employeeValidator';
 import { storageService } from '../services/storageService';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 
-const prisma = new PrismaClient();
+
 
 export const createEmployee = async (req: Request, res: Response) => {
   try {
@@ -162,6 +164,10 @@ export const completeOnboarding = async (req: Request, res: Response) => {
       data: { onboardingStatus: OnboardingStatus.PROFILE_COMPLETED }
     });
     await logAudit('ONBOARDING_COMPLETED', userId, { employeeId: id });
+    const hrUsers = await prisma.userRole.findMany({ where: { role: { name: 'HEAD_OF_HR' } } });
+    for (const hr of hrUsers) {
+      await notifyUser(hr.userId, 'Onboarding Completed', `Employee ${emp.firstName} ${emp.lastName} completed onboarding.`, 'SUCCESS', 'Employee', String(id));
+    }
     res.json(emp);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

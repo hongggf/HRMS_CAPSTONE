@@ -22,32 +22,15 @@ describe('Phase 4: Recruitment Lifecycle', () => {
 
   beforeAll(async () => {
     // 1. Clean up
-    await prisma.interviewEvaluation.deleteMany();
-    await prisma.interview.deleteMany();
-    await prisma.candidateStatusHistory.deleteMany();
-    await prisma.application.deleteMany();
-    await prisma.candidate.deleteMany();
-    await prisma.jobPosting.deleteMany();
-    await prisma.jobRequisition.deleteMany();
-    
-    await prisma.workforceRequest.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.rolePermission.deleteMany();
-    await prisma.permission.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-
     // 2. Setup Roles & Permissions
-    const headRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR' } });
-    const recRole = await prisma.role.create({ data: { name: 'HR_RECRUITMENT' } });
+    const headRole = (await prisma.role.findUnique({ where: { name: 'HEAD_OF_HR' } }))!;
+    const recRole = (await prisma.role.findUnique({ where: { name: 'HR_RECRUITMENT' } }))!;
 
     const perms = ['RECRUITMENT_CREATE', 'RECRUITMENT_READ', 'RECRUITMENT_UPDATE'];
     for (const p of perms) {
       const perm = await prisma.permission.create({ data: { action: p } });
-      await prisma.rolePermission.create({ data: { roleId: headRole.id, permissionId: perm.id } });
-      await prisma.rolePermission.create({ data: { roleId: recRole.id, permissionId: perm.id } });
+      await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: headRole.id, permissionId: perm.id } }, update: {}, create: { roleId: headRole.id, permissionId: perm.id } });
+      await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: recRole.id, permissionId: perm.id } }, update: {}, create: { roleId: recRole.id, permissionId: perm.id } });
     }
 
     // 3. Setup Users

@@ -1,5 +1,6 @@
 import { Response, NextFunction } from 'express';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 import { AuthRequest } from '../middlewares/auth';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/AppError';
@@ -99,6 +100,7 @@ export const approveWorkforceRequest = async (req: AuthRequest, res: Response, n
 
     const request = await workforceService.approveWorkforceRequestInDB(id, req.user.id);
     await logAudit('WORKFORCE_APPROVED', req.user.id, { workforceRequestId: id });
+    await notifyUser(request.requestedBy, 'Workforce Request Approved', `Your request ${id} has been approved.`, 'SUCCESS', 'WorkforceRequest', String(id));
     return sendSuccess(res, { workforceRequest: request }, 'Workforce request approved successfully');
   } catch (error) {
     next(error);
@@ -114,6 +116,7 @@ export const rejectWorkforceRequest = async (req: AuthRequest, res: Response, ne
     const { rejectionReason } = req.body;
     const request = await workforceService.rejectWorkforceRequestInDB(id, req.user.id, rejectionReason);
     await logAudit('WORKFORCE_REJECTED', req.user.id, { workforceRequestId: id, rejectionReason });
+    await notifyUser(request.requestedBy, 'Workforce Request Rejected', `Your request ${id} has been rejected.`, 'ALERT', 'WorkforceRequest', String(id));
     return sendSuccess(res, { workforceRequest: request }, 'Workforce request rejected successfully');
   } catch (error) {
     next(error);

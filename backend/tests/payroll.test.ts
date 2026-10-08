@@ -16,40 +16,16 @@ describe('Phase 7: Payroll Management Integration Tests', () => {
   let payrollId: number;
 
   beforeAll(async () => {
-    await prisma.payrollItem.deleteMany();
-    await prisma.payrollAdjustment.deleteMany();
-    await prisma.payrollApproval.deleteMany();
-    await prisma.payroll.deleteMany();
-    await prisma.payrollPeriod.deleteMany();
-    
-    await prisma.employeeSalaryComponent.deleteMany();
-    await prisma.salaryComponent.deleteMany();
-    await prisma.employeeCompensation.deleteMany();
-    
-    await prisma.timesheet.deleteMany();
-    await prisma.employeeShift.deleteMany();
-    await prisma.shift.deleteMany();
-    await prisma.employee.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    
-    await prisma.jobPosting.deleteMany();
-    await prisma.jobRequisition.deleteMany();
-    await prisma.workforceRequest.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.role.deleteMany();
-    await prisma.permission.deleteMany();
-
-    const headOfHrRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR_P7' } });
-    const poRole = await prisma.role.create({ data: { name: 'PAYROLL_OFFICER_P7' } });
+    const headOfHrRole = (await prisma.role.findUnique({ where: { name: 'HEAD_OF_HR' } }))!;
+    const poRole = (await prisma.role.findUnique({ where: { name: 'HR_PAYROLL' } }))!;
 
     const perms = ['PAYROLL_CREATE', 'PAYROLL_READ', 'PAYROLL_UPDATE', 'PAYROLL_APPROVE', 'PAYROLL_LOCK'];
     for (const p of perms) {
       const perm = await prisma.permission.upsert({ where: { action: p }, update: {}, create: { action: p } });
       if (['PAYROLL_CREATE', 'PAYROLL_READ', 'PAYROLL_UPDATE'].includes(p)) {
-        await prisma.rolePermission.create({ data: { roleId: poRole.id, permissionId: perm.id } });
+        await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: poRole.id, permissionId: perm.id } }, update: {}, create: { roleId: poRole.id, permissionId: perm.id } });
       }
-      await prisma.rolePermission.create({ data: { roleId: headOfHrRole.id, permissionId: perm.id } });
+      await prisma.rolePermission.upsert({ where: { roleId_permissionId: { roleId: headOfHrRole.id, permissionId: perm.id } }, update: {}, create: { roleId: headOfHrRole.id, permissionId: perm.id } });
     }
 
     const headUser = await prisma.user.create({ data: { email: 'head_p7@test.com', password: 'hash', roles: { create: { roleId: headOfHrRole.id } } } });

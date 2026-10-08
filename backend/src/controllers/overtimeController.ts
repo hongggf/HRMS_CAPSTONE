@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient, RequestStatus } from '@prisma/client';
+import { RequestStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createOvertimeRequestSchema, updateRequestStatusSchema } from '../validators/attendanceValidator';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 
-const prisma = new PrismaClient();
+
 
 export const createOvertimeRequest = async (req: Request, res: Response) => {
   try {
@@ -42,6 +44,8 @@ export const approveOvertimeRequest = async (req: Request, res: Response) => {
     });
 
     await logAudit('OVERTIME_STATUS_UPDATED', userId, { overtimeRequestId: id, status });
+    const uEmp = await prisma.employee.findUnique({ where: { id: updated.employeeId } });
+    if (uEmp?.userId) await notifyUser(uEmp.userId, `Overtime ${status}`, `Your overtime request has been ${status.toLowerCase()}.`, status === 'APPROVED' ? 'SUCCESS' : 'INFO', 'OvertimeRequest', String(updated.id));
     res.json(updated);
   } catch (error: any) {
     res.status(400).json({ error: error.message });

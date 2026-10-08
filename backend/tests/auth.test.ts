@@ -14,22 +14,12 @@ describe('Auth & User Management & RBAC Tests', () => {
   const JWT_SECRET = process.env.JWT_SECRET!;
 
   beforeAll(async () => {
-    await prisma.auditLog.deleteMany();
-    await prisma.refreshToken.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.rolePermission.deleteMany();
-    await prisma.permission.deleteMany();
-    await prisma.role.deleteMany();
-
-    // Setup Roles and Permissions
-    const headOfHrRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR' } });
+                            
+    const headOfHrRole = await prisma.role.findUnique({ where: { name: 'HEAD_OF_HR' } });
+    if (!headOfHrRole) throw new Error('Role not found');
     headOfHrRoleId = headOfHrRole.id;
-    const adminRole = await prisma.role.create({ data: { name: 'HR_ADMIN' } });
-    const permRead = await prisma.permission.create({ data: { action: 'USER_READ' } });
+            
     
-    await prisma.rolePermission.create({ data: { roleId: headOfHrRole.id, permissionId: permRead.id } });
-
     // Setup Users
     const hashedPassword = await bcrypt.hash('password123', 10);
 

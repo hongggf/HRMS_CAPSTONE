@@ -19,20 +19,9 @@ describe('Phase 3: Organization Structure & Workforce Planning', () => {
 
   beforeAll(async () => {
     // Clean up in correct order (respect FK constraints)
-    await prisma.workforceRequest.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
-    await prisma.auditLog.deleteMany();
-    await prisma.refreshToken.deleteMany();
-    await prisma.userRole.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.rolePermission.deleteMany();
-    await prisma.permission.deleteMany();
-    await prisma.role.deleteMany();
-
     // Create roles
-    const headOfHrRole = await prisma.role.create({ data: { name: 'HEAD_OF_HR' } });
-    const hrRecruitmentRole = await prisma.role.create({ data: { name: 'HR_RECRUITMENT' } });
+    const headOfHrRole = (await prisma.role.findUnique({ where: { name: 'HEAD_OF_HR' } }))!;
+    const hrRecruitmentRole = (await prisma.role.findUnique({ where: { name: 'HR_RECRUITMENT' } }))!;
 
     // Create all permissions
     const allPermissions = [
@@ -44,7 +33,7 @@ describe('Phase 3: Organization Structure & Workforce Planning', () => {
 
     const permRecords = [];
     for (const action of allPermissions) {
-      const perm = await prisma.permission.create({ data: { action } });
+      const perm = await prisma.permission.upsert({ where: { action }, update: {}, create: { action } });
       permRecords.push(perm);
     }
 
@@ -101,9 +90,6 @@ describe('Phase 3: Organization Structure & Workforce Planning', () => {
   });
 
   afterAll(async () => {
-    await prisma.workforceRequest.deleteMany();
-    await prisma.position.deleteMany();
-    await prisma.department.deleteMany();
     await prisma.$disconnect();
   });
 

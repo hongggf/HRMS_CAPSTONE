@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
-import { PrismaClient, PayrollPeriodStatus } from '@prisma/client';
+import { PayrollPeriodStatus } from '@prisma/client';
+import { prisma } from '../config/db';
 import { createPeriodSchema, updatePayrollStatusSchema } from '../validators/payrollValidator';
 import { logAudit } from '../services/auditService';
+import { notifyUser } from '../services/notificationService';
 
-const prisma = new PrismaClient();
+
 
 export const createPayrollPeriod = async (req: Request, res: Response) => {
   try {
@@ -180,6 +182,10 @@ export const approvePayroll = async (req: Request, res: Response) => {
     });
 
     await logAudit('PAYROLL_APPROVED', userId, { periodId: id });
+    const hrUsers = await prisma.userRole.findMany({ where: { role: { name: 'HEAD_OF_HR' } } });
+    for (const hr of hrUsers) {
+      await notifyUser(hr.userId, 'Payroll Approved', `Payroll period ${id} has been approved.`, 'SUCCESS', 'PayrollPeriod', String(id));
+    }
     res.json(result);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
