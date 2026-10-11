@@ -1,5 +1,9 @@
+import axios from 'axios';
 import { apiClient } from './client';
 import { ApiResponse, LoginResponseData, User } from '../types/api';
+
+const baseURL =
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
 
 export const authApi = {
   login: async (
@@ -16,8 +20,20 @@ export const authApi = {
     return res.data.data;
   },
 
-  logout: async (refreshToken: string): Promise<void> => {
-    await apiClient.post('/auth/logout', { refreshToken });
+  refresh: async (
+    refreshToken: string,
+  ): Promise<{ accessToken: string; refreshToken?: string }> => {
+    const res = await axios.post<
+      ApiResponse<{ accessToken: string; refreshToken?: string }>
+    >(`${baseURL}/auth/refresh`, { refreshToken });
+    return res.data.data;
+  },
+
+  logout: async (refreshToken: string): Promise<{ message?: string }> => {
+    const res = await apiClient.post<ApiResponse<null>>('/auth/logout', {
+      refreshToken,
+    });
+    return { message: res.data.message };
   },
 
   getMe: async (): Promise<User> => {

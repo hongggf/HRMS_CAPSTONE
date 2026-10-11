@@ -5,11 +5,10 @@ import {
   LockOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons';
-import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { authApi } from '../../api/auth';
+import { normalizeApiError } from '../../api/client';
 import { useAuthStore } from '../../store/useAuthStore';
-import { ApiErrorResponse } from '../../types/api';
 
 const { Title, Text } = Typography;
 
@@ -22,14 +21,23 @@ interface LocationState {
 export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuthStore();
+  const { login, isAuthenticated } = useAuthStore();
 
   const state = location.state as LocationState | null;
   const from = state?.from?.pathname || '/dashboard';
 
+  // Prevent redirect loops and redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const onFinish = async (values: { email: string; password: string }) => {
+    if (loading) return;
     setLoading(true);
     setErrorMessage(null);
     try {
@@ -37,14 +45,20 @@ export const LoginPage: React.FC = () => {
       login(data.user, data.accessToken, data.refreshToken);
       navigate(from, { replace: true });
     } catch (err: unknown) {
-      let backendMessage =
-        'Failed to authenticate. Please check your credentials.';
-      if (axios.isAxiosError<ApiErrorResponse>(err)) {
-        backendMessage = err.response?.data?.error?.message || err.message;
-      } else if (err instanceof Error) {
-        backendMessage = err.message;
+      const normalized = normalizeApiError(err);
+      setErrorMessage(normalized.message);
+
+      // If backend returned specific field errors, map them to form fields
+      if (normalized.details && normalized.details.length > 0) {
+        form.setFields(
+          normalized.details
+            .filter((d): d is { field: string; message: string } => Boolean(d.field))
+            .map((d) => ({
+              name: d.field,
+              errors: [d.message],
+            })),
+        );
       }
-      setErrorMessage(backendMessage);
     } finally {
       setLoading(false);
     }
@@ -107,6 +121,7 @@ export const LoginPage: React.FC = () => {
         )}
 
         <Form
+          form={form}
           name="loginForm"
           layout="vertical"
           initialValues={{ email: 'head@hr.local', password: 'password123' }}

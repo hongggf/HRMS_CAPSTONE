@@ -30,6 +30,15 @@ const initialUser: User | null = (() => {
   }
 })();
 
+let onLogoutCallbacks: Array<() => void> = [];
+
+export const registerOnLogout = (cb: () => void) => {
+  onLogoutCallbacks.push(cb);
+  return () => {
+    onLogoutCallbacks = onLogoutCallbacks.filter((fn) => fn !== cb);
+  };
+};
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
   accessToken: null,
@@ -69,6 +78,13 @@ export const useAuthStore = create<AuthState>((set) => ({
       accessToken: null,
       refreshToken: null,
       isAuthenticated: false,
+    });
+    onLogoutCallbacks.forEach((cb) => {
+      try {
+        cb();
+      } catch {
+        // Safe callback execution
+      }
     });
   },
 }));
