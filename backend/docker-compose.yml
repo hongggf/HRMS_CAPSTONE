@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: hrms-postgres
+    environment:
+      POSTGRES_USER: hrms_user
+      POSTGRES_PASSWORD: hrms_password
+      POSTGRES_DB: hrms_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms_user -d hrms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hrms-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://hrms_user:hrms_password@db:5432/hrms_db
+      - JWT_SECRET=supersecretjwtkey_please_change_in_production
+      - JWT_REFRESH_SECRET=supersecretrefreshkey_please_change_in_production
+      - PORT=3000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./uploads:/app/uploads
+
+volumes:
+  pgdata:

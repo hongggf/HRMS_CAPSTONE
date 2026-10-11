@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: hrms-postgres-prod
+    environment:
+      POSTGRES_USER: hrms_user
+      POSTGRES_PASSWORD: hrms_password
+      POSTGRES_DB: hrms_db
+    ports:
+      - "5433:5432" # using 5433 to avoid conflicts if you have another pg running
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hrms_user -d hrms_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: hong16/hrms-backend:latest
+    container_name: hrms-backend-prod
+    ports:
+      - "3001:3000" # using 3001 to avoid conflicts
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=postgresql://hrms_user:hrms_password@db:5432/hrms_db
+      - JWT_SECRET=supersecretjwtkey_please_change_in_production
+      - JWT_REFRESH_SECRET=supersecretrefreshkey_please_change_in_production
+      - PORT=3000
+    depends_on:
+      db:
+        condition: service_healthy

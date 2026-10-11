@@ -129,7 +129,7 @@ export const uploadDocument = async (req: Request, res: Response) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     if (!documentType) return res.status(400).json({ error: 'Document type is required' });
 
-    const result = await storageService.uploadFile(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const result = await storageService.uploadFile(req.file.buffer, req.file.originalname);
 
     const document = await prisma.employeeDocument.create({
       data: {

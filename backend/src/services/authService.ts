@@ -1,10 +1,8 @@
-import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma } from '../config/db';
 import { env } from '../config/env';
 import { AppError } from '../utils/AppError';
-import { logAudit } from './auditService';
 
 export const generateTokens = async (userId: number) => {
   const accessToken = jwt.sign({ id: userId }, env.JWT_SECRET, {

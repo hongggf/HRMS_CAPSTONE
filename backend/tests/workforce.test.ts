@@ -31,27 +31,20 @@ describe('Phase 3: Organization Structure & Workforce Planning', () => {
       'POSITION_CREATE', 'POSITION_READ', 'POSITION_UPDATE',
     ];
 
-    const permRecords = [];
+    const permRecords: any[] = [];
     for (const action of allPermissions) {
       const perm = await prisma.permission.upsert({ where: { action }, update: {}, create: { action } });
       permRecords.push(perm);
     }
 
     // HEAD_OF_HR gets ALL permissions
-    for (const perm of permRecords) {
-      await prisma.rolePermission.create({
-        data: { roleId: headOfHrRole.id, permissionId: perm.id },
-      });
-    }
+    const headData = permRecords.map(perm => ({ roleId: headOfHrRole.id, permissionId: perm.id }));
+    await prisma.rolePermission.createMany({ data: headData, skipDuplicates: true });
 
     // HR_RECRUITMENT gets WORKFORCE_CREATE, WORKFORCE_READ, DEPARTMENT_READ, POSITION_READ
     const hrRecruitmentPerms = ['WORKFORCE_CREATE', 'WORKFORCE_READ', 'DEPARTMENT_READ', 'POSITION_READ'];
-    for (const action of hrRecruitmentPerms) {
-      const perm = permRecords.find(p => p.action === action)!;
-      await prisma.rolePermission.create({
-        data: { roleId: hrRecruitmentRole.id, permissionId: perm.id },
-      });
-    }
+    const hrData = hrRecruitmentPerms.map(action => ({ roleId: hrRecruitmentRole.id, permissionId: permRecords.find(p => p.action === action)!.id }));
+    await prisma.rolePermission.createMany({ data: hrData, skipDuplicates: true });
 
     // Create users
     const hashedPassword = await bcrypt.hash('password123', 10);

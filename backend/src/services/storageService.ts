@@ -3,7 +3,7 @@ import path from 'path';
 
 // Storage abstraction so local storage can later be replaced by S3/GCS
 export interface StorageService {
-  uploadFile(fileBuffer: Buffer, originalName: string, mimeType: string): Promise<{ storageKey: string }>;
+  uploadFile(fileBuffer: Buffer, originalName: string): Promise<{ storageKey: string }>;
   getFileStream(storageKey: string): fs.ReadStream;
 }
 
@@ -17,7 +17,7 @@ export class LocalStorageService implements StorageService {
     }
   }
 
-  async uploadFile(fileBuffer: Buffer, originalName: string, mimeType: string): Promise<{ storageKey: string }> {
+  async uploadFile(fileBuffer: Buffer, originalName: string): Promise<{ storageKey: string }> {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const storageKey = uniqueSuffix + '-' + originalName.replace(/[^a-zA-Z0-9.\-]/g, '_');
     const filePath = path.join(this.baseDir, storageKey);
