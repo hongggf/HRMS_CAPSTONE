@@ -18,7 +18,8 @@ services:
     image: hong16/hrms-backend:latest
     container_name: hrms-backend-prod
     ports:
-      - "3001:3000" # using 3001 to avoid conflicts
+      - "3000:3000"
+      - "3001:3000"
     environment:
       - NODE_ENV=production
       - DATABASE_URL=postgresql://hrms_user:hrms_password@db:5432/hrms_db
