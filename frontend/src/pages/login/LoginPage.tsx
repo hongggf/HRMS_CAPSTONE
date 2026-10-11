@@ -52,7 +52,9 @@ export const LoginPage: React.FC = () => {
       if (normalized.details && normalized.details.length > 0) {
         form.setFields(
           normalized.details
-            .filter((d): d is { field: string; message: string } => Boolean(d.field))
+            .filter((d): d is { field: string; message: string } =>
+              Boolean(d.field),
+            )
             .map((d) => ({
               name: d.field,
               errors: [d.message],
@@ -71,6 +73,8 @@ export const LoginPage: React.FC = () => {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
+        width: '100%',
+        margin: 0,
         background: 'linear-gradient(135deg, #1f1f1f 0%, #141414 100%)',
         padding: 16,
       }}
@@ -81,6 +85,7 @@ export const LoginPage: React.FC = () => {
           maxWidth: 420,
           boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
           borderRadius: 12,
+          overflow: 'hidden',
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
