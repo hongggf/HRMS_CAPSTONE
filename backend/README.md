@@ -3,28 +3,56 @@
 Welcome to the HRMS (Human Resources Management System) Backend repository. This system is built for high performance, strict type safety, and robust Role-Based Access Control (RBAC).
 
 ## 🛠 Tech Stack
-- **Runtime:** Node.js
+- **Runtime:** Node.js (v18+)
 - **Framework:** Express.js + TypeScript
 - **Database:** PostgreSQL
 - **ORM:** Prisma
-- **Security:** JWT (JSON Web Tokens), bcryptjs, Helmet, Express Rate Limit
+- **Security:** JWT (Access & Refresh tokens), bcryptjs, Helmet, Express Rate Limit
 - **Validation:** Zod
+- **Containerization:** Docker & Docker Compose
 
 ---
 
-## 💻 Local Setup Guide
+## 🐳 Quickstart with Docker (Recommended)
 
-Follow these steps exactly to get the backend running on your local machine.
+You can run the entire backend and PostgreSQL database using Docker without needing Node.js or PostgreSQL installed locally.
+
+### 1. Run Prebuilt Production Stack (Docker Hub)
+Pull and start the production-ready backend image and PostgreSQL in the background:
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+- **API URL:** `http://localhost:3001`
+- **PostgreSQL Port:** `5433` (isolated to avoid local Postgres port conflicts)
+- **Automatic Migrations:** Database migrations are automatically applied on container startup.
+
+### 2. View Live Logs
+```bash
+docker logs -f hrms-backend-prod
+```
+
+### 3. Stop Containers
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+---
+
+## 💻 Local Node.js Setup Guide
+
+If you are developing locally with live reload, follow these steps:
 
 ### 1. Prerequisites
 - **Node.js** (v18 or higher)
-- **Docker & Docker Compose** (for running PostgreSQL)
+- **Docker & Docker Compose** (for running local PostgreSQL)
 
-### 2. Start the Database
-From the root of the project (where `docker-compose.yml` is located), spin up the database in the background:
+### 2. Start the Local Database
+From `backend/`, spin up the local PostgreSQL container in the background:
 ```bash
 docker compose up -d
 ```
+*(Runs PostgreSQL on standard port `5432`)*
 
 ### 3. Install Dependencies
 Navigate into the backend folder and install the NPM packages:
@@ -38,10 +66,10 @@ Copy the example environment file to create your local `.env`:
 ```bash
 cp .env.example .env
 ```
-*(The default variables provided are already perfectly configured for local Docker development).*
+*(The default variables provided are already configured for local Docker development).*
 
 ### 5. Setup the Database Schema & Seed Data
-Run the following commands to apply the database schema, generate the Prisma Client, and seed the initial roles and admin user:
+Apply the database schema, generate the Prisma Client, and seed initial roles & accounts:
 ```bash
 npx prisma migrate dev
 npx prisma generate
@@ -62,7 +90,7 @@ The API will now be running at `http://localhost:3000`.
 This API uses a strict Role-Based Access Control system. Roles are stored in the database and mapped to specific granular permissions.
 
 ### Seeded Master Account
-Running the seed command automatically creates a master HR user for you to test with:
+Running the seed command automatically creates a master HR user for testing:
 - **Email:** `head@hr.local`
 - **Password:** `password123`
 - **Role:** `HEAD_OF_HR` (Has all permissions)
@@ -72,13 +100,13 @@ When creating or assigning roles to users via the API, use the following `roleId
 
 | Role ID | Role Name | Description |
 | :--- | :--- | :--- |
-| **1** | `HR_RECRUITMENT` | Manages job postings and candidates |
-| **2** | `HR_LND` | Learning and Development |
-| **3** | `HEAD_OF_HR` | Master role with full system access |
-| **4** | `HR_PAYROLL` | Approves and manages payroll |
-| **5** | `HR_ADMIN` | General system administration |
-| **6** | `HR_ATTENDANCE` | Manages clock-ins, clock-outs, and leaves |
-| **7** | `HR_PERFORMANCE` | Manages employee reviews and KPIs |
+| **1** | `HR_RECRUITMENT` | Manages job postings, candidate screening, and recruitment |
+| **2** | `HR_LND` | Learning and Development, courses, and skill tracking |
+| **3** | `HEAD_OF_HR` | Master role with full system access and final approvals |
+| **4** | `HR_PAYROLL` | Prepares, adjusts, and calculates payroll |
+| **5** | `HR_ADMIN` | General system administration, employee profiles, and promotions |
+| **6** | `HR_ATTENDANCE` | Manages shifts, clock-ins, clock-outs, leaves, and overtime |
+| **7** | `HR_PERFORMANCE` | Manages employee reviews, goals, and KPIs |
 
 ---
 
@@ -87,7 +115,7 @@ When creating or assigning roles to users via the API, use the following `roleId
 Prisma comes with a built-in visual database browser (similar to pgAdmin or DBeaver) called **Prisma Studio**. This allows you to easily view, add, edit, or delete records in your database directly from your web browser.
 
 **To start Prisma Studio:**
-1. Open a new terminal window.
+1. Open a terminal window.
 2. Navigate to the backend directory (`cd hrms/backend`).
 3. Run the following command:
 ```bash
@@ -153,4 +181,4 @@ We have prepared a fully automated Postman Collection that handles JWTs for you.
 - `npm run dev`: Starts the TypeScript server with hot-reloading.
 - `npm run build`: Compiles the TypeScript code to plain JavaScript in the `/dist` folder.
 - `npm run lint`: Analyzes the code for ESLint errors.
-- `npm run test`: Runs the automated Jest test suite (Note: This will isolate and reset the database).
+- `npm run test`: Runs the automated Jest test suite (140 tests across 13 test suites).
