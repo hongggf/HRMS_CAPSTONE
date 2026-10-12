@@ -5,8 +5,8 @@ import { Forbidden403 } from '../../pages/error/Forbidden403';
 
 interface RoleGuardProps {
   requiredRoles: RoleName[];
-  children: React.ReactElement;
-  fallback?: React.ReactElement;
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
 }
 
 export const RoleGuard: React.FC<RoleGuardProps> = ({
@@ -16,8 +16,13 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
 }) => {
   const { user } = useAuthStore();
 
-  if (!user) {
-    return fallback;
+  if (!user || !user.roles || !Array.isArray(user.roles)) {
+    return fallback ? <>{fallback}</> : null;
+  }
+
+  // Deny access by default if no required roles are specified
+  if (!requiredRoles || requiredRoles.length === 0) {
+    return fallback ? <>{fallback}</> : null;
   }
 
   // HEAD_OF_HR is the master authority and passes all role requirements
@@ -26,8 +31,8 @@ export const RoleGuard: React.FC<RoleGuardProps> = ({
     isHeadOfHr || requiredRoles.some((role) => user.roles.includes(role));
 
   if (!hasRequiredRole) {
-    return fallback;
+    return fallback ? <>{fallback}</> : null;
   }
 
-  return children;
+  return <>{children}</>;
 };

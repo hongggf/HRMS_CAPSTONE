@@ -1,5 +1,6 @@
 import { prisma } from '../config/db';
 import { logger } from '../utils/logger';
+import { wsManager } from '../websocket';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const logAudit = async (action: string, userId: number | null, details?: any) => {
@@ -22,9 +23,11 @@ export const logAudit = async (action: string, userId: number | null, details?: 
     else if (action.includes('PROMOTION')) module = 'PROMOTION';
     else if (action.includes('IMPROVEMENT') || action.includes('PIP')) module = 'IMPROVEMENT';
     else if (action.includes('LND') || action.includes('TRAINING') || action.includes('CATEGORY') || action.includes('PLAN') || action.includes('SESSION') || action.includes('EVALUATION') || action.includes('SKILL')) module = 'TRAINING';
+    else if (action.includes('TASK')) module = 'TASK';
 
     if (details) {
-      if (details.employeeId) { entityType = 'Employee'; entityId = String(details.employeeId); }
+      if (details.taskId) { entityType = details.taskType || 'Task'; entityId = String(details.taskId); }
+      else if (details.employeeId) { entityType = 'Employee'; entityId = String(details.employeeId); }
       else if (details.userId || details.targetUserId || details.newUserId) { entityType = 'User'; entityId = String(details.userId || details.targetUserId || details.newUserId); }
       else if (details.departmentId) { entityType = 'Department'; entityId = String(details.departmentId); }
       else if (details.positionId) { entityType = 'Position'; entityId = String(details.positionId); }
@@ -43,6 +46,19 @@ export const logAudit = async (action: string, userId: number | null, details?: 
         entityId,
         newValues: details ? JSON.parse(JSON.stringify(details)) : null,
       },
+    });
+
+    // Real-time WebSocket broadcast to all connected clients
+    wsManager.broadcast('DATA_MUTATION', {
+      module,
+      action,
+      entityType,
+      entityId,
+      actorId: userId,
+    });
+    wsManager.broadcast('DASHBOARD_UPDATED', {
+      module,
+      action,
     });
   } catch (error) {
     logger.error('Failed to log audit event', error);

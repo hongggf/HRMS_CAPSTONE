@@ -203,5 +203,91 @@ describe('apiClient and error normalization', () => {
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
       expect(useAuthStore.getState().accessToken).toBeNull();
     });
+
+    it('handles simultaneous 401 responses with a single refresh request (mutex queue)', async () => {
+      useAuthStore
+        .getState()
+        .login(
+          { id: 1, email: 'head@hr.local', roles: ['HEAD_OF_HR'] },
+          'expired-access',
+          'valid-refresh',
+        );
+
+      // Spy on raw axios.post for the refresh call
+      let refreshCallCount = 0;
+      vi.spyOn(axios, 'post').mockImplementation(async (url) => {
+        if (typeof url === 'string' && url.includes('/auth/refresh')) {
+          refreshCallCount++;
+          // Simulate short network delay for refresh
+          await new Promise((r) => setTimeout(r, 10));
+          return {
+            data: {
+              success: true,
+              data: {
+                accessToken: 'fresh-new-token',
+                refreshToken: 'fresh-new-refresh',
+              },
+            },
+          };
+        }
+        return { data: { success: true, data: {} } };
+      });
+
+      // Mock adapter to return clean response for retried requests without network I/O
+      const originalAdapter = apiClient.defaults.adapter;
+      let retriedCount = 0;
+      apiClient.defaults.adapter = async (config) => {
+        retriedCount++;
+        return {
+          data: { success: true },
+          status: 200,
+          statusText: 'OK',
+          headers: {},
+          config: {
+            url: config.url,
+            headers: config.headers,
+          } as unknown as InternalAxiosRequestConfig,
+        };
+      };
+
+      const responseHandlers = (
+        apiClient.interceptors
+          .response as unknown as InterceptorManager<unknown>
+      ).handlers;
+      const rejectFn = responseHandlers[0].rejected;
+
+      const req1Config = {
+        url: '/departments',
+        headers: {},
+      } as InternalAxiosRequestConfig;
+      const err1 = new AxiosError('Unauthorized');
+      err1.response = { status: 401 } as AxiosError['response'];
+      err1.config = req1Config;
+
+      const req2Config = {
+        url: '/positions',
+        headers: {},
+      } as InternalAxiosRequestConfig;
+      const err2 = new AxiosError('Unauthorized');
+      err2.response = { status: 401 } as AxiosError['response'];
+      err2.config = req2Config;
+
+      try {
+        // Dispatch two concurrent 401 errors
+        const [res1, res2] = await Promise.all([
+          rejectFn(err1),
+          rejectFn(err2),
+        ]);
+
+        // Exactly ONE refresh request must have been dispatched
+        expect(refreshCallCount).toBe(1);
+        expect(useAuthStore.getState().accessToken).toBe('fresh-new-token');
+        expect(retriedCount).toBe(2);
+        expect(res1).toBeDefined();
+        expect(res2).toBeDefined();
+      } finally {
+        apiClient.defaults.adapter = originalAdapter;
+      }
+    });
   });
 });

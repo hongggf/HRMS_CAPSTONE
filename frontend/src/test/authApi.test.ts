@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import axios from 'axios';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/client';
+import { useAuthStore } from '../store/useAuthStore';
 
 describe('authApi', () => {
   beforeEach(() => {
@@ -114,5 +115,54 @@ describe('authApi', () => {
     expect(apiClient.get).toHaveBeenCalledWith('/auth/me');
     expect(result.email).toBe('head@hr.local');
     expect(result.roles).toContain('HEAD_OF_HR');
+  });
+
+  it('restoreSession restores tokens and fetches user profile when valid refreshToken exists', async () => {
+    useAuthStore.getState().logout();
+    localStorage.setItem('hrms_refresh_token', 'valid-persisted-refresh');
+
+    vi.spyOn(authApi, 'refresh').mockResolvedValueOnce({
+      accessToken: 'restored-access-token',
+      refreshToken: 'valid-persisted-refresh',
+    });
+
+    vi.spyOn(authApi, 'getMe').mockResolvedValueOnce({
+      id: 1,
+      email: 'head@hr.local',
+      roles: ['HEAD_OF_HR'],
+    });
+
+    // Manually set initial state simulating browser reload with stored refreshToken
+    useAuthStore.setState({
+      refreshToken: 'valid-persisted-refresh',
+      accessToken: null,
+      user: null,
+      isAuthenticated: true,
+    });
+
+    const success = await authApi.restoreSession();
+
+    expect(success).toBe(true);
+    expect(useAuthStore.getState().accessToken).toBe('restored-access-token');
+    expect(useAuthStore.getState().user?.email).toBe('head@hr.local');
+  });
+
+  it('restoreSession logs out when refresh fails during session restoration', async () => {
+    useAuthStore.setState({
+      refreshToken: 'expired-persisted-refresh',
+      accessToken: null,
+      user: null,
+      isAuthenticated: true,
+    });
+
+    vi.spyOn(authApi, 'refresh').mockRejectedValueOnce(
+      new Error('Token expired'),
+    );
+
+    const success = await authApi.restoreSession();
+
+    expect(success).toBe(false);
+    expect(useAuthStore.getState().isAuthenticated).toBe(false);
+    expect(useAuthStore.getState().refreshToken).toBeNull();
   });
 });

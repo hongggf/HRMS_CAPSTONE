@@ -3,7 +3,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { ApiResponse, ApiErrorResponse, ApiErrorDetail } from '../types/api';
 
 const baseURL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 export const apiClient = axios.create({
   baseURL,
@@ -20,6 +20,12 @@ export const apiClient = axios.create({
 export const normalizeApiError = (
   err: unknown,
 ): { message: string; details?: ApiErrorDetail[] } => {
+  if (axios.isCancel(err) || (err as AxiosError)?.code === 'ERR_CANCELED') {
+    return {
+      message: 'Request was cancelled',
+    };
+  }
+
   if (axios.isAxiosError<ApiErrorResponse>(err)) {
     if (err.response?.data?.error) {
       return {
@@ -132,9 +138,12 @@ apiClient.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({
             resolve: (token: string) => {
-              if (originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
+              originalRequest._retry = true;
+              if (!originalRequest.headers) {
+                originalRequest.headers =
+                  {} as unknown as InternalAxiosRequestConfig['headers'];
               }
+              originalRequest.headers.Authorization = `Bearer ${token}`;
               resolve(apiClient(originalRequest));
             },
             reject: (err) => {

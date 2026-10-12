@@ -4,11 +4,21 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './router';
 import { useThemeStore } from './store/useThemeStore';
+import { useAuthStore } from './store/useAuthStore';
+import { authApi } from './api/auth';
 import { queryClient } from './queryClient';
 import { ErrorBoundary } from './components/common/ErrorBoundary';
 
 export const App: React.FC = () => {
   const { mode } = useThemeStore();
+  const { refreshToken, accessToken } = useAuthStore();
+
+  // Proactively restore session and refresh token on initial application load
+  React.useEffect(() => {
+    if (refreshToken && !accessToken) {
+      authApi.restoreSession().catch(() => {});
+    }
+  }, [refreshToken, accessToken]);
 
   return (
     <ErrorBoundary>

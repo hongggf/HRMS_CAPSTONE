@@ -1,14 +1,25 @@
-import React from 'react';
-import { Tabs, Dropdown, MenuProps } from 'antd';
+import { Tabs, Dropdown, MenuProps, theme } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTabStore } from '../../store/useTabStore';
-import { CloseOutlined, ReloadOutlined, StopOutlined } from '@ant-design/icons';
+import {
+  CloseOutlined,
+  ReloadOutlined,
+  StopOutlined,
+  CloseCircleOutlined,
+} from '@ant-design/icons';
 
 export const TagsView: React.FC = () => {
+  const { token } = theme.useToken();
   const navigate = useNavigate();
   const location = useLocation();
-  const { tabs, removeTab, closeOthers, closeAll, setActiveKey } =
-    useTabStore();
+  const {
+    tabs,
+    removeTab,
+    closeOthers,
+    closeAll,
+    setActiveKey,
+    reloadCurrentTab,
+  } = useTabStore();
 
   const handleTabChange = (key: string) => {
     setActiveKey(key);
@@ -27,15 +38,34 @@ export const TagsView: React.FC = () => {
     }
   };
 
-  const getContextMenuItems = (tabKey: string): MenuProps['items'] => [
+  const getContextMenuItems = (
+    tabKey: string,
+    closable: boolean,
+  ): MenuProps['items'] => [
     {
       key: 'reload',
       icon: <ReloadOutlined />,
       label: 'Reload Page',
       onClick: () => {
-        navigate(tabKey);
+        if (location.pathname !== tabKey) {
+          navigate(tabKey);
+        }
+        reloadCurrentTab();
       },
     },
+    ...(closable
+      ? [
+          {
+            key: 'close-current',
+            icon: <CloseCircleOutlined />,
+            label: 'Close Tab',
+            onClick: () => {
+              const next = removeTab(tabKey);
+              if (next) navigate(next);
+            },
+          },
+        ]
+      : []),
     {
       key: 'close-others',
       icon: <CloseOutlined />,
@@ -60,8 +90,8 @@ export const TagsView: React.FC = () => {
     <div
       style={{
         padding: '6px 16px 0',
-        background: 'var(--ant-color-bg-container)',
-        borderBottom: '1px solid var(--ant-color-border-secondary)',
+        background: token.colorBgContainer,
+        borderBottom: `1px solid ${token.colorBorderSecondary}`,
       }}
     >
       <Tabs
@@ -76,7 +106,7 @@ export const TagsView: React.FC = () => {
           key: tab.key,
           label: (
             <Dropdown
-              menu={{ items: getContextMenuItems(tab.key) }}
+              menu={{ items: getContextMenuItems(tab.key, tab.closable) }}
               trigger={['contextMenu']}
             >
               <span>{tab.label}</span>

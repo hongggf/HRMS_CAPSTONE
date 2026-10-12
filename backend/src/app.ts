@@ -19,6 +19,7 @@ import lndRouter from './routes/lndRoutes';
 import notificationRouter from './routes/notificationRoutes';
 import auditRouter from './routes/auditRoutes';
 import reportRouter from './routes/reportRoutes';
+import taskRouter from './routes/taskRoutes';
 import { errorHandler } from './middlewares/errorHandler';
 import { sendError } from './utils/response';
 import { env } from './config/env';
@@ -33,7 +34,17 @@ app.use(helmet());
 
 // CORS Configuration
 app.use(cors({
-  origin: env.CORS_ORIGIN,
+  origin: (origin, callback) => {
+    // Allow non-browser requests or any dev origin
+    if (!origin || env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    if (origin === env.CORS_ORIGIN) {
+      return callback(null, true);
+    }
+    return callback(new Error('Blocked by CORS'));
+  },
+  credentials: true,
 }));
 
 // Request body size limits
@@ -61,6 +72,7 @@ app.use('/api/v1/lnd', lndRouter);
 app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/audit-logs', auditRouter);
 app.use('/api/v1/reports', reportRouter);
+app.use('/api/v1/tasks', taskRouter);
 
 // Unknown endpoint / 404 handler
 app.use((req: Request, res: Response, next: NextFunction) => {

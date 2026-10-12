@@ -116,35 +116,54 @@ async function main() {
     console.log(`Assigned ${assignedPerms.length} permissions to ${roleName}`);
   }
 
-  // 4. Create HEAD_OF_HR user
-  const email = process.env.SEED_EMAIL || 'head@hr.local';
-  const passwordText = process.env.SEED_PASSWORD || 'password123';
-  const password = await bcrypt.hash(passwordText, 10);
+  // 4. Create Users for all 7 HR Officer Roles
+  const defaultPassword = await bcrypt.hash('password123', 10);
+  const officerAccounts = [
+    { email: process.env.SEED_EMAIL || 'head@hr.local', role: 'HEAD_OF_HR' },
+    { email: 'recruiter@hr.local', role: 'HR_RECRUITMENT' },
+    { email: 'admin@hr.local', role: 'HR_ADMIN' },
+    { email: 'attendance@hr.local', role: 'HR_ATTENDANCE' },
+    { email: 'payroll@hr.local', role: 'HR_PAYROLL' },
+    { email: 'performance@hr.local', role: 'HR_PERFORMANCE' },
+    { email: 'lnd@hr.local', role: 'HR_LND' },
+  ];
 
-  let adminUser = await prisma.user.findUnique({ where: { email } });
-  if (!adminUser) {
-    adminUser = await prisma.user.create({
-      data: {
-        email,
-        password,
-        isActive: true,
-      },
-    });
-    
-    const headOfHrRole = roles.find((r) => r.name === 'HEAD_OF_HR');
-    if (headOfHrRole) {
-      await prisma.userRole.create({
+  for (const account of officerAccounts) {
+    let user = await prisma.user.findUnique({ where: { email: account.email } });
+    if (!user) {
+      user = await prisma.user.create({
         data: {
-          userId: adminUser.id,
-          roleId: headOfHrRole.id,
+          email: account.email,
+          password: defaultPassword,
+          isActive: true,
         },
       });
+      console.log(`Created user: ${account.email}`);
     }
-    console.log(`Created HEAD_OF_HR user: ${email}`);
-  } else {
-    console.log(`User ${email} already exists.`);
+
+    const assignedRole = roles.find((r) => r.name === account.role);
+    if (assignedRole) {
+      const userRoleExists = await prisma.userRole.findUnique({
+        where: {
+          userId_roleId: {
+            userId: user.id,
+            roleId: assignedRole.id,
+          },
+        },
+      });
+      if (!userRoleExists) {
+        await prisma.userRole.create({
+          data: {
+            userId: user.id,
+            roleId: assignedRole.id,
+          },
+        });
+        console.log(`Assigned role ${account.role} to ${account.email}`);
+      }
+    }
   }
 }
+
 
 main()
   .catch((e) => {

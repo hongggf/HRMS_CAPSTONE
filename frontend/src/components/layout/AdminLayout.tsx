@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Layout,
   Menu,
@@ -6,21 +6,16 @@ import {
   Avatar,
   Dropdown,
   Space,
-  Badge,
   Typography,
+  Breadcrumb,
+  Tag,
+  Drawer,
+  Grid,
   theme,
 } from 'antd';
+import type { MenuProps } from 'antd';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  DashboardOutlined,
-  TeamOutlined,
-  ApartmentOutlined,
-  SolutionOutlined,
-  ScheduleOutlined,
-  DollarOutlined,
-  RiseOutlined,
-  ReadOutlined,
-  SafetyCertificateOutlined,
   UserOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
@@ -29,129 +24,158 @@ import {
   BulbFilled,
   FullscreenOutlined,
   FullscreenExitOutlined,
-  BellOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useTabStore } from '../../store/useTabStore';
 import { useThemeStore } from '../../store/useThemeStore';
-import { RoleName } from '../../types/api';
+import { useAppConfigStore } from '../../store/useAppConfigStore';
+import { authApi } from '../../api/auth';
 import { TagsView } from './TagsView';
+import { NotificationCenter } from './NotificationCenter';
+import { useRealtimeSync } from '../../socket/useRealtimeSync';
+import {
+  NAVIGATION_CONFIG,
+  filterNavByRoles,
+  findBreadcrumbTrail,
+  findNavItem,
+  NavigationItem,
+} from '../../config/navigation';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
+const { useBreakpoint } = Grid;
 
-interface MenuItemDef {
-  key: string;
-  label: string;
-  icon: React.ReactNode;
-  roles?: RoleName[];
-  children?: MenuItemDef[];
-}
+type MenuItem = Required<MenuProps>['items'][number];
 
-const MENU_DEFINITIONS: MenuItemDef[] = [
-  {
-    key: '/dashboard',
-    label: 'Dashboard',
-    icon: <DashboardOutlined />,
-    roles: ['HEAD_OF_HR'],
-  },
-  {
-    key: '/organization',
-    label: 'Organization',
-    icon: <ApartmentOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_ADMIN'],
-  },
-  {
-    key: '/workforce',
-    label: 'Workforce Planning',
-    icon: <SolutionOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_RECRUITMENT', 'HR_ADMIN'],
-  },
-  {
-    key: '/recruitment',
-    label: 'Recruitment',
-    icon: <TeamOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_RECRUITMENT'],
-  },
-  {
-    key: '/employees',
-    label: 'Employees',
-    icon: <UserOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_ADMIN'],
-  },
-  {
-    key: '/attendance',
-    label: 'Attendance & Leaves',
-    icon: <ScheduleOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_ATTENDANCE'],
-  },
-  {
-    key: '/payroll',
-    label: 'Payroll',
-    icon: <DollarOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_PAYROLL'],
-  },
-  {
-    key: '/performance',
-    label: 'Performance & PIP',
-    icon: <RiseOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_PERFORMANCE'],
-  },
-  {
-    key: '/lnd',
-    label: 'Learning & Dev',
-    icon: <ReadOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_LND'],
-  },
-  {
-    key: '/audit-logs',
-    label: 'Audit Logs',
-    icon: <SafetyCertificateOutlined />,
-    roles: ['HEAD_OF_HR', 'HR_ADMIN'],
-  },
-];
+// Convert NavigationItems to Ant Design Menu items
+const buildMenuItems = (items: NavigationItem[]): MenuItem[] => {
+  return items.map((item) => {
+    if (item.children && item.children.length > 0) {
+      return {
+        key: item.key,
+        icon: item.icon,
+        label: item.label,
+        children: buildMenuItems(item.children),
+      };
+    }
+    return {
+      key: item.key,
+      icon: item.icon,
+      label: (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>{item.label}</span>
+          {item.isDev && (
+            <Tag
+              color="orange"
+              style={{
+                fontSize: 10,
+                lineHeight: '16px',
+                padding: '0 4px',
+                margin: 0,
+                transform: 'scale(0.85)',
+              }}
+            >
+              Dev
+            </Tag>
+          )}
+        </div>
+      ),
+    };
+  });
+};
 
 export const AdminLayout: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const screens = useBreakpoint();
+  const isMobile = screens.md === false;
 
   const { user, logout } = useAuthStore();
-  const { addTab } = useTabStore();
+  const { addTab, refreshKey } = useTabStore();
   const { mode, toggleTheme } = useThemeStore();
+  const { sidebarCollapsed, toggleSidebar, setSidebarCollapsed } =
+    useAppConfigStore();
   const { token } = theme.useToken();
 
-  // Filter menu items by user roles
-  const filteredMenuItems = React.useMemo(() => {
-    if (!user) return [];
-    const isHead = user.roles.includes('HEAD_OF_HR');
-    return MENU_DEFINITIONS.filter((item) => {
-      if (isHead) return true;
-      if (!item.roles) return true;
-      return item.roles.some((r) => user.roles.includes(r));
-    });
+  // Maintain real-time WebSocket connection
+  useRealtimeSync();
+
+  // Filter hierarchical navigation by active verified roles
+  const filteredNavItems = useMemo(() => {
+    const roles = Array.isArray(user?.roles) ? user.roles : [];
+    return filterNavByRoles(NAVIGATION_CONFIG, roles);
   }, [user]);
 
-  // Synchronize active route with TagsView tabs
+  // Synchronize active route with TagsView tabs and avoid duplicates
   useEffect(() => {
-    const currentItem = MENU_DEFINITIONS.find(
-      (m) => m.key === location.pathname,
-    );
-    if (currentItem) {
+    const navItem = findNavItem(NAVIGATION_CONFIG, location.pathname);
+    if (navItem) {
       addTab({
-        key: currentItem.key,
-        label: currentItem.label,
-        path: currentItem.key,
+        key: navItem.key,
+        label: navItem.label,
+        path: navItem.key,
       });
     }
   }, [location.pathname, addTab]);
 
+  // Breadcrumbs trail
+  const breadcrumbItems = useMemo(() => {
+    const trail = findBreadcrumbTrail(NAVIGATION_CONFIG, location.pathname);
+    if (trail.length === 0) {
+      return [{ title: <HomeOutlined /> }, { title: 'Dashboard' }];
+    }
+    return [
+      {
+        title: (
+          <span
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/dashboard')}
+          >
+            <HomeOutlined />
+          </span>
+        ),
+      },
+      ...trail.map((item, idx) => ({
+        title:
+          idx === trail.length - 1 || item.children ? (
+            <span>{item.label}</span>
+          ) : (
+            <span
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate(item.key)}
+            >
+              {item.label}
+            </span>
+          ),
+      })),
+    ];
+  }, [location.pathname, navigate]);
+
   const handleMenuClick = ({ key }: { key: string }) => {
     navigate(key);
+    if (isMobile) {
+      setMobileDrawerOpen(false);
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const refreshToken = useAuthStore.getState().refreshToken;
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken);
+      } catch {
+        // Safe backend error handling during logout
+      }
+    }
     logout();
     navigate('/login');
   };
@@ -166,16 +190,31 @@ export const AdminLayout: React.FC = () => {
     }
   };
 
+  const menuItems = useMemo(
+    () => buildMenuItems(filteredNavItems),
+    [filteredNavItems],
+  );
+
+  // Compute selected and open menu keys for hierarchical sidebar
+  const selectedKeys = [location.pathname];
+  const openKeys = useMemo(() => {
+    const trail = findBreadcrumbTrail(NAVIGATION_CONFIG, location.pathname);
+    return trail.slice(0, -1).map((t) => t.key);
+  }, [location.pathname]);
+
   const userMenuItems = [
     {
       key: 'user-info',
       label: (
-        <div>
+        <div style={{ padding: '4px 0' }}>
           <Text strong>{user?.email}</Text>
-          <div>
-            <Text type="secondary" style={{ fontSize: 12 }}>
-              {user?.roles.join(', ')}
-            </Text>
+          <div style={{ marginTop: 4 }}>
+            {Array.isArray(user?.roles) &&
+              user.roles.map((r) => (
+                <Tag color="blue" key={r} style={{ fontSize: 11 }}>
+                  {r}
+                </Tag>
+              ))}
           </div>
         </div>
       ),
@@ -190,54 +229,87 @@ export const AdminLayout: React.FC = () => {
     },
   ];
 
-  return (
-    <Layout style={{ minHeight: '100vh' }}>
-      {/* 1. Left Collapsible Sidebar */}
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        trigger={null}
-        theme="dark"
-        width={240}
+  const sidebarContent = (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        backgroundColor: '#001529',
+      }}
+    >
+      {/* Brand Header */}
+      <div
         style={{
-          boxShadow: '2px 0 8px 0 rgba(29,35,41,.05)',
-          zIndex: 10,
+          height: 64,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent:
+            sidebarCollapsed && !isMobile ? 'center' : 'flex-start',
+          padding: sidebarCollapsed && !isMobile ? 0 : '0 20px',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: 18,
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          overflow: 'hidden',
+          whiteSpace: 'nowrap',
+          cursor: 'pointer',
         }}
+        onClick={() => navigate('/dashboard')}
       >
-        <div
-          style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? 0 : '0 20px',
-            color: '#fff',
-            fontWeight: 700,
-            fontSize: 18,
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
-            overflow: 'hidden',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <span style={{ color: '#1677ff', marginRight: 8, fontSize: 22 }}>
-            ⚡
-          </span>
-          {!collapsed && <span>HRMS Portal</span>}
-        </div>
+        <span style={{ color: '#1677ff', marginRight: 10, fontSize: 22 }}>
+          ⚡
+        </span>
+        {(!sidebarCollapsed || isMobile) && (
+          <span style={{ letterSpacing: '0.5px' }}>HRMS Enterprise</span>
+        )}
+      </div>
 
+      {/* Hierarchical Menu */}
+      <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
         <Menu
           theme="dark"
           mode="inline"
-          selectedKeys={[location.pathname]}
+          selectedKeys={selectedKeys}
+          defaultOpenKeys={openKeys}
           onClick={handleMenuClick}
-          items={filteredMenuItems.map((item) => ({
-            key: item.key,
-            icon: item.icon,
-            label: item.label,
-          }))}
+          items={menuItems}
         />
-      </Sider>
+      </div>
+    </div>
+  );
+
+  return (
+    <Layout style={{ minHeight: '100vh' }}>
+      {/* 1. Desktop Sider */}
+      {!isMobile ? (
+        <Sider
+          collapsible
+          collapsed={sidebarCollapsed}
+          onCollapse={setSidebarCollapsed}
+          trigger={null}
+          theme="dark"
+          width={250}
+          collapsedWidth={80}
+          style={{
+            boxShadow: '2px 0 8px 0 rgba(29,35,41,.05)',
+            zIndex: 10,
+          }}
+        >
+          {sidebarContent}
+        </Sider>
+      ) : (
+        /* Mobile Drawer */
+        <Drawer
+          placement="left"
+          open={mobileDrawerOpen}
+          onClose={() => setMobileDrawerOpen(false)}
+          styles={{ body: { padding: 0, backgroundColor: '#001529' } }}
+          width={250}
+        >
+          {sidebarContent}
+        </Drawer>
+      )}
 
       {/* 2. Main Work Area */}
       <Layout>
@@ -250,21 +322,54 @@ export const AdminLayout: React.FC = () => {
             alignItems: 'center',
             justifyContent: 'space-between',
             borderBottom: `1px solid ${token.colorBorderSecondary}`,
+            position: 'sticky',
+            top: 0,
+            zIndex: 9,
           }}
         >
-          <Space>
+          {/* Left: Collapse Button + Breadcrumbs */}
+          <Space size="middle" style={{ overflow: 'hidden' }}>
             <Button
               type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
+              icon={
+                isMobile ? (
+                  <MenuUnfoldOutlined />
+                ) : sidebarCollapsed ? (
+                  <MenuUnfoldOutlined />
+                ) : (
+                  <MenuFoldOutlined />
+                )
+              }
+              onClick={() => {
+                if (isMobile) {
+                  setMobileDrawerOpen(true);
+                } else {
+                  toggleSidebar();
+                }
+              }}
               style={{ fontSize: 16 }}
+              aria-label="Toggle Sidebar Navigation"
             />
-            <Text style={{ fontSize: 14, color: token.colorTextSecondary }}>
-              HRMS Enterprise Edition
-            </Text>
+
+            {!isMobile && (
+              <Breadcrumb
+                items={breadcrumbItems}
+                style={{ fontSize: 13, userSelect: 'none' }}
+              />
+            )}
           </Space>
 
+          {/* Right: Actions, Notifications, User Profile */}
           <Space size="middle">
+            {/* Verified Role Tag (Header Display) */}
+            {!isMobile &&
+              Array.isArray(user?.roles) &&
+              user.roles.length > 0 && (
+                <Tag color="geekblue" style={{ fontSize: 12, margin: 0 }}>
+                  {user.roles[0]}
+                </Tag>
+              )}
+
             {/* Dark/Light Theme Toggle */}
             <Button
               type="text"
@@ -276,25 +381,29 @@ export const AdminLayout: React.FC = () => {
                 )
               }
               onClick={toggleTheme}
+              title={`Switch to ${mode === 'dark' ? 'Light' : 'Dark'} theme`}
+              aria-label="Toggle Theme"
             />
 
             {/* Fullscreen Toggle */}
-            <Button
-              type="text"
-              icon={
-                isFullscreen ? (
-                  <FullscreenExitOutlined />
-                ) : (
-                  <FullscreenOutlined />
-                )
-              }
-              onClick={toggleFullscreen}
-            />
+            {!isMobile && (
+              <Button
+                type="text"
+                icon={
+                  isFullscreen ? (
+                    <FullscreenExitOutlined />
+                  ) : (
+                    <FullscreenOutlined />
+                  )
+                }
+                onClick={toggleFullscreen}
+                title="Toggle Fullscreen"
+                aria-label="Toggle Fullscreen"
+              />
+            )}
 
-            {/* Notifications Bell */}
-            <Badge count={0} size="small" offset={[2, 2]}>
-              <Button type="text" icon={<BellOutlined />} />
-            </Badge>
+            {/* Notification Center */}
+            <NotificationCenter />
 
             {/* User Avatar & Dropdown */}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
@@ -309,7 +418,9 @@ export const AdminLayout: React.FC = () => {
                   style={{ backgroundColor: '#1677ff' }}
                   icon={<UserOutlined />}
                 />
-                <Text strong>{user?.email?.split('@')[0] || 'User'}</Text>
+                {!isMobile && (
+                  <Text strong>{user?.email?.split('@')[0] || 'User'}</Text>
+                )}
               </Space>
             </Dropdown>
           </Space>
@@ -318,18 +429,19 @@ export const AdminLayout: React.FC = () => {
         {/* Multi-Tab Navigation Bar */}
         <TagsView />
 
-        {/* Page View Outlet */}
+        {/* Page Content Viewport */}
         <Content
           style={{
             margin: '16px',
             padding: '24px',
             background: token.colorBgContainer,
             borderRadius: token.borderRadiusLG,
-            minHeight: 280,
+            minHeight: 320,
             overflowY: 'auto',
           }}
         >
-          <Outlet />
+          {/* Keyed by refreshKey to support reloadCurrentTab */}
+          <Outlet key={`${location.pathname}-${refreshKey}`} />
         </Content>
       </Layout>
     </Layout>

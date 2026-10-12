@@ -4,7 +4,10 @@ import '@testing-library/jest-dom';
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
-    matches: false,
+    matches:
+      query.includes('min-width: 768px') ||
+      query.includes('min-width: 992px') ||
+      query.includes('min-width: 576px'),
     media: query,
     onchange: null,
     addListener: () => {},
@@ -14,3 +17,11 @@ Object.defineProperty(window, 'matchMedia', {
     dispatchEvent: () => false,
   }),
 });
+
+// Standard ResizeObserver mock for JSDOM
+class ResizeObserverMock {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+window.ResizeObserver = ResizeObserverMock;

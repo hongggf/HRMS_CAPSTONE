@@ -10,7 +10,7 @@ const router = Router();
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 5,
+  max: process.env.NODE_ENV === 'production' ? 10 : 1000,
   handler: (req, res) => {
     return sendError(res, 'Too many login attempts from this IP, please try again after 15 minutes', 429);
   }

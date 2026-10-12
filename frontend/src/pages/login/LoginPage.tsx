@@ -24,17 +24,18 @@ export const LoginPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated } = useAuthStore();
+  const { login, isAuthenticated, accessToken, isInitializing } =
+    useAuthStore();
 
   const state = location.state as LocationState | null;
   const from = state?.from?.pathname || '/dashboard';
 
-  // Prevent redirect loops and redirect if already authenticated
+  // Prevent redirect loops and redirect only if genuinely authenticated with active accessToken
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if (isAuthenticated && accessToken && !isInitializing) {
       navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, accessToken, isInitializing, navigate]);
 
   const onFinish = async (values: { email: string; password: string }) => {
     if (loading) return;
@@ -121,6 +122,8 @@ export const LoginPage: React.FC = () => {
             showIcon
             style={{ marginBottom: 20 }}
             closable
+            role="alert"
+            aria-live="polite"
             onClose={() => setErrorMessage(null)}
           />
         )}
@@ -142,10 +145,13 @@ export const LoginPage: React.FC = () => {
             ]}
           >
             <Input
+              id="email"
               prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
               placeholder="e.g. head@hr.local"
               size="large"
               autoComplete="email"
+              aria-label="Email Address"
+              aria-required="true"
             />
           </Form.Item>
 
@@ -158,10 +164,13 @@ export const LoginPage: React.FC = () => {
             ]}
           >
             <Input.Password
+              id="password"
               prefix={<LockOutlined style={{ color: '#8c8c8c' }} />}
               placeholder="••••••••"
               size="large"
               autoComplete="current-password"
+              aria-label="Password"
+              aria-required="true"
             />
           </Form.Item>
 
@@ -172,6 +181,7 @@ export const LoginPage: React.FC = () => {
               size="large"
               block
               loading={loading}
+              disabled={loading}
             >
               Sign In
             </Button>

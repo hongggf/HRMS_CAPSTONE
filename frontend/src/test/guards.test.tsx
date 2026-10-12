@@ -62,6 +62,27 @@ describe('Route & RBAC Guards', () => {
 
       expect(screen.getByText('Secret Protected Content')).toBeInTheDocument();
     });
+
+    it('displays loading spinner while session is initializing', () => {
+      useAuthStore.setState({
+        isInitializing: true,
+        isAuthenticated: false,
+        accessToken: null,
+      });
+
+      render(
+        <MemoryRouter initialEntries={['/protected']}>
+          <ProtectedRoute>
+            <div>Secret Protected Content</div>
+          </ProtectedRoute>
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByText(/Verifying secure session/i)).toBeInTheDocument();
+      expect(
+        screen.queryByText('Secret Protected Content'),
+      ).not.toBeInTheDocument();
+    });
   });
 
   describe('RoleGuard', () => {
@@ -77,8 +98,8 @@ describe('Route & RBAC Guards', () => {
       expect(
         screen.queryByText('Confidential Payroll Ledger'),
       ).not.toBeInTheDocument();
-      // Default fallback is Forbidden403 which renders 403 status
-      expect(screen.getByText('403')).toBeInTheDocument();
+      // Default fallback is Forbidden403 which renders 403 Forbidden status
+      expect(screen.getByText(/403/i)).toBeInTheDocument();
     });
 
     it('renders fallback when user has unauthorized role', () => {
@@ -177,6 +198,83 @@ describe('Route & RBAC Guards', () => {
 
       expect(screen.queryByText('Admin Panel')).not.toBeInTheDocument();
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
+    });
+
+    it('denies access by default when requiredRoles is empty', () => {
+      useAuthStore.getState().login(
+        {
+          id: 5,
+          email: 'admin@hr.local',
+          roles: ['HR_ADMIN'],
+        },
+        'admin-access',
+        'admin-refresh',
+      );
+
+      render(
+        <MemoryRouter>
+          <RoleGuard requiredRoles={[]} fallback={<div>Fallback Blocked</div>}>
+            <div>Sensitive Screen</div>
+          </RoleGuard>
+        </MemoryRouter>,
+      );
+
+      expect(screen.queryByText('Sensitive Screen')).not.toBeInTheDocument();
+      expect(screen.getByText('Fallback Blocked')).toBeInTheDocument();
+    });
+
+    it('conceals unauthorized action buttons when fallback is null', () => {
+      useAuthStore.getState().login(
+        {
+          id: 6,
+          email: 'recruiter@hr.local',
+          roles: ['HR_RECRUITMENT'],
+        },
+        'recruiter-access',
+        'recruiter-refresh',
+      );
+
+      render(
+        <MemoryRouter>
+          <div>
+            <h1>Payroll Controls</h1>
+            <RoleGuard requiredRoles={['HR_PAYROLL']} fallback={null}>
+              <button>Lock Payroll Period</button>
+            </RoleGuard>
+          </div>
+        </MemoryRouter>,
+      );
+
+      expect(screen.getByText('Payroll Controls')).toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /Lock Payroll Period/i }),
+      ).not.toBeInTheDocument();
+    });
+
+    it('renders action buttons for authorized roles', () => {
+      useAuthStore.getState().login(
+        {
+          id: 7,
+          email: 'payroll@hr.local',
+          roles: ['HR_PAYROLL'],
+        },
+        'payroll-access',
+        'payroll-refresh',
+      );
+
+      render(
+        <MemoryRouter>
+          <div>
+            <RoleGuard requiredRoles={['HR_PAYROLL']} fallback={null}>
+              <button>Lock Payroll Period</button>
+            </RoleGuard>
+          </div>
+        </MemoryRouter>,
+      );
+
+      expect(
+        screen.getByRole('button', { name: /Lock Payroll Period/i }),
+      ).toBeInTheDocument();
     });
   });
 });

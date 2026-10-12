@@ -132,4 +132,44 @@ describe('LoginPage', () => {
 
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });
+
+  it('displays field-specific error messages from backend validation details', async () => {
+    const axiosError = new AxiosError('Bad Request');
+    axiosError.response = {
+      status: 400,
+      data: {
+        success: false,
+        error: {
+          message: 'Validation failed',
+          details: [
+            {
+              field: 'email',
+              message: 'Email address not recognized in system',
+            },
+          ],
+        },
+      },
+      statusText: 'Bad Request',
+      headers: {},
+      config: {} as InternalAxiosRequestConfig,
+    };
+
+    vi.mocked(authApi.login).mockRejectedValueOnce(axiosError);
+
+    render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>,
+    );
+
+    const submitBtn = screen.getByRole('button', { name: /Sign In/i });
+    fireEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText('Validation failed')).toBeInTheDocument();
+      expect(
+        screen.getByText('Email address not recognized in system'),
+      ).toBeInTheDocument();
+    });
+  });
 });

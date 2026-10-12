@@ -1,9 +1,10 @@
 import axios from 'axios';
 import { apiClient } from './client';
 import { ApiResponse, LoginResponseData, User } from '../types/api';
+import { useAuthStore } from '../store/useAuthStore';
 
 const baseURL =
-  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+  import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 
 export const authApi = {
   login: async (
@@ -37,7 +38,43 @@ export const authApi = {
   },
 
   getMe: async (): Promise<User> => {
-    const res = await apiClient.get<ApiResponse<User>>('/auth/me');
-    return res.data.data;
+    const res =
+      await apiClient.get<ApiResponse<{ user: User } | User>>('/auth/me');
+    const data = res.data.data;
+    if (data && typeof data === 'object' && 'user' in data) {
+      return (data as { user: User }).user;
+    }
+    return data as User;
+  },
+
+  restoreSession: async (): Promise<boolean> => {
+    const {
+      refreshToken,
+      accessToken,
+      logout,
+      setTokens,
+      setUser,
+      setInitializing,
+    } = useAuthStore.getState();
+    if (!refreshToken) {
+      setInitializing(false);
+      return false;
+    }
+    if (accessToken) {
+      setInitializing(false);
+      return true;
+    }
+    try {
+      const data = await authApi.refresh(refreshToken);
+      setTokens(data.accessToken, data.refreshToken);
+      const profile = await authApi.getMe();
+      setUser(profile);
+      useAuthStore.setState({ isAuthenticated: true, isInitializing: false });
+      return true;
+    } catch {
+      logout();
+      setInitializing(false);
+      return false;
+    }
   },
 };

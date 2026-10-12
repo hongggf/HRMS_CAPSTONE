@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { useAuthStore } from '../store/useAuthStore';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { useAuthStore, registerOnLogout } from '../store/useAuthStore';
 import { User } from '../types/api';
 
 describe('useAuthStore', () => {
@@ -58,5 +58,19 @@ describe('useAuthStore', () => {
 
     expect(localStorage.getItem('hrms_refresh_token')).toBeNull();
     expect(localStorage.getItem('hrms_user_profile')).toBeNull();
+  });
+
+  it('triggers onLogout callbacks on account switching (login with another user) to prevent data leakage', () => {
+    const purgeCallback = vi.fn();
+    const unregister = registerOnLogout(purgeCallback);
+
+    useAuthStore.getState().login(mockUser, 'user1-token', 'user1-refresh');
+    expect(purgeCallback).toHaveBeenCalledTimes(1);
+
+    const user2: User = { id: 2, email: 'user2@hr.local', roles: ['HR_ADMIN'] };
+    useAuthStore.getState().login(user2, 'user2-token', 'user2-refresh');
+    expect(purgeCallback).toHaveBeenCalledTimes(2);
+
+    unregister();
   });
 });

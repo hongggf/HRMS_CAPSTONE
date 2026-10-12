@@ -4,6 +4,10 @@ import { AdminLayout } from '../components/layout/AdminLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { RoleGuard } from '../components/auth/RoleGuard';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
+import { TasksPage } from '../pages/tasks/TasksPage';
+import { OrganizationPage } from '../pages/organization/OrganizationPage';
+import { WorkforcePage } from '../pages/workforce/WorkforcePage';
+import { UnderDevelopmentPage } from '../pages/common/UnderDevelopmentPage';
 import { NotFound404 } from '../pages/error/NotFound404';
 
 export const router = createBrowserRouter([
@@ -26,8 +30,110 @@ export const router = createBrowserRouter([
       {
         path: 'dashboard',
         element: (
-          <RoleGuard requiredRoles={['HEAD_OF_HR']}>
+          <RoleGuard
+            requiredRoles={[
+              'HEAD_OF_HR',
+              'HR_RECRUITMENT',
+              'HR_ADMIN',
+              'HR_ATTENDANCE',
+              'HR_PAYROLL',
+              'HR_PERFORMANCE',
+              'HR_LND',
+            ]}
+          >
             <DashboardPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'tasks',
+        element: (
+          <RoleGuard
+            requiredRoles={[
+              'HEAD_OF_HR',
+              'HR_RECRUITMENT',
+              'HR_ADMIN',
+              'HR_ATTENDANCE',
+              'HR_PAYROLL',
+              'HR_PERFORMANCE',
+              'HR_LND',
+            ]}
+          >
+            <TasksPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'organization',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
+            <OrganizationPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'workforce',
+        element: (
+          <RoleGuard
+            requiredRoles={['HEAD_OF_HR', 'HR_RECRUITMENT', 'HR_ADMIN']}
+          >
+            <WorkforcePage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'recruitment',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_RECRUITMENT']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'employees',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'attendance',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ATTENDANCE']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'payroll',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_PAYROLL']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'performance',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_PERFORMANCE']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'lnd',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_LND']}>
+            <UnderDevelopmentPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'audit-logs',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
+            <UnderDevelopmentPage />
           </RoleGuard>
         ),
       },
