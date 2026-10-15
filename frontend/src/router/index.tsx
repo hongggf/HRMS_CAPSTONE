@@ -7,6 +7,8 @@ import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { TasksPage } from '../pages/tasks/TasksPage';
 import { OrganizationPage } from '../pages/organization/OrganizationPage';
 import { WorkforcePage } from '../pages/workforce/WorkforcePage';
+import { RecruitmentPage } from '../pages/recruitment/RecruitmentPage';
+import { EmployeePage } from '../pages/employees/EmployeePage';
 import { UnderDevelopmentPage } from '../pages/common/UnderDevelopmentPage';
 import { NotFound404 } from '../pages/error/NotFound404';
 
@@ -85,7 +87,7 @@ export const router = createBrowserRouter([
         path: 'recruitment',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_RECRUITMENT']}>
-            <UnderDevelopmentPage />
+            <RecruitmentPage />
           </RoleGuard>
         ),
       },
@@ -93,7 +95,7 @@ export const router = createBrowserRouter([
         path: 'employees',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
-            <UnderDevelopmentPage />
+            <EmployeePage />
           </RoleGuard>
         ),
       },

@@ -93,10 +93,15 @@ describe('Navigation Configuration and Role Filtering', () => {
   });
 
   it('findNavItem finds specific item and verifies isDev flag for upcoming phases', () => {
-    const item = findNavItem(NAVIGATION_CONFIG, '/recruitment');
-    expect(item).toBeDefined();
-    expect(item?.label).toBe('Recruitment & ATS');
-    expect(item?.isDev).toBe(true);
-    expect(item?.phase).toBe('Phase 4');
+    const employeeItem = findNavItem(NAVIGATION_CONFIG, '/employees');
+    expect(employeeItem).toBeDefined();
+    expect(employeeItem?.label).toBe('Employee Directory');
+    expect(employeeItem?.isDev).toBeFalsy();
+
+    const upcomingItem = findNavItem(NAVIGATION_CONFIG, '/attendance');
+    expect(upcomingItem).toBeDefined();
+    expect(upcomingItem?.label).toBe('Attendance & Leaves');
+    expect(upcomingItem?.isDev).toBe(true);
+    expect(upcomingItem?.phase).toBe('Phase 6');
   });
 });

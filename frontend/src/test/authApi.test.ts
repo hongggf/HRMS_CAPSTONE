@@ -119,7 +119,7 @@ describe('authApi', () => {
 
   it('restoreSession restores tokens and fetches user profile when valid refreshToken exists', async () => {
     useAuthStore.getState().logout();
-    localStorage.setItem('hrms_refresh_token', 'valid-persisted-refresh');
+    sessionStorage.setItem('hrms_refresh_token', 'valid-persisted-refresh');
 
     vi.spyOn(authApi, 'refresh').mockResolvedValueOnce({
       accessToken: 'restored-access-token',

@@ -17,15 +17,25 @@ interface AuthState {
   setInitializing: (isInitializing: boolean) => void;
 }
 
-// Safely load initial persisted refresh token and user cache
+// Safely purge legacy persistent tokens from localStorage to eliminate persistent cross-session auto-restoration
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_CACHE_KEY);
+  } catch {
+    // Ignore storage errors in restricted contexts
+  }
+}
+
+// Safely load initial session-scoped refresh token and user cache from sessionStorage
 const initialRefreshToken =
   typeof window !== 'undefined'
-    ? localStorage.getItem(REFRESH_TOKEN_KEY)
+    ? sessionStorage.getItem(REFRESH_TOKEN_KEY)
     : null;
 const initialUser: User | null = (() => {
   if (typeof window === 'undefined') return null;
   try {
-    const raw = localStorage.getItem(USER_CACHE_KEY);
+    const raw = sessionStorage.getItem(USER_CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const u =
@@ -52,17 +62,15 @@ export const registerOnLogout = (cb: () => void) => {
 };
 
 /**
- * SECURITY ARCHITECTURE & STORAGE TRADE-OFFS:
+ * SECURITY ARCHITECTURE:
  * - Access Tokens: Short-lived (15 min) JWTs stored exclusively in-memory inside Zustand state.
- *   Never persisted to disk, localStorage, or IndexedDB.
- * - Refresh Tokens: The backend API contract currently requires refreshToken in JSON request bodies
- *   (POST /auth/refresh and POST /auth/logout) and does not issue HttpOnly cookies.
- *   To support session restoration across page reloads without forcing re-login, refreshToken is saved
- *   to localStorage.
- *   Mitigations: All user output is strictly escaped to eliminate XSS vectors; tokens are immediately
- *   evicted from memory and storage upon explicit logout or refresh rejection.
- * - Cache Clearance: Stale sensitive server query caches and opened tabs are purged on both logout
- *   and account-switching (login) to prevent cross-account data leakage in shared browser sessions.
+ *   Never persisted to disk or storage.
+ * - Refresh Tokens: Stored in tab-scoped `sessionStorage` (strictly wiped when browser tab/window closes).
+ *   Does NOT persist across separate browser sessions, windows, or after restart.
+ *   Enables seamless page refresh (F5) within the active work tab without exposing the session to other users
+ *   or auto-logging in when opening new tabs or browsers.
+ * - Auto-Purge: Stale sensitive server query caches, opened tabs, and legacy persistent keys are purged on logout
+ *   and account-switching to prevent cross-account data leakage in shared browser environments.
  */
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialUser,
@@ -84,8 +92,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
     });
 
-    localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
-    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
+    sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+    sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(user));
     set({
       user,
       accessToken,
@@ -97,7 +105,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setTokens: (accessToken: string, refreshToken?: string) => {
     if (refreshToken) {
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+      sessionStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
       set({ accessToken, refreshToken });
     } else {
       set({ accessToken });
@@ -118,14 +126,20 @@ export const useAuthStore = create<AuthState>((set) => ({
         }
       : null;
     if (cleanUser) {
-      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cleanUser));
+      sessionStorage.setItem(USER_CACHE_KEY, JSON.stringify(cleanUser));
     }
     set({ user: cleanUser });
   },
 
   logout: () => {
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(USER_CACHE_KEY);
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+    sessionStorage.removeItem(USER_CACHE_KEY);
+    try {
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      localStorage.removeItem(USER_CACHE_KEY);
+    } catch {
+      // Safe storage clearance
+    }
     set({
       user: null,
       accessToken: null,

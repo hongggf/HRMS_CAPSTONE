@@ -27,6 +27,14 @@ export const listRequisitions = async (req: AuthRequest, res: Response, next: Ne
   } catch (error) { next(error); }
 };
 
+export const getRequisition = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const requisition = await recruitmentService.getRequisitionById(id);
+    return sendSuccess(res, { requisition }, 'Requisition retrieved successfully');
+  } catch (error) { next(error); }
+};
+
 export const updateRequisitionStatus = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const id = parseInt(req.params.id);
@@ -43,6 +51,14 @@ export const createJobPosting = async (req: AuthRequest, res: Response, next: Ne
     const posting = await recruitmentService.createJobPosting(req.body);
     await logAudit('JOB_POSTING_CREATED', req.user!.id, { jobPostingId: posting.id });
     return sendSuccess(res, { jobPosting: posting }, 'Job posting created successfully', undefined, 201);
+  } catch (error) { next(error); }
+};
+
+export const getJobPosting = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const jobPosting = await recruitmentService.getJobPostingById(id);
+    return sendSuccess(res, { jobPosting }, 'Job posting retrieved successfully');
   } catch (error) { next(error); }
 };
 
@@ -65,12 +81,66 @@ export const listJobPostings = async (req: AuthRequest, res: Response, next: Nex
   } catch (error) { next(error); }
 };
 
-// ========== Candidates & Applications ==========
+// ========== Candidate Profiles ==========
+export const createCandidate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const candidate = await recruitmentService.createCandidate(req.body);
+    await logAudit('CANDIDATE_CREATED', req.user!.id, { candidateId: candidate.id });
+    return sendSuccess(res, { candidate }, 'Candidate profile created successfully', undefined, 201);
+  } catch (error) { next(error); }
+};
+
+export const listCandidates = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string;
+    const { total, candidates } = await recruitmentService.listCandidates(page, limit, search);
+    return sendSuccess(res, { candidates }, 'Candidates retrieved successfully', { page, limit, total, totalPages: Math.ceil(total / limit) });
+  } catch (error) { next(error); }
+};
+
+export const getCandidate = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const candidate = await recruitmentService.getCandidateById(id);
+    return sendSuccess(res, { candidate }, 'Candidate profile retrieved successfully');
+  } catch (error) { next(error); }
+};
+
+// ========== Applications ==========
 export const createApplication = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const app = await recruitmentService.createApplication(req.body);
     await logAudit('APPLICATION_CREATED', req.user?.id || null, { applicationId: app.id });
     return sendSuccess(res, { application: app }, 'Application submitted successfully', undefined, 201);
+  } catch (error) { next(error); }
+};
+
+export const listApplications = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const jobPostingId = req.query.jobPostingId ? parseInt(req.query.jobPostingId as string) : undefined;
+    const candidateId = req.query.candidateId ? parseInt(req.query.candidateId as string) : undefined;
+    const status = req.query.status as string;
+    const search = req.query.search as string;
+
+    const { total, applications } = await recruitmentService.listApplications(page, limit, {
+      jobPostingId,
+      candidateId,
+      status,
+      search,
+    });
+    return sendSuccess(res, { applications }, 'Applications retrieved successfully', { page, limit, total, totalPages: Math.ceil(total / limit) });
+  } catch (error) { next(error); }
+};
+
+export const getApplication = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const application = await recruitmentService.getApplicationById(id);
+    return sendSuccess(res, { application }, 'Application retrieved successfully');
   } catch (error) { next(error); }
 };
 
@@ -120,13 +190,37 @@ export const rejectCandidate = async (req: AuthRequest, res: Response, next: Nex
   } catch (error) { next(error); }
 };
 
-
 // ========== Interviews ==========
 export const createInterview = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const interview = await recruitmentService.createInterview(req.body);
     await logAudit('INTERVIEW_SCHEDULED', req.user!.id, { interviewId: interview.id });
     return sendSuccess(res, { interview }, 'Interview scheduled successfully', undefined, 201);
+  } catch (error) { next(error); }
+};
+
+export const listInterviews = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const applicationId = req.query.applicationId ? parseInt(req.query.applicationId as string) : undefined;
+    const interviewerId = req.query.interviewerId ? parseInt(req.query.interviewerId as string) : undefined;
+    const status = req.query.status as string;
+
+    const { total, interviews } = await recruitmentService.listInterviews(page, limit, {
+      applicationId,
+      interviewerId,
+      status,
+    });
+    return sendSuccess(res, { interviews }, 'Interviews retrieved successfully', { page, limit, total, totalPages: Math.ceil(total / limit) });
+  } catch (error) { next(error); }
+};
+
+export const getInterview = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const id = parseInt(req.params.id);
+    const interview = await recruitmentService.getInterviewById(id);
+    return sendSuccess(res, { interview }, 'Interview retrieved successfully');
   } catch (error) { next(error); }
 };
 

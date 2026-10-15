@@ -65,15 +65,50 @@ export const listJobPostingsSchema = z.object({
 });
 
 // ========== Candidate & Application Validators ==========
+export const createCandidateSchema = z.object({
+  body: z.object({
+    firstName: z.string().min(1, 'First name is required'),
+    lastName: z.string().min(1, 'Last name is required'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().optional().nullable(),
+    resumeUrl: z.string().url('Invalid resume URL').optional().nullable(),
+    source: z.string().optional().nullable(),
+  }),
+});
+
+export const listCandidatesSchema = z.object({
+  query: z.object({
+    page: z.string().regex(/^\d+$/).transform(Number).optional(),
+    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    search: z.string().optional(),
+  }),
+});
+
 export const createApplicationSchema = z.object({
   body: z.object({
     jobPostingId: z.number().int().positive(),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    email: z.string().email(),
-    phone: z.string().optional(),
+    candidateId: z.number().int().positive().optional(),
+    firstName: z.string().min(1).optional(),
+    lastName: z.string().min(1).optional(),
+    email: z.string().email().optional(),
+    phone: z.string().optional().nullable(),
     resumeUrl: z.string().url().optional().nullable(),
-    source: z.string().optional(),
+    source: z.string().optional().nullable(),
+  }),
+});
+
+export const listApplicationsSchema = z.object({
+  query: z.object({
+    page: z.string().regex(/^\d+$/).transform(Number).optional(),
+    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    jobPostingId: z.string().regex(/^\d+$/).transform(Number).optional(),
+    candidateId: z.string().regex(/^\d+$/).transform(Number).optional(),
+    status: z.enum([
+      'APPLIED', 'SCREENING', 'SHORTLISTED', 'INTERVIEW', 
+      'SELECTED', 'PENDING_HEAD_OF_HR_APPROVAL', 
+      'APPROVED', 'REJECTED', 'WITHDRAWN', 'HIRED'
+    ]).optional(),
+    search: z.string().optional(),
   }),
 });
 
@@ -106,6 +141,16 @@ export const updateInterviewSchema = z.object({
     interviewerId: z.number().int().positive().optional(),
     scheduledAt: z.string().datetime().optional(),
     location: z.string().optional(),
+    status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED']).optional(),
+  }),
+});
+
+export const listInterviewsSchema = z.object({
+  query: z.object({
+    page: z.string().regex(/^\d+$/).transform(Number).optional(),
+    limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+    applicationId: z.string().regex(/^\d+$/).transform(Number).optional(),
+    interviewerId: z.string().regex(/^\d+$/).transform(Number).optional(),
     status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED']).optional(),
   }),
 });

@@ -11,6 +11,7 @@ describe('useAuthStore', () => {
 
   beforeEach(() => {
     useAuthStore.getState().logout();
+    sessionStorage.clear();
     localStorage.clear();
   });
 
@@ -21,7 +22,7 @@ describe('useAuthStore', () => {
     expect(state.isAuthenticated).toBe(false);
   });
 
-  it('updates state and persists refresh token on login', () => {
+  it('updates state and persists refresh token in sessionStorage on login', () => {
     useAuthStore
       .getState()
       .login(mockUser, 'access-token-123', 'refresh-token-456');
@@ -32,9 +33,10 @@ describe('useAuthStore', () => {
     expect(state.refreshToken).toBe('refresh-token-456');
     expect(state.isAuthenticated).toBe(true);
 
-    expect(localStorage.getItem('hrms_refresh_token')).toBe(
+    expect(sessionStorage.getItem('hrms_refresh_token')).toBe(
       'refresh-token-456',
     );
+    expect(localStorage.getItem('hrms_refresh_token')).toBeNull();
   });
 
   it('updates accessToken on setTokens', () => {
@@ -56,6 +58,8 @@ describe('useAuthStore', () => {
     expect(state.refreshToken).toBeNull();
     expect(state.isAuthenticated).toBe(false);
 
+    expect(sessionStorage.getItem('hrms_refresh_token')).toBeNull();
+    expect(sessionStorage.getItem('hrms_user_profile')).toBeNull();
     expect(localStorage.getItem('hrms_refresh_token')).toBeNull();
     expect(localStorage.getItem('hrms_user_profile')).toBeNull();
   });

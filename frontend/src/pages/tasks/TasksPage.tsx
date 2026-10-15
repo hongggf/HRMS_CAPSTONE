@@ -32,7 +32,6 @@ import {
   FileTextOutlined,
   CheckSquareOutlined,
   BellOutlined,
-  PlusOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { TableRowSelection } from 'antd/es/table/interface';
@@ -46,7 +45,6 @@ import {
 } from '../../types/tasks';
 import { TaskDetailDrawer } from './TaskDetailDrawer';
 import { TaskRejectModal } from './TaskRejectModal';
-import { CreateTaskModal } from './CreateTaskModal';
 import { normalizeApiError } from '../../api/client';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -85,8 +83,6 @@ export const TasksPage: React.FC = () => {
 
   const [rejectModalOpen, setRejectModalOpen] = useState<boolean>(false);
   const [rejectingTask, setRejectingTask] = useState<UnifiedTask | null>(null);
-
-  const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
 
   // Fetch departments for department filter
   const { data: deptData } = useQuery({
@@ -632,14 +628,6 @@ export const TasksPage: React.FC = () => {
             </Text>
           </div>
         </div>
-
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() => setCreateModalOpen(true)}
-        >
-          New Task Request
-        </Button>
       </div>
 
       {/* KPI Cards */}
@@ -1002,13 +990,6 @@ export const TasksPage: React.FC = () => {
             setRejectModalOpen(false);
             setRejectingTask(null);
           }}
-        />
-
-        {/* Create Task Modal */}
-        <CreateTaskModal
-          open={createModalOpen}
-          onClose={() => setCreateModalOpen(false)}
-          onSuccess={() => refetch()}
         />
       </Card>
     </div>

@@ -95,8 +95,6 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
         label: 'Recruitment & ATS',
         icon: <FolderOpenOutlined />,
         roles: ['HEAD_OF_HR', 'HR_RECRUITMENT'],
-        isDev: true,
-        phase: 'Phase 4',
         description:
           'Candidate pipelines, job requisitions, and interview stages',
       },
@@ -105,8 +103,6 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
         label: 'Employee Directory',
         icon: <UserOutlined />,
         roles: ['HEAD_OF_HR', 'HR_ADMIN'],
-        isDev: true,
-        phase: 'Phase 5',
         description:
           'Personnel records, status lifecycle, documents, and profiles',
       },

@@ -42,7 +42,8 @@ export const LoginPage: React.FC = () => {
     setLoading(true);
     setErrorMessage(null);
     try {
-      const data = await authApi.login(values.email.trim(), values.password);
+      const email = values.email.trim().toLowerCase();
+      const data = await authApi.login(email, values.password);
       login(data.user, data.accessToken, data.refreshToken);
       navigate(from, { replace: true });
     } catch (err: unknown) {
@@ -132,22 +133,25 @@ export const LoginPage: React.FC = () => {
           form={form}
           name="loginForm"
           layout="vertical"
-          initialValues={{ email: 'head@hr.local', password: 'password123' }}
           onFinish={onFinish}
           requiredMark={false}
         >
           <Form.Item
             name="email"
             label="Email Address"
+            normalize={(value: string) => (value ? value.trim() : '')}
             rules={[
               { required: true, message: 'Please enter your email address' },
-              { type: 'email', message: 'Please enter a valid email' },
+              {
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: 'Please enter a valid email address',
+              },
             ]}
           >
             <Input
               id="email"
               prefix={<UserOutlined style={{ color: '#8c8c8c' }} />}
-              placeholder="e.g. head@hr.local"
+              placeholder="Enter your email address"
               size="large"
               autoComplete="email"
               aria-label="Email Address"
@@ -187,13 +191,6 @@ export const LoginPage: React.FC = () => {
             </Button>
           </Form.Item>
         </Form>
-
-        <div style={{ textAlign: 'center', marginTop: 12 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Demo: <code>head@hr.local</code> / <code>password123</code>{' '}
-            (HEAD_OF_HR)
-          </Text>
-        </div>
       </Card>
     </div>
   );

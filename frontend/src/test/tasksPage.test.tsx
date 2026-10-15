@@ -352,13 +352,10 @@ describe('Executive Tasks & Approvals Center (Head of HR)', () => {
     });
   });
 
-  it('opens Create Task modal when clicking New Task Request button', async () => {
+  it('does not render New Task Request button', () => {
     renderComponent();
 
-    const newReqBtn = screen.getByRole('button', { name: /new task request/i });
-    fireEvent.click(newReqBtn);
-
-    expect(screen.getByText('Create New Task / Request')).toBeInTheDocument();
-    expect(screen.getByText(/business justification/i)).toBeInTheDocument();
+    const newReqBtn = screen.queryByRole('button', { name: /new task request/i });
+    expect(newReqBtn).not.toBeInTheDocument();
   });
 });

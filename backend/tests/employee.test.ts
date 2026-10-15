@@ -119,6 +119,30 @@ describe('Phase 5: Employee & Onboarding Integration Tests', () => {
     expect(res.body.error).toBe('Employee ID must be unique.');
   });
 
+  it('GET /api/v1/employees/generate-id returns a unique auto-generated employee ID', async () => {
+    const res = await request(app).get('/api/v1/employees/generate-id').set('Authorization', `Bearer ${hrAdminToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.employeeId).toMatch(/^EMP-\d{4}$/);
+  });
+
+  it('auto-generates unique employee ID when omitted in creation request', async () => {
+    const appCandidate = await prisma.candidate.create({ data: { firstName: 'Auto', lastName: 'Gen', email: Math.random() + '@c.com' } });
+    const appRecord = await prisma.application.create({ data: { candidateId: appCandidate.id, jobPostingId: testPostingId, status: 'APPROVED' } });
+    const res = await request(app).post('/api/v1/employees').set('Authorization', `Bearer ${hrAdminToken}`).send({
+      applicationId: appRecord.id,
+      firstName: 'Auto',
+      lastName: 'Gen',
+      email: 'autogen@c.com',
+      departmentId: testDepartment.id,
+      positionId: testPosition.id
+    });
+    expect(res.status).toBe(201);
+    expect(res.body.employeeId).toBeDefined();
+    expect(res.body.employeeId).toMatch(/^EMP-\d{4}$/);
+    expect(res.body.employeeId).not.toBe('EMP_001');
+  });
+
   it('activation fails if incomplete documents', async () => {
     // Complete onboarding first to satisfy that requirement for testing this branch
     await prisma.employee.update({ where: { id: createdEmployeeId }, data: { onboardingStatus: OnboardingStatus.PROFILE_COMPLETED } });

@@ -41,14 +41,7 @@ describe('LoginPage', () => {
       </MemoryRouter>,
     );
 
-    const emailInput = screen.getByLabelText(/Email Address/i);
-    const passwordInput = screen.getByLabelText(/Password/i);
     const submitBtn = screen.getByRole('button', { name: /Sign In/i });
-
-    // Clear initial demo values
-    fireEvent.change(emailInput, { target: { value: '' } });
-    fireEvent.change(passwordInput, { target: { value: '' } });
-
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -121,7 +114,12 @@ describe('LoginPage', () => {
       </MemoryRouter>,
     );
 
+    const emailInput = screen.getByLabelText(/Email Address/i);
+    const passwordInput = screen.getByLabelText(/Password/i);
     const submitBtn = screen.getByRole('button', { name: /Sign In/i });
+
+    fireEvent.change(emailInput, { target: { value: 'wrong@hr.local' } });
+    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
@@ -162,7 +160,12 @@ describe('LoginPage', () => {
       </MemoryRouter>,
     );
 
+    const emailInput = screen.getByLabelText(/Email Address/i);
+    const passwordInput = screen.getByLabelText(/Password/i);
     const submitBtn = screen.getByRole('button', { name: /Sign In/i });
+
+    fireEvent.change(emailInput, { target: { value: 'unknown@hr.local' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {

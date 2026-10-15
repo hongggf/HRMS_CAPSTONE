@@ -8,6 +8,42 @@ import { notifyUser } from '../services/notificationService';
 
 
 
+export const generateUniqueEmployeeId = async (tx?: any): Promise<string> => {
+  const client = tx || prisma;
+  const employees = await client.employee.findMany({
+    select: { employeeId: true }
+  });
+
+  let maxNumber = 0;
+  for (const emp of employees) {
+    const match = emp.employeeId.match(/(\d+)/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (!isNaN(num) && num > maxNumber) {
+        maxNumber = num;
+      }
+    }
+  }
+
+  let nextNumber = Math.max(maxNumber + 1, 1);
+  let candidate = `EMP-${String(nextNumber).padStart(4, '0')}`;
+  const existingSet = new Set(employees.map((e: { employeeId: string }) => e.employeeId));
+  while (existingSet.has(candidate)) {
+    nextNumber++;
+    candidate = `EMP-${String(nextNumber).padStart(4, '0')}`;
+  }
+  return candidate;
+};
+
+export const getGeneratedEmployeeId = async (req: Request, res: Response) => {
+  try {
+    const employeeId = await generateUniqueEmployeeId();
+    res.json({ success: true, data: { employeeId } });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const createEmployee = async (req: Request, res: Response) => {
   try {
     const data = createEmployeeSchema.parse(req.body);
@@ -23,17 +59,23 @@ export const createEmployee = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Only a candidate approved by HEAD_OF_HR can become an employee.' });
     }
 
-    // Check unique employeeId
-    const existingEmp = await prisma.employee.findUnique({ where: { employeeId: data.employeeId } });
-    if (existingEmp) {
-      return res.status(400).json({ error: 'Employee ID must be unique.' });
+    // Auto-generate employee ID with unique number if not supplied
+    let employeeId = data.employeeId?.trim();
+    if (!employeeId) {
+      employeeId = await generateUniqueEmployeeId();
+    } else {
+      // Check unique employeeId
+      const existingEmp = await prisma.employee.findUnique({ where: { employeeId } });
+      if (existingEmp) {
+        return res.status(400).json({ error: 'Employee ID must be unique.' });
+      }
     }
 
     // Create Employee in transaction
     const employee = await prisma.$transaction(async (tx) => {
       const emp = await tx.employee.create({
         data: {
-          employeeId: data.employeeId,
+          employeeId,
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,

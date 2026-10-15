@@ -8,7 +8,8 @@ import {
   uploadDocument,
   completeOnboarding,
   activateEmployee,
-  updateEmployeePosition
+  updateEmployeePosition,
+  getGeneratedEmployeeId,
 } from '../controllers/employeeController';
 
 const router = Router();
@@ -18,6 +19,7 @@ router.use(requireAuth);
 
 router.post('/', requirePermission(['EMPLOYEE_CREATE']), createEmployee);
 router.get('/', requirePermission(['EMPLOYEE_READ']), getEmployees);
+router.get('/generate-id', requirePermission(['EMPLOYEE_READ']), getGeneratedEmployeeId);
 router.get('/:id', requirePermission(['EMPLOYEE_READ']), getEmployeeById);
 
 router.post('/:id/documents', requirePermission(['DOCUMENT_UPLOAD']), upload.single('file'), uploadDocument);
