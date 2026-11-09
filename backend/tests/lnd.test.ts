@@ -9,9 +9,12 @@ const generateToken = (userId: number, expiresIn: string) => jwt.sign({ id: user
 describe('Phase 10: Learning & Development Integration Tests', () => {
   let hrLndToken: string;
   let hrLndUserId: number;
+  let empUserToken: string;
   let empId1: number;
+  let depId: number;
   let categoryId: number;
   let trainingId: number;
+  let planId: number;
   let sessionId: number;
 
   beforeAll(async () => {
@@ -37,11 +40,13 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
     hrLndToken = generateToken(hrLndUser.id, '1h');
 
     const dep = await prisma.department.create({ data: { code: 'LND_DEP', name: 'LND Department' } });
+    depId = dep.id;
     const pos = await prisma.position.create({ data: { code: 'LND_POS', title: 'LND Position', departmentId: dep.id } });
     
     const empUser = await prisma.user.create({
       data: { email: 'emp.lnd@example.com', password: 'hashed' }
     });
+    empUserToken = generateToken(empUser.id, '1h');
     
     const emp = await prisma.employee.create({
       data: {
@@ -88,7 +93,7 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
     categoryId = res.body.id;
   });
 
-  it('LND-002 Create training', async () => {
+  it('LND-002 Create training with target department', async () => {
     const res = await request(app)
       .post('/api/v1/lnd/trainings')
       .set('Authorization', `Bearer ${hrLndToken}`)
@@ -96,12 +101,24 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
         title: 'Advanced React',
         description: 'Deep dive into React hooks',
         categoryId,
+        departmentId: depId,
         type: 'ONLINE',
         capacity: 50
       });
     expect(res.status).toBe(201);
     expect(res.body.title).toBe('Advanced React');
+    expect(res.body.departmentId).toBe(depId);
+    expect(res.body.department.name).toBe('LND Department');
     trainingId = res.body.id;
+  });
+
+  it('LND-002b Update course status', async () => {
+    const res = await request(app)
+      .patch(`/api/v1/lnd/trainings/${trainingId}/status`)
+      .set('Authorization', `Bearer ${hrLndToken}`)
+      .send({ status: 'ACTIVE' });
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('ACTIVE');
   });
 
   it('LND-003 Create training plan', async () => {
@@ -115,6 +132,16 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
       });
     expect(res.status).toBe(201);
     expect(res.body.identifiedNeed).toBe('React skills gap');
+    planId = res.body.id;
+  });
+
+  it('LND-003b Update training plan status', async () => {
+    const res = await request(app)
+      .patch(`/api/v1/lnd/plans/${planId}/status`)
+      .set('Authorization', `Bearer ${hrLndToken}`)
+      .send({ status: 'APPROVED' });
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('APPROVED');
   });
 
   it('LND-004 Assign employee to training', async () => {
@@ -127,6 +154,14 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
     expect(res.status).toBe(201);
   });
 
+  it('LND-004b Employee self-joins training course', async () => {
+    const res = await request(app)
+      .post(`/api/v1/lnd/trainings/${trainingId}/join`)
+      .set('Authorization', `Bearer ${empUserToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.message).toContain('Successfully joined');
+  });
+
   it('LND-005 Create training session', async () => {
     const res = await request(app)
       .post(`/api/v1/lnd/trainings/${trainingId}/sessions`)
@@ -137,6 +172,16 @@ describe('Phase 10: Learning & Development Integration Tests', () => {
       });
     expect(res.status).toBe(201);
     sessionId = res.body.id;
+  });
+
+  it('LND-005b List attendance roster with auto-populated attendees', async () => {
+    const res = await request(app)
+      .get(`/api/v1/lnd/sessions/${sessionId}/attendance`)
+      .set('Authorization', `Bearer ${hrLndToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.length).toBeGreaterThanOrEqual(1);
+    expect(res.body[0].employeeId).toBe(empId1);
+    expect(res.body[0].status).toBe('REGISTERED');
   });
 
   it('LND-006 Mark attendance', async () => {

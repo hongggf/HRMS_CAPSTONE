@@ -159,6 +159,7 @@ model Department {
   workforceRequests       WorkforceRequest[]
   Employee                Employee[]
   EmployeePositionHistory EmployeePositionHistory[]
+  trainings               Training[]
 
   @@index([code])
 }
@@ -1069,6 +1070,7 @@ model Training {
   title        String
   description  String?
   categoryId   Int
+  departmentId Int?
   provider     String?
   type         TrainingType
   startDate    DateTime?        @db.Date
@@ -1080,6 +1082,7 @@ model Training {
   updatedAt    DateTime         @updatedAt
 
   category     TrainingCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  department   Department?      @relation(fields: [departmentId], references: [id], onDelete: SetNull)
   plans        TrainingPlan[]
   assignments  TrainingAssignment[]
   sessions     TrainingSession[]

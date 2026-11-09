@@ -176,4 +176,143 @@ describe('Phase 6: Attendance & Leave Management Integration Tests', () => {
     expect(res.body.overtimeHours).toBe(2);
     expect(res.body.totalHours).toBe(10);
   });
+
+  it('duplicate check-out rejected', async () => {
+    const res = await request(app).post(`/api/v1/attendance/${attendanceId}/check-out`).set('Authorization', `Bearer ${hrToken}`).send({
+      time: '2026-10-06T18:00:00Z'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Already checked out');
+  });
+
+  it('check-out rejected if check-out time is earlier than check-in time', async () => {
+    // Create new attendance
+    const attRes = await request(app).post('/api/v1/attendance/check-in').set('Authorization', `Bearer ${hrToken}`).send({
+      employeeId: empId,
+      date: '2026-10-07T00:00:00Z',
+      time: '2026-10-07T09:00:00Z'
+    });
+    expect(attRes.status).toBe(201);
+
+    const res = await request(app).post(`/api/v1/attendance/${attRes.body.id}/check-out`).set('Authorization', `Bearer ${hrToken}`).send({
+      time: '2026-10-07T08:00:00Z'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('cannot be earlier than check-in time');
+  });
+
+  it('leave request rejected if end date is earlier than start date', async () => {
+    const res = await request(app).post('/api/v1/leave').set('Authorization', `Bearer ${hrToken}`).send({
+      employeeId: empId,
+      leaveTypeId: leaveTypeId,
+      startDate: '2026-12-10T00:00:00Z',
+      endDate: '2026-12-05T00:00:00Z',
+      reason: 'Invalid dates'
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('leave request rejected if overlapping with existing leave', async () => {
+    // We already have leaveRequestId approved for 2026-12-01 to 2026-12-05
+    const res = await request(app).post('/api/v1/leave').set('Authorization', `Bearer ${hrToken}`).send({
+      employeeId: empId,
+      leaveTypeId: leaveTypeId,
+      startDate: '2026-12-03T00:00:00Z',
+      endDate: '2026-12-07T00:00:00Z',
+      reason: 'Overlapping request'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('Overlapping leave request already exists');
+  });
+
+  it('self-approval rejected for leave request', async () => {
+    // Create an employee linked to hrUser
+    const selfDept = await prisma.department.findFirst();
+    const selfPos = await prisma.position.findFirst();
+    const selfEmp = await prisma.employee.create({
+      data: {
+        employeeId: 'SELF_EMP',
+        firstName: 'HR',
+        lastName: 'Self',
+        email: 'self_att@test.local',
+        userId: hrId,
+        departmentId: selfDept!.id,
+        positionId: selfPos!.id,
+        status: 'ACTIVE'
+      }
+    });
+
+    const selfLeave = await prisma.leaveRequest.create({
+      data: {
+        employeeId: selfEmp.id,
+        leaveTypeId: leaveTypeId,
+        startDate: new Date('2026-11-01'),
+        endDate: new Date('2026-11-03'),
+        reason: 'Self leave',
+        status: 'SUBMITTED'
+      }
+    });
+
+    // HR user attempts to approve their own leave request
+    const res = await request(app).put(`/api/v1/leave/${selfLeave.id}/status`).set('Authorization', `Bearer ${hrToken}`).send({
+      status: 'APPROVED'
+    });
+    expect(res.status).toBe(403);
+    expect(res.body.error).toContain('Cannot approve your own leave request');
+  });
+
+  it('self-approval rejected for overtime request', async () => {
+    const selfEmp = await prisma.employee.findUnique({ where: { employeeId: 'SELF_EMP' } });
+    const selfOt = await prisma.overtimeRequest.create({
+      data: {
+        employeeId: selfEmp!.id,
+        date: new Date('2026-11-01'),
+        hours: 3,
+        reason: 'Weekend release',
+        status: 'SUBMITTED'
+      }
+    });
+
+    const res = await request(app).put(`/api/v1/overtime/${selfOt.id}/status`).set('Authorization', `Bearer ${hrToken}`).send({
+      status: 'APPROVED'
+    });
+    expect(res.status).toBe(403);
+    expect(res.body.error).toContain('Cannot approve your own overtime request');
+  });
+
+  it('approval conflict rejected if request already approved or rejected', async () => {
+    // leaveRequestId is already approved
+    const res = await request(app).put(`/api/v1/leave/${leaveRequestId}/status`).set('Authorization', `Bearer ${hrToken}`).send({
+      status: 'APPROVED'
+    });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toContain('already been approved');
+  });
+
+  it('timesheet generation rejected if end date is earlier than start date', async () => {
+    const res = await request(app).post('/api/v1/timesheets/generate').set('Authorization', `Bearer ${hrToken}`).send({
+      employeeId: empId,
+      startDate: '2026-10-31T00:00:00Z',
+      endDate: '2026-10-01T00:00:00Z'
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it('lists shifts, leave types, balances, and attendances', async () => {
+    const shiftsRes = await request(app).get('/api/v1/shifts').set('Authorization', `Bearer ${hrToken}`);
+    expect(shiftsRes.status).toBe(200);
+    expect(Array.isArray(shiftsRes.body)).toBe(true);
+
+    const typesRes = await request(app).get('/api/v1/leave/types').set('Authorization', `Bearer ${hrToken}`);
+    expect(typesRes.status).toBe(200);
+    expect(Array.isArray(typesRes.body)).toBe(true);
+
+    const attRes = await request(app).get('/api/v1/attendance').set('Authorization', `Bearer ${hrToken}`);
+    expect(attRes.status).toBe(200);
+    expect(Array.isArray(attRes.body)).toBe(true);
+
+    const timesheetRes = await request(app).get('/api/v1/timesheets').set('Authorization', `Bearer ${hrToken}`);
+    expect(timesheetRes.status).toBe(200);
+    expect(Array.isArray(timesheetRes.body)).toBe(true);
+  });
 });

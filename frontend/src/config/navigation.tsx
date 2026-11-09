@@ -116,20 +116,20 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
     children: [
       {
         key: '/attendance',
-        label: 'Attendance & Leaves',
+        label: 'Attendance Management',
         icon: <ScheduleOutlined />,
         roles: ['HEAD_OF_HR', 'HR_ATTENDANCE'],
-        isDev: true,
+        isDev: false,
         phase: 'Phase 6',
         description:
-          'Time tracking, shift clocking, leave requests, and overtime logs',
+          'Attendance review, exceptions, correction requests, shifts, leave reference & overtime audit',
       },
       {
         key: '/payroll',
         label: 'Payroll Processing',
         icon: <DollarOutlined />,
         roles: ['HEAD_OF_HR', 'HR_PAYROLL'],
-        isDev: true,
+        isDev: false,
         phase: 'Phase 7',
         description:
           'Salary calculations, period locks, allowances, and payslips',
@@ -147,7 +147,7 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
         label: 'Performance & Reviews',
         icon: <RiseOutlined />,
         roles: ['HEAD_OF_HR', 'HR_PERFORMANCE'],
-        isDev: true,
+        isDev: false,
         phase: 'Phase 8',
         description:
           'Annual appraisals, KPI scoring, and performance improvement plans',
@@ -157,8 +157,8 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
         label: 'Learning & Dev',
         icon: <ReadOutlined />,
         roles: ['HEAD_OF_HR', 'HR_LND'],
-        isDev: true,
-        phase: 'Phase 9',
+        isDev: false,
+        phase: 'Phase 8',
         description:
           'Training programs, employee enrollments, and certification logs',
       },

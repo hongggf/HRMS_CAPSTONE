@@ -6,6 +6,6 @@ const router = Router();
 
 router.use(requireAuth);
 
-router.get('/', requirePermission(['USER_READ', 'WORKFORCE_READ']), getAuditLogs); // Usually an admin or super admin can read audit logs
+router.get('/', requirePermission(['USER_READ', 'WORKFORCE_READ', 'ATTENDANCE_UPDATE']), getAuditLogs);
 
 export default router;

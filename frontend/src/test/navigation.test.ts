@@ -98,10 +98,32 @@ describe('Navigation Configuration and Role Filtering', () => {
     expect(employeeItem?.label).toBe('Employee Directory');
     expect(employeeItem?.isDev).toBeFalsy();
 
-    const upcomingItem = findNavItem(NAVIGATION_CONFIG, '/attendance');
+    const attendanceItem = findNavItem(NAVIGATION_CONFIG, '/attendance');
+    expect(attendanceItem).toBeDefined();
+    expect(attendanceItem?.label).toBe('Attendance Management');
+    expect(attendanceItem?.isDev).toBe(false);
+    expect(attendanceItem?.phase).toBe('Phase 6');
+
+    const payrollItem = findNavItem(NAVIGATION_CONFIG, '/payroll');
+    expect(payrollItem).toBeDefined();
+    expect(payrollItem?.label).toBe('Payroll Processing');
+    expect(payrollItem?.isDev).toBe(false);
+    expect(payrollItem?.phase).toBe('Phase 7');
+
+    const performanceItem = findNavItem(NAVIGATION_CONFIG, '/performance');
+    expect(performanceItem).toBeDefined();
+    expect(performanceItem?.label).toBe('Performance & Reviews');
+    expect(performanceItem?.isDev).toBe(false);
+    expect(performanceItem?.phase).toBe('Phase 8');
+
+    const lndItem = findNavItem(NAVIGATION_CONFIG, '/lnd');
+    expect(lndItem).toBeDefined();
+    expect(lndItem?.label).toBe('Learning & Dev');
+    expect(lndItem?.isDev).toBe(false);
+
+    const upcomingItem = findNavItem(NAVIGATION_CONFIG, '/audit-logs');
     expect(upcomingItem).toBeDefined();
-    expect(upcomingItem?.label).toBe('Attendance & Leaves');
+    expect(upcomingItem?.label).toBe('Audit & Compliance');
     expect(upcomingItem?.isDev).toBe(true);
-    expect(upcomingItem?.phase).toBe('Phase 6');
   });
 });

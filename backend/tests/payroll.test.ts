@@ -176,4 +176,136 @@ describe('Phase 7: Payroll Management Integration Tests', () => {
     const res = await request(app).post(`/api/v1/payroll/99999/calculate`).set('Authorization', `Bearer ${payrollOfficerToken}`);
     expect(res.status).toBe(404);
   });
+
+  it('rejects unauthorized payslip access for non-privileged user', async () => {
+    const regularUser = await prisma.user.create({
+      data: { email: 'regular_p7@test.com', password: 'hash' }
+    });
+    const regularToken = generateToken(regularUser.id, '15m');
+
+    const payrolls = await prisma.payroll.findMany({ where: { payrollPeriodId: periodId } });
+    const targetPayrollId = payrolls[0].id;
+
+    // Regular user without PAYROLL_READ tries to access payslip
+    const res = await request(app)
+      .get(`/api/v1/payroll/payslips/${targetPayrollId}`)
+      .set('Authorization', `Bearer ${regularToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects client-spoofed employeeId and role parameters', async () => {
+    const regularUser = await prisma.user.create({
+      data: { email: 'spoof_p7@test.com', password: 'hash' }
+    });
+    const regularToken = generateToken(regularUser.id, '15m');
+
+    const payrolls = await prisma.payroll.findMany({ where: { payrollPeriodId: periodId } });
+    const targetPayrollId = payrolls[0].id;
+
+    // Client passes spoofed employeeId and role in query & body
+    const res = await request(app)
+      .get(`/api/v1/payroll/payslips/${targetPayrollId}?employeeId=${payrolls[0].employeeId}&role=HEAD_OF_HR`)
+      .set('Authorization', `Bearer ${regularToken}`)
+      .send({ employeeId: payrolls[0].employeeId, role: 'HEAD_OF_HR' });
+    expect(res.status).toBe(403);
+  });
+
+  it('allows authorized HR to retrieve full payslip breakdown', async () => {
+    const payrolls = await prisma.payroll.findMany({ where: { payrollPeriodId: periodId } });
+    const targetPayrollId = payrolls[0].id;
+
+    const res = await request(app)
+      .get(`/api/v1/payroll/payslips/${targetPayrollId}`)
+      .set('Authorization', `Bearer ${payrollOfficerToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(targetPayrollId);
+    expect(Array.isArray(res.body.items)).toBe(true);
+    expect(res.body.employee).toBeDefined();
+    expect(res.body.payrollPeriod).toBeDefined();
+  });
+
+  it('allows employee self-service retrieval for their own released payslip', async () => {
+    // Link empId1 to an employee user account
+    const empUser = await prisma.user.create({
+      data: { email: 'emp1_p7@test.com', password: 'hash' }
+    });
+    await prisma.employee.update({
+      where: { id: empId1 },
+      data: { userId: empUser.id }
+    });
+    const empToken = generateToken(empUser.id, '15m');
+
+    const emp1Payroll = await prisma.payroll.findFirst({
+      where: { payrollPeriodId: periodId, employeeId: empId1 }
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/payroll/payslips/${emp1Payroll!.id}`)
+      .set('Authorization', `Bearer ${empToken}`);
+    expect(res.status).toBe(200);
+    expect(res.body.employeeId).toBe(empId1);
+
+    const myRes = await request(app)
+      .get(`/api/v1/payroll/payslips/my`)
+      .set('Authorization', `Bearer ${empToken}`);
+    expect(myRes.status).toBe(200);
+    expect(myRes.body.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('rejects employee accessing another employee payslip', async () => {
+    const empUser = await prisma.user.findFirst({ where: { email: 'emp1_p7@test.com' } });
+    const empToken = generateToken(empUser!.id, '15m');
+
+    const emp2Payroll = await prisma.payroll.findFirst({
+      where: { payrollPeriodId: periodId, employeeId: empId2 }
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/payroll/payslips/${emp2Payroll!.id}`)
+      .set('Authorization', `Bearer ${empToken}`);
+    expect(res.status).toBe(403);
+  });
+
+  it('prevents repeated submission and invalid state transitions', async () => {
+    // periodId is currently LOCKED
+    const res = await request(app)
+      .post(`/api/v1/payroll/${periodId}/submit`)
+      .set('Authorization', `Bearer ${payrollOfficerToken}`);
+    expect(res.status).toBe(400);
+
+    const approveRes = await request(app)
+      .post(`/api/v1/payroll/${periodId}/approve`)
+      .set('Authorization', `Bearer ${headOfHrToken}`);
+    expect(approveRes.status).toBe(400);
+
+    const lockRes = await request(app)
+      .post(`/api/v1/payroll/${periodId}/lock`)
+      .set('Authorization', `Bearer ${headOfHrToken}`);
+    expect(lockRes.status).toBe(400);
+  });
+
+  it('allows authorized HR and self employee to access employee payslips endpoint', async () => {
+    // 1. HR with PAYROLL_READ accesses employee payslips
+    const hrRes = await request(app)
+      .get(`/api/v1/payroll/employees/${empId1}/payslips`)
+      .set('Authorization', `Bearer ${payrollOfficerToken}`);
+    expect(hrRes.status).toBe(200);
+    expect(Array.isArray(hrRes.body)).toBe(true);
+    expect(hrRes.body.length).toBeGreaterThanOrEqual(1);
+
+    // 2. Self employee accesses their own payslips
+    const empUser = await prisma.user.findFirst({ where: { email: 'emp1_p7@test.com' } });
+    const empToken = generateToken(empUser!.id, '15m');
+    const selfRes = await request(app)
+      .get(`/api/v1/payroll/employees/${empId1}/payslips`)
+      .set('Authorization', `Bearer ${empToken}`);
+    expect(selfRes.status).toBe(200);
+    expect(Array.isArray(selfRes.body)).toBe(true);
+
+    // 3. Employee accessing another employee's payslips is forbidden
+    const forbiddenRes = await request(app)
+      .get(`/api/v1/payroll/employees/${empId2}/payslips`)
+      .set('Authorization', `Bearer ${empToken}`);
+    expect(forbiddenRes.status).toBe(403);
+  });
 });

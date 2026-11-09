@@ -9,6 +9,10 @@ import { OrganizationPage } from '../pages/organization/OrganizationPage';
 import { WorkforcePage } from '../pages/workforce/WorkforcePage';
 import { RecruitmentPage } from '../pages/recruitment/RecruitmentPage';
 import { EmployeePage } from '../pages/employees/EmployeePage';
+import { AttendancePage } from '../pages/attendance/AttendancePage';
+import { PayrollPage } from '../pages/payroll/PayrollPage';
+import { PerformancePage } from '../pages/performance/PerformancePage';
+import { LndPage } from '../pages/lnd/LndPage';
 import { UnderDevelopmentPage } from '../pages/common/UnderDevelopmentPage';
 import { NotFound404 } from '../pages/error/NotFound404';
 
@@ -103,7 +107,7 @@ export const router = createBrowserRouter([
         path: 'attendance',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ATTENDANCE']}>
-            <UnderDevelopmentPage />
+            <AttendancePage />
           </RoleGuard>
         ),
       },
@@ -111,7 +115,7 @@ export const router = createBrowserRouter([
         path: 'payroll',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_PAYROLL']}>
-            <UnderDevelopmentPage />
+            <PayrollPage />
           </RoleGuard>
         ),
       },
@@ -119,7 +123,7 @@ export const router = createBrowserRouter([
         path: 'performance',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_PERFORMANCE']}>
-            <UnderDevelopmentPage />
+            <PerformancePage />
           </RoleGuard>
         ),
       },
@@ -127,7 +131,7 @@ export const router = createBrowserRouter([
         path: 'lnd',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_LND']}>
-            <UnderDevelopmentPage />
+            <LndPage />
           </RoleGuard>
         ),
       },

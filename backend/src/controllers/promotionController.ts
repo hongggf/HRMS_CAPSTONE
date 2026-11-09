@@ -3,8 +3,56 @@ import { prisma } from '../config/db';
 import { createPromotionSchema, createPipSchema, addPipItemSchema, updatePipProgressSchema } from '../validators/promotionValidator';
 import { logAudit } from '../services/auditService';
 
-
 // ======================= PROMOTIONS =======================
+
+export const getPromotions = async (req: Request, res: Response) => {
+  try {
+    const { employeeId, status } = req.query;
+    const where: any = {};
+    if (employeeId) where.employeeId = parseInt(employeeId as string, 10);
+    if (status) where.status = status as any;
+
+    const promotions = await prisma.promotionRequest.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeId: true,
+            department: true,
+          },
+        },
+        currentPosition: true,
+        proposedPosition: true,
+        requestedBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        approvedBy: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+        performanceReview: {
+          select: {
+            id: true,
+            overallScore: true,
+            status: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(promotions);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 export const requestPromotion = async (req: Request, res: Response) => {
   try {
@@ -13,7 +61,7 @@ export const requestPromotion = async (req: Request, res: Response) => {
 
     const employee = await prisma.employee.findUnique({
       where: { id: data.employeeId },
-      include: { compensation: true }
+      include: { compensation: true },
     });
 
     if (!employee) return res.status(404).json({ error: 'Employee not found' });
@@ -29,8 +77,13 @@ export const requestPromotion = async (req: Request, res: Response) => {
         performanceReviewId: data.performanceReviewId,
         effectiveDate: new Date(data.effectiveDate),
         status: 'SUBMITTED',
-        requestedById: userId
-      }
+        requestedById: userId,
+      },
+      include: {
+        employee: true,
+        currentPosition: true,
+        proposedPosition: true,
+      },
     });
 
     await logAudit('PROMOTION_REQUESTED', userId, { promotionId: promotion.id });
@@ -46,8 +99,8 @@ export const approvePromotion = async (req: Request, res: Response) => {
     const userId = (req as any).user!.id;
 
     const promotion = await prisma.promotionRequest.findUnique({
-      where: { id: parseInt(id) },
-      include: { employee: true }
+      where: { id: parseInt(id, 10) },
+      include: { employee: true },
     });
 
     if (!promotion) return res.status(404).json({ error: 'Promotion not found' });
@@ -63,21 +116,21 @@ export const approvePromotion = async (req: Request, res: Response) => {
       // 1. Update promotion request
       const updatedPromo = await tx.promotionRequest.update({
         where: { id: promotion.id },
-        data: { status: 'APPROVED', approvedById: userId }
+        data: { status: 'APPROVED', approvedById: userId },
       });
 
       // 2. End current position history
       const currentPos = await tx.employeePositionHistory.findFirst({
         where: { employeeId: promotion.employeeId, endDate: null },
-        orderBy: { startDate: 'desc' }
+        orderBy: { startDate: 'desc' },
       });
       if (currentPos) {
         await tx.employeePositionHistory.update({
           where: { id: currentPos.id },
-          data: { endDate: new Date() }
+          data: { endDate: new Date() },
         });
       }
-      
+
       // Create new position history
       await tx.employeePositionHistory.create({
         data: {
@@ -86,8 +139,8 @@ export const approvePromotion = async (req: Request, res: Response) => {
           departmentId: proposedPos.departmentId,
           startDate: new Date(),
           changedById: userId,
-          notes: 'PROMOTION'
-        }
+          notes: 'PROMOTION',
+        },
       });
 
       // 3. Update employee position
@@ -95,20 +148,20 @@ export const approvePromotion = async (req: Request, res: Response) => {
         where: { id: promotion.employeeId },
         data: {
           positionId: promotion.proposedPositionId,
-          departmentId: proposedPos.departmentId
-        }
+          departmentId: proposedPos.departmentId,
+        },
       });
 
       // 4. Update salary if provided
       if (promotion.proposedSalary) {
         const currentSal = await tx.employeeSalaryHistory.findFirst({
           where: { employeeId: promotion.employeeId, endDate: null },
-          orderBy: { effectiveDate: 'desc' }
+          orderBy: { effectiveDate: 'desc' },
         });
         if (currentSal) {
           await tx.employeeSalaryHistory.update({
             where: { id: currentSal.id },
-            data: { endDate: new Date() }
+            data: { endDate: new Date() },
           });
         }
         await tx.employeeSalaryHistory.create({
@@ -117,13 +170,17 @@ export const approvePromotion = async (req: Request, res: Response) => {
             baseSalary: promotion.proposedSalary,
             effectiveDate: new Date(),
             changedById: userId,
-            changeReason: 'PROMOTION'
-          }
+            changeReason: 'PROMOTION',
+          },
         });
         await tx.employeeCompensation.upsert({
           where: { employeeId: promotion.employeeId },
           update: { basicSalary: promotion.proposedSalary },
-          create: { employeeId: promotion.employeeId, basicSalary: promotion.proposedSalary, effectiveDate: new Date() }
+          create: {
+            employeeId: promotion.employeeId,
+            basicSalary: promotion.proposedSalary,
+            effectiveDate: new Date(),
+          },
         });
       }
 
@@ -142,19 +199,88 @@ export const rejectPromotion = async (req: Request, res: Response) => {
     const { id } = req.params;
     const userId = (req as any).user!.id;
 
-    const promotion = await prisma.promotionRequest.update({
-      where: { id: parseInt(id) },
-      data: { status: 'REJECTED' }
+    const promotion = await prisma.promotionRequest.findUnique({
+      where: { id: parseInt(id, 10) },
+    });
+    if (!promotion) return res.status(404).json({ error: 'Promotion not found' });
+    if (promotion.status === 'APPROVED' || promotion.status === 'REJECTED') {
+      return res.status(400).json({ error: 'Already processed' });
+    }
+
+    const updated = await prisma.promotionRequest.update({
+      where: { id: parseInt(id, 10) },
+      data: { status: 'REJECTED' },
     });
 
     await logAudit('PROMOTION_REJECTED', userId, { promotionId: id });
-    res.json(promotion);
+    res.json(updated);
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
 };
 
 // ======================= PIP =======================
+
+export const getPips = async (req: Request, res: Response) => {
+  try {
+    const { employeeId, status } = req.query;
+    const where: any = {};
+    if (employeeId) where.employeeId = parseInt(employeeId as string, 10);
+    if (status) where.status = status as any;
+
+    const pips = await prisma.improvementPlan.findMany({
+      where,
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeId: true,
+            department: true,
+            position: true,
+          },
+        },
+        items: {
+          orderBy: { dueDate: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+    res.json(pips);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getPipById = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const pip = await prisma.improvementPlan.findUnique({
+      where: { id: parseInt(id, 10) },
+      include: {
+        employee: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            employeeId: true,
+            department: true,
+            position: true,
+          },
+        },
+        items: {
+          orderBy: { dueDate: 'asc' },
+        },
+      },
+    });
+
+    if (!pip) return res.status(404).json({ error: 'PIP not found' });
+    res.json(pip);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
 
 export const createPip = async (req: Request, res: Response) => {
   try {
@@ -168,8 +294,12 @@ export const createPip = async (req: Request, res: Response) => {
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
         objective: data.objective,
-        status: 'ACTIVE'
-      }
+        status: 'ACTIVE',
+      },
+      include: {
+        employee: true,
+        items: true,
+      },
     });
 
     await logAudit('PIP_CREATED', userId, { pipId: pip.id });
@@ -185,15 +315,18 @@ export const addPipItem = async (req: Request, res: Response) => {
     const data = addPipItemSchema.parse(req.body);
     const userId = (req as any).user!.id;
 
+    const pip = await prisma.improvementPlan.findUnique({ where: { id: parseInt(pipId, 10) } });
+    if (!pip) return res.status(404).json({ error: 'PIP not found' });
+
     const item = await prisma.improvementPlanItem.create({
       data: {
-        planId: parseInt(pipId),
+        planId: parseInt(pipId, 10),
         action: data.action,
         target: data.target,
         owner: data.owner,
         dueDate: new Date(data.dueDate),
-        progress: 0
-      }
+        progress: 0,
+      },
     });
 
     await logAudit('PIP_ITEM_ADDED', userId, { pipId, itemId: item.id });
@@ -209,12 +342,23 @@ export const updatePipProgress = async (req: Request, res: Response) => {
     const data = updatePipProgressSchema.parse(req.body);
     const userId = (req as any).user!.id;
 
+    const existingItem = await prisma.improvementPlanItem.findUnique({ where: { id: parseInt(itemId, 10) } });
+    if (!existingItem) return res.status(404).json({ error: 'PIP item not found' });
+
+    const completionDate = data.completionDate
+      ? new Date(data.completionDate)
+      : data.progress === 100 && !existingItem.completionDate
+      ? new Date()
+      : data.progress < 100
+      ? null
+      : existingItem.completionDate;
+
     const item = await prisma.improvementPlanItem.update({
-      where: { id: parseInt(itemId) },
+      where: { id: parseInt(itemId, 10) },
       data: {
         progress: data.progress,
-        completionDate: data.completionDate ? new Date(data.completionDate) : null
-      }
+        completionDate,
+      },
     });
 
     await logAudit('PIP_PROGRESS_UPDATED', userId, { itemId });

@@ -9,6 +9,7 @@ export const createTrainingSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional(),
   categoryId: z.number().int().positive(),
+  departmentId: z.number().int().positive().nullable().optional(),
   provider: z.string().optional(),
   type: z.enum(['INTERNAL', 'EXTERNAL', 'ONLINE', 'CLASSROOM']),
   startDate: z.string().optional(),
@@ -52,4 +53,12 @@ export const evaluateTrainingSchema = z.object({
 export const updateEmployeeSkillSchema = z.object({
   skillName: z.string().min(1),
   level: z.enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED', 'EXPERT']),
+});
+
+export const updateTrainingStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'ACTIVE', 'COMPLETED', 'CANCELLED']),
+});
+
+export const updateTrainingPlanStatusSchema = z.object({
+  status: z.enum(['DRAFT', 'APPROVED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
 });

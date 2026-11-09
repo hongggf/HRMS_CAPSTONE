@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HRMS Enterprise Suite — End-to-End User Guide Slides</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --accent: #0ea5e9;
+      --dark-navy: #0f172a;
+      --navy-card: #1e293b;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --bg-slate: #f1f5f9;
+      --bg-slide: #ffffff;
+      --border-color: #e2e8f0;
+      --success: #16a34a;
+      --success-bg: #dcfce7;
+      --warning: #d97706;
+      --warning-bg: #fef3c7;
+      --danger: #dc2626;
+      --danger-bg: #fee2e2;
+      --purple: #9333ea;
+      --purple-bg: #f3e8ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--dark-navy);
+      color: var(--text-main);
+      overflow-x: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Control Bar */
+    header.deck-header {
+      background: #090d16;
+      border-bottom: 1px solid #1e293b;
+      color: #ffffff;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 100;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-badge {
+      background: #2563eb;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .role-filters {
+      display: flex;
+      gap: 6px;
+      background: #1e293b;
+      padding: 3px;
+      border-radius: 6px;
+    }
+
+    .filter-btn {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 12px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-btn:hover {
+      color: #ffffff;
+    }
+
+    .filter-btn.active {
+      background: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    .btn-action {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-action:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    /* Main Slide Stage */
+    main.stage {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #1e293b 0%, #0f172a 100%);
+    }
+
+    .slide-wrapper {
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: var(--bg-slide);
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.99); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Slide Internal Structure */
+    .slide-header {
+      padding: 20px 36px 12px;
+      border-bottom: 2px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      background: #fafafa;
+    }
+
+    .slide-header-left h1 {
+      font-size: 26px;
+      color: #0f172a;
+      line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slide-header-left p.subheading {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .slide-header-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .slide-body {
+      padding: 28px 36px;
+      flex: 1;
+      overflow-y: auto;
+      font-size: 15px;
+      line-height: 1.6;
+      color: #334155;
+    }
+
+    .slide-footer {
+      padding: 10px 36px;
+      border-top: 1px solid #e2e8f0;
+      background: #f8fafc;
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Grid Layouts inside slides */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h3 {
+      font-size: 16px;
+      color: #1e3a8a;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card h4 {
+      font-size: 14px;
+      color: #0f172a;
+      margin-bottom: 6px;
+    }
+
+    .card-highlight {
+      background: var(--primary-light);
+      border: 1px solid #bfdbfe;
+    }
+
+    .card-dark {
+      background: #0f172a;
+      color: #f8fafc;
+      border: 1px solid #334155;
+    }
+
+    .card-dark h3 {
+      color: #60a5fa;
+    }
+
+    .step-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .step-num {
+      width: 26px;
+      height: 26px;
+      background: #2563eb;
+      color: #ffffff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content strong {
+      display: block;
+      color: #0f172a;
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .step-content p {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-blue { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    .badge-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+    .badge-amber { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-red { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }
+    .badge-gray { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    /* Alert Banner */
+    .alert-banner {
+      background: #fffbeb;
+      border-left: 4px solid #f59e0b;
+      padding: 10px 14px;
+      border-radius: 4px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #92400e;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .alert-banner.info {
+      background: #eff6ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .alert-banner.success {
+      background: #f0fdf4;
+      border-color: #22c55e;
+      color: #15803d;
+    }
+
+    /* Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    table.data-table th {
+      background: #0f172a;
+      color: #ffffff;
+      padding: 8px 12px;
+      text-align: left;
+      font-weight: 600;
+    }
+
+    table.data-table td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 7px 12px;
+      color: #334155;
+    }
+
+    table.data-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+
+    /* Flow Chart / Sequence Cards */
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 16px 0;
+    }
+
+    .flow-step {
+      flex: 1;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 12px 10px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .flow-step.active {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .flow-step h5 {
+      font-size: 13px;
+      color: #0f172a;
+      margin-bottom: 4px;
+    }
+
+    .flow-step span {
+      font-size: 11px;
+      color: #64748b;
+    }
+
+    .flow-arrow {
+      color: #94a3b8;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    /* Lead / Title Slide Style */
+    .slide-wrapper.title-slide {
+      background: linear-gradient(135deg, #090d16 0%, #1e3a8a 100%);
+      color: #ffffff;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 60px;
+    }
+
+    .title-slide h1 {
+      font-size: 42px;
+      color: #ffffff;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    .title-slide h2 {
+      font-size: 22px;
+      color: #93c5fd;
+      font-weight: 400;
+      margin-bottom: 24px;
+    }
+
+    .title-slide .meta-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 16px 28px;
+      display: inline-flex;
+      gap: 32px;
+      font-size: 14px;
+      color: #e2e8f0;
+      text-align: left;
+    }
+
+    /* Bottom Navigator Bar */
+    footer.deck-nav {
+      background: #090d16;
+      border-top: 1px solid #1e293b;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #94a3b8;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+
+    .nav-buttons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 400px;
+      margin: 0 20px;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: #2563eb;
+      width: 0%;
+      transition: width 0.2s ease;
+    }
+
+    /* Speaker Notes Drawer */
+    #notes-drawer {
+      position: fixed;
+      bottom: 56px;
+      right: 24px;
+      width: 420px;
+      max-height: 280px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      color: #cbd5e1;
+      padding: 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      display: none;
+      z-index: 200;
+      overflow-y: auto;
+    }
+
+    #notes-drawer h4 {
+      color: #60a5fa;
+      margin-bottom: 8px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Overview Modal / Grid */
+    #overview-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      z-index: 300;
+      display: none;
+      padding: 40px;
+      overflow-y: auto;
+    }
+
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .overview-thumb {
+      background: #ffffff;
+      border-radius: 6px;
+      aspect-ratio: 16 / 9;
+      padding: 10px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .overview-thumb:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border-color: #3b82f6;
+    }
+
+    .overview-thumb.active {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+    }
+
+    .overview-thumb-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+    }
+
+    .overview-thumb-meta {
+      font-size: 10px;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #ffffff !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      header.deck-header, footer.deck-nav, #notes-drawer, #overview-modal {
+        display: none !important;
+      }
+      main.stage {
+        padding: 0 !important;
+        background: transparent !important;
+        display: block !important;
+      }
+      .slide-wrapper {
+        display: flex !important;
+        page-break-after: always;
+        break-after: page;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-shadow: none !important;
+        border: 1px solid #e2e8f0 !important;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header Bar -->
+  <header class="deck-header">
+    <div class="brand-title">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      <span>HRMS ENTERPRISE SUITE</span>
+      <span class="brand-badge">End-to-End User Guide</span>
+    </div>
+
+    <!-- Quick Role Filter Pills -->
+    <div class="role-filters">
+      <button class="filter-btn active" onclick="filterByRole('ALL')">All Slides</button>
+      <button class="filter-btn" onclick="filterByRole('HEAD_OF_HR')">Head of HR</button>
+      <button class="filter-btn" onclick="filterByRole('HR_ADMIN')">HR Admin</button>
+      <button class="filter-btn" onclick="filterByRole('HR_RECRUITMENT')">Recruiter</button>
+      <button class="filter-btn" onclick="filterByRole('HR_ATTENDANCE')">Attendance</button>
+      <button class="filter-btn" onclick="filterByRole('HR_PAYROLL')">Payroll</button>
+      <button class="filter-btn" onclick="filterByRole('EMPLOYEE')">Staff (ESS)</button>
+    </div>
+
+    <!-- Secondary Actions -->
+    <div class="deck-controls">
+      <button class="btn-action" onclick="toggleOverview()" title="View all slides in a grid (Shortcut: O)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect>
+          <rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>
+        </svg>
+        <span>Overview</span>
+      </button>
+
+      <button class="btn-action" onclick="toggleNotes()" title="Toggle speaker notes (Shortcut: N)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+        </svg>
+        <span>Notes</span>
+      </button>
+
+      <button class="btn-action" onclick="window.print()" title="Print or save as PDF">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"></polyline>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+          <rect x="6" y="14" width="12" height="8"></rect>
+        </svg>
+        <span>Print PDF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Slide Stage -->
+  <main class="stage" id="stage-container">
+    <!-- Slides will be injected dynamically via JS -->
+  </main>
+
+  <!-- Bottom Navigation -->
+  <footer class="deck-nav">
+    <div class="nav-buttons">
+      <button class="btn-action" onclick="prevSlide()" id="btn-prev">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+        <span>Previous</span>
+      </button>
+      <button class="btn-action btn-primary" onclick="nextSlide()" id="btn-next">
+        <span>Next</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Progress Tracker -->
+    <div style="display: flex; align-items: center; gap: 12px; flex: 1; justify-content: center;">
+      <span id="slide-counter" style="font-weight: 600; font-size: 13px;">Slide 1 / 50</span>
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="progress-bar"></div>
+      </div>
+      <span id="current-section-badge" class="badge badge-blue">Executive Overview</span>
+    </div>
+
+    <div style="font-size: 12px; color: #64748b;">
+      Keyboard: <kbd>←</kbd> <kbd>→</kbd> Navigate | <kbd>O</kbd> Overview | <kbd>N</kbd> Notes
+    </div>
+  </footer>
+
+  <!-- Speaker Notes Floating Drawer -->
+  <div id="notes-drawer">
+    <h4>
+      <span>Presenter Notes & Takeaways</span>
+      <span style="cursor: pointer;" onclick="toggleNotes()">✕</span>
+    </h4>
+    <div id="notes-content">Notes content will appear here...</div>
+  </div>
+
+  <!-- Overview Grid Modal -->
+  <div id="overview-modal" onclick="toggleOverview()">
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto 24px; color: #fff;">
+      <h2 style="font-size: 20px;">Slide Navigation Matrix (Click to Jump)</h2>
+      <button class="btn-action" onclick="toggleOverview()">Close (Esc)</button>
+    </div>
+    <div class="overview-grid" id="overview-grid-container" onclick="event.stopPropagation()"></div>
+  </div>
+
+  <!-- Slides Data & Presentation Logic -->
+  <script>
+    const slidesData = [
+      // 1
+      {
+        id: 1,
+        section: "Platform Overview",
+        role: "ALL",
+        isTitle: true,
+        title: "HRMS ENTERPRISE SUITE",
+        subtitle: "Complete End-to-End User Guide & Operational Manual",
+        meta: [
+          { label: "Application Version", value: "2.0.0 Production" },
+          { label: "Architecture", value: "RBAC + Zero-Trust Multi-Tenant" },
+          { label: "Target Roles", value: "All 7 HR Officers & General Staff" },
+          { label: "Security", value: "JWT, Session Revocation, Rate Limits" }
+        ],
+        notes: "Welcome to the official HRMS training deck. This presentation walks every employee through daily operations, executive sign-offs, and compliance practices."
+      },
+      // 2
+      {
+        id: 2,
+        section: "Platform Overview",
+        role: "ALL",
+        title: "Platform Ecosystem & Core Pillars",
+        subtitle: "Unified architecture connecting personnel, attendance, payroll, and governance",
+        content: `
+          <div class="grid-3">
+            <div class="card">
+              <span class="badge badge-blue">Structure</span>
+              <h4>Org & Workforce</h4>
+              <p>Department hierarchical trees, position grading, annual quotas, and workforce headcount requests.</p>
+            </div>
+            <div class="card">
+              <span class="badge badge-purple">Talent</span>
+              <h4>Recruitment & ATS</h4>
+              <p>Workforce-linked requisitions, multi-channel job postings, candidate resume masking, and interview rubrics.</p>
+            </div>
+            <div class="card">
+              <span class="badge badge-green">Operations</span>
+              <h4>Attendance & Shifts</h4>
+              <p>Shift rostering, real-time punch review, anomaly corrections, leave tracking, and overtime audits.</p>
+            </div>
+            <div class="card">
+              <span class="badge badge-amber">Finance</span>
+              <h4>Authoritative Payroll</h4>
+              <p>Deterministic calculation engine, manual adjustments, pre-submission scan, locking, and bank CSV export.</p>
+            </div>
+            <div class="card">
+              <span class="badge badge-blue">Growth</span>
+              <h4>Performance & L&D</h4>
+              <p>Appraisal cycles, 360 evaluations, performance improvement plans (PIPs), and training course logs.</p>
+            </div>
+            <div class="card">
+              <span class="badge badge-red">Governance</span>
+              <h4>Tasks & Audit Trails</h4>
+              <p>Unified executive approval inbox, real-time WebSocket alerts, TagsView workspace, and immutable audit logs.</p>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            <strong>System Integration:</strong> Every transaction seamlessly feeds downstream modules without redundant manual data re-entry.
+          </div>
+        `,
+        notes: "Emphasize how data cascades naturally from Workforce approvals to Recruitment, into Employee creation, through daily Attendance, and into the monthly Payroll calculation."
+      },
+      // 3
+      {
+        id: 3,
+        section: "Platform Overview",
+        role: "ALL",
+        title: "User Personas & Role Access Hierarchy",
+        subtitle: "Separation of duties across 7 specialized officer roles + general staff",
+        content: `
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>System Role</th>
+                <th>Domain Scope</th>
+                <th>Key Capabilities</th>
+                <th>Seed Account</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HEAD_OF_HR</strong></td>
+                <td>Master HR Authority</td>
+                <td>All 43 backend permissions; final approval on workforce, recruitment, promotions, and payroll.</td>
+                <td><code>head@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_ADMIN</strong></td>
+                <td>Personnel Administration</td>
+                <td>Departments, positions, employee directory, document vault, status transitions, promotions.</td>
+                <td><code>admin@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_RECRUITMENT</strong></td>
+                <td>Talent Acquisition</td>
+                <td>Headcount requests, job requisitions, job ads, candidate pipeline, interviews, and offers.</td>
+                <td><code>recruiter@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_ATTENDANCE</strong></td>
+                <td>Time & Attendance</td>
+                <td>Shift schedules, punch logs, attendance corrections, leave approvals, overtime audits.</td>
+                <td><code>attendance@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_PAYROLL</strong></td>
+                <td>Compensation & Payroll</td>
+                <td>Pay period setup, authoritative calculations, adjustments, validation scans, payslips.</td>
+                <td><code>payroll@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_PERFORMANCE</strong></td>
+                <td>Reviews & PIPs</td>
+                <td>Appraisal cycles, KPI goal definitions, performance scoring, and PIP management.</td>
+                <td><code>performance@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>HR_LND</strong></td>
+                <td>Training & Development</td>
+                <td>Course catalog, session scheduling, employee enrollments, skill ratings.</td>
+                <td><code>lnd@hr.local</code></td>
+              </tr>
+              <tr>
+                <td><strong>EMPLOYEE</strong></td>
+                <td>Staff Self-Service (ESS)</td>
+                <td>Clock-in/out, leave requests, overtime claims, personal payslips, profile inspection.</td>
+                <td>Individual staff login</td>
+              </tr>
+            </tbody>
+          </table>
+        `,
+        notes: "All pre-configured seed accounts share the default development password: password123. Review Separation of Duties: HR_PAYROLL prepares; HEAD_OF_HR approves."
+      },
+      // 4
+      {
+        id: 4,
+        section: "Platform Overview",
+        role: "ALL",
+        title: "Navigation Anatomy & Workspace Layout",
+        subtitle: "Multi-tab productivity, live alerts, and dynamic sidebar filtering",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Top Application Bar</h3>
+              <ul style="padding-left: 20px; font-size: 14px;">
+                <li><strong>Socket Sync Indicator:</strong> Green pulse icon confirming live WebSocket connection to server.</li>
+                <li><strong>Real-Time Notification Bell:</strong> Interactive drawer displaying unread task approvals and alerts.</li>
+                <li><strong>User Profile Dropdown:</strong> View active role, manage profile, change password, or logout.</li>
+                <li><strong>Multi-Role Switcher:</strong> Instantly toggle views if holding multiple officer roles.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>TagsView (Multi-Tab Bar)</h3>
+              <ul style="padding-left: 20px; font-size: 14px;">
+                <li>Keep multiple workspaces open concurrently (e.g. Employee #42 and November Payroll).</li>
+                <li>Switch tabs without losing unsaved form fields or modal states.</li>
+                <li><strong>Context Menu:</strong> Right-click tabs to "Close Others" or "Close Tabs to Right".</li>
+              </ul>
+            </div>
+          </div>
+          <div class="card card-highlight" style="margin-top: 16px;">
+            <h4>Dynamic Sidebar Menu Filtering</h4>
+            <p>The sidebar runs <code>filterNavByRoles()</code> against your authenticated JWT claims. Navigation groups with zero permitted routes are automatically pruned from DOM rendering to ensure a distraction-free workspace.</p>
+          </div>
+        `,
+        notes: "The TagsView feature is popular with HR Admins who frequently compare new employee submissions against organizational position quotas."
+      },
+      // 5
+      {
+        id: 5,
+        section: "Security & Governance",
+        role: "ALL",
+        title: "Authentication & Cache Security",
+        subtitle: "Enterprise token rotation and automatic browser cache purging",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Dual-Token Architecture</h3>
+              <div class="step-box">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                  <strong>Access Token (JWT)</strong>
+                  <p>15-minute expiration time. Contains user ID and verified role array. Passed in Bearer headers.</p>
+                </div>
+              </div>
+              <div class="step-box">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                  <strong>Refresh Token</strong>
+                  <p>7-day expiration. Stored securely in database and rotated on renewal. Automatically revokes on logout.</p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Zero-Leakage Cache Cleansing</h3>
+              <div class="step-box">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                  <strong>Automatic Query Purge</strong>
+                  <p><code>useAuthStore</code> automatically fires <code>queryClient.clear()</code> upon both login and logout.</p>
+                </div>
+              </div>
+              <div class="step-box">
+                <div class="step-num">4</div>
+                <div class="step-content">
+                  <strong>Shared Terminal Protection</strong>
+                  <p>Guarantees that switching users on the same computer never leaves cached salary or candidate data in memory.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Highlight the queryClient.clear() call. In shared HR department terminals, this prevents officers from viewing previous users' cached confidential records."
+      },
+      // 6
+      {
+        id: 6,
+        section: "Security & Governance",
+        role: "ALL",
+        title: "Password Governance & Policy",
+        subtitle: "Self-service password management with session revocation protections",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Password Strength Standard</h3>
+              <ul style="padding-left: 20px; font-size: 14px; line-height: 1.8;">
+                <li>Minimum <strong>8 characters</strong> in length</li>
+                <li>At least <strong>1 uppercase</strong> letter (A-Z)</li>
+                <li>At least <strong>1 lowercase</strong> letter (a-z)</li>
+                <li>At least <strong>1 numerical</strong> digit (0-9)</li>
+                <li>At least <strong>1 special</strong> character (!@#$%^&*)</li>
+                <li><strong>Anti-Reuse:</strong> New password cannot match current password</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Security Safeguards</h3>
+              <div class="step-box">
+                <div class="step-num">🛡️</div>
+                <div class="step-content">
+                  <strong>Global Session Revocation</strong>
+                  <p>Changing password forcefully marks all active refresh tokens as <code>revoked: true</code>, terminating sessions across all devices.</p>
+                </div>
+              </div>
+              <div class="step-box">
+                <div class="step-num">⏱️</div>
+                <div class="step-content">
+                  <strong>Rate Limiting</strong>
+                  <p>Restricted to 3 attempts per hour to defeat brute-force password guessing.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="alert-banner">
+            ⚠️ <strong>Action Required:</strong> All staff logging in with initial temporary passwords must immediately navigate to <strong>Profile > Change Password</strong>.
+          </div>
+        `,
+        notes: "Explain that the global session revocation guarantees that if a laptop is lost, changing the password immediately kicks off any unauthorized sessions."
+      },
+      // 7
+      {
+        id: 7,
+        section: "Security & Governance",
+        role: "ALL",
+        title: "Zero-Trust Route & API Guards",
+        subtitle: "Defense-in-depth security model across frontend and backend tiers",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Frontend Route Protection</h3>
+              <p><strong>ProtectedRoute:</strong> Unauthenticated visits are intercepted and redirected to <code>/login</code>, preserving the intended destination path.</p>
+              <p style="margin-top: 10px;"><strong>RoleGuard:</strong> Authenticated officers attempting to browse unauthorized modules are blocked with a dedicated <code>403 Forbidden</code> component.</p>
+            </div>
+            <div class="card">
+              <h3>Authoritative Backend Enforcement</h3>
+              <p>Hiding UI elements is purely for ergonomics. The backend Express API independently validates credentials on every request:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px;">
+                <li><code>authenticateToken()</code>: Validates signature and active status.</li>
+                <li><code>requireRole()</code>: Verifies role membership.</li>
+                <li><code>requirePermission()</code>: Checks granular database permissions.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="flow-row">
+            <div class="flow-step"><h5>1. UI Click</h5><span>Frontend Route</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>2. RoleGuard</h5><span>Local Checks</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>3. Express JWT</h5><span>Token Verified</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>4. Permission Check</h5><span>43 Action Scopes</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step active"><h5>5. DB Transaction</h5><span>Authorized Action</span></div>
+          </div>
+        `,
+        notes: "Even if an employee inspects elements and modifies frontend JavaScript, backend middleware rejects the transaction with 403 Forbidden."
+      },
+      // 8
+      {
+        id: 8,
+        section: "Security & Governance",
+        role: "ALL",
+        title: "Unified Tasks & Approvals Center (`/tasks`)",
+        subtitle: "Centralized inbox for executive review and workflow status tracking",
+        content: `
+          <div class="grid-3">
+            <div class="card">
+              <h4>Pending Approvals Tab</h4>
+              <p>Executive review desk displaying all incoming requests across modules: Workforce, Payroll, Leaves, Overtime, and Promotions.</p>
+            </div>
+            <div class="card">
+              <h4>Drafts Tab</h4>
+              <p>In-progress requests saved by your department awaiting completion or preliminary internal review before final dispatch.</p>
+            </div>
+            <div class="card">
+              <h4>All Requests Tab</h4>
+              <p>Complete historical archive with status tags: <code>APPROVED</code>, <code>REJECTED</code>, <code>SUBMITTED</code>, and <code>CANCELLED</code>.</p>
+            </div>
+          </div>
+          <div class="card card-highlight" style="margin-top: 16px;">
+            <h3>Key Features for Approvers</h3>
+            <div class="grid-2">
+              <div>
+                <strong>Side Drawer Deep-Dive:</strong> Click any task to inspect financial estimates, headcount rationale, and employee attachments.
+              </div>
+              <div>
+                <strong>Follow-Up Ping:</strong> Requesters can click "Follow Up" to send real-time notification alerts to assigned approvers.
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Explain that the Tasks page aggregates items from all modules into a single screen, eliminating the need to click into each separate module."
+      },
+      // 9
+      {
+        id: 9,
+        section: "Security & Governance",
+        role: "ALL",
+        title: "Real-Time Notifications & WebSocket Sync",
+        subtitle: "Instant event notifications without browser refresh",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Live Event Dispatching</h3>
+              <p>The system connects via Socket.io to stream events directly to your screen:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li><span class="badge badge-amber">TASK_SUBMITTED</span> New item routed to your inbox.</li>
+                <li><span class="badge badge-green">TASK_APPROVED</span> Your request was signed off.</li>
+                <li><span class="badge badge-red">TASK_REJECTED</span> Feedback returned with mandatory reason.</li>
+                <li><span class="badge badge-blue">PAYROLL_LOCKED</span> Payout finalized; payslips ready.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Notification Center Drawer</h3>
+              <p>Click the bell icon in the top header:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li>Review unread alerts with direct navigation links.</li>
+                <li>Click <strong>"Mark All as Read"</strong> to clear badge counter.</li>
+                <li>Configure preferences (email notifications vs. in-app toasts).</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner success">
+            🔔 <strong>Instant Cache Invalidation:</strong> When an approval occurs, React Query automatically refetches table data in the background!
+          </div>
+        `,
+        notes: "Mention that users do not need to refresh the page to see new tasks or approvals; the system updates automatically."
+      },
+      // 10
+      {
+        id: 10,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "HR Administrator (`HR_ADMIN`) Overview",
+        subtitle: "Master data governance, organizational hierarchy, and employee lifecycle",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Role Profile & Scope</h3>
+              <p><strong>Primary Modules:</strong> <code>/organization</code>, <code>/employees</code>, <code>/tasks</code></p>
+              <p><strong>Permissions:</strong> 14 Permissions covering Department, Position, Employee, Document, Activation, and Promotion creation.</p>
+              <p style="margin-top: 10px;"><strong>Dashboard KPIs:</strong></p>
+              <ul style="padding-left: 20px; font-size: 13px;">
+                <li>Total Employee Headcount</li>
+                <li>New Hires in Last 30 Days</li>
+                <li>Configured Departments & Positions Count</li>
+                <li>Employee Status Breakdown (Probation, Active, Terminated)</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Core Admin Workflows</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content"><strong>Department Trees:</strong> Nesting divisions & budgets</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content"><strong>Positions:</strong> Title definitions & salary bands</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>Personnel Directory:</strong> Onboarding new employees</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content"><strong>Document Vault:</strong> Contracts, IDs & compliance</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content"><strong>Promotions:</strong> Role transfers & salary bumps</div></div>
+            </div>
+          </div>
+        `,
+        notes: "HR Admin is the cornerstone role. Accurate employee records ensure smooth operation of Attendance, Shifts, and Payroll."
+      },
+      // 11
+      {
+        id: 11,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "Configuring Department Hierarchy (`/organization`)",
+        subtitle: "Structuring parent departments, cost centers, and annual budgets",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Creating a Department</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content"><strong>Navigate:</strong> Open <em>Organization & Workforce > Departments & Structure</em>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content"><strong>Click:</strong> Click the <code>+ Add Department</code> button.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>Fields:</strong> Enter Department Name, unique Code (e.g. <code>ENG-01</code>), and annual budget allocation.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content"><strong>Hierarchy:</strong> Select Parent Department to nest within organizational tree.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content"><strong>Save:</strong> Click <em>Save Department</em> to persist.</div></div>
+            </div>
+            <div class="card">
+              <h3>Organizational Tree Visualization</h3>
+              <p>Toggle to the <strong>Tree View</strong> mode to visualize reporting structures:</p>
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 12px; border-radius: 6px; font-family: monospace; font-size: 12px; margin-top: 8px;">
+                └── Executive Board<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;├── Engineering (ENG-01) [Budget: $1.2M]<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;├── Frontend Squad<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;└── Backend Infrastructure<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;└── People Operations (HR-01)
+              </div>
+            </div>
+          </div>
+          <div class="alert-banner">
+            ⚠️ <strong>Data Integrity:</strong> Departments with active positions or staff cannot be deleted until dependencies are re-assigned.
+          </div>
+        `,
+        notes: "Explain that budgets roll up through the parent hierarchy, aiding finance reporting."
+      },
+      // 12
+      {
+        id: 12,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "Standardized Positions & Salary Bands",
+        subtitle: "Defining roles, job grades, and minimum/maximum compensation ranges",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Creating a Position Record</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Switch to the <strong>Positions</strong> tab on <code>/organization</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <strong>+ Create Position</strong>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Enter <strong>Position Title</strong> and Job Code (e.g. <code>POS-ENG-03</code>).</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Link to authorized Department node.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Specify Job Level: <em>Junior, Mid, Senior, Lead, Director</em>.</div></div>
+              <div class="step-box"><div class="step-num">6</div><div class="step-content">Set <strong>Min Base Salary</strong> and <strong>Max Base Salary</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Compensation Band Governance</h3>
+              <p>Standardizing salary ranges enforces company-wide pay equity:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li><strong>Validation on Hire:</strong> Recruiter cannot extend offers exceeding position maximum without executive approval.</li>
+                <li><strong>Promotion Checks:</strong> System verifies proposed promotion salaries align with the new position band.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Explain that salary bands safeguard against unfair compensation disparities across parallel departments."
+      },
+      // 13
+      {
+        id: 13,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "Employee Directory & Personnel Lifecycle",
+        subtitle: "Creating personnel records, auto-generating codes, and state tracking",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Creating a New Personnel Record</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>Talent & Employees > Employee Directory</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>+ Add Employee</code>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Complete Personal Details: Full Name, Email, Phone, National ID.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Assign Department, Position, Base Salary, and First Hire Date.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">System generates unique code (e.g. <code>EMP-2026-0089</code>) and linked login account.</div></div>
+            </div>
+            <div class="card">
+              <h3>Personnel State Lifecycle</h3>
+              <table class="data-table">
+                <tr><th>Status</th><th>Meaning</th></tr>
+                <tr><td><span class="badge badge-amber">PROBATION</span></td><td>New joiner under 90-day evaluation review.</td></tr>
+                <tr><td><span class="badge badge-green">ACTIVE</span></td><td>Permanent confirmed staff member in full standing.</td></tr>
+                <tr><td><span class="badge badge-blue">ON_LEAVE</span></td><td>Extended sabbatical, medical, or parental leave.</td></tr>
+                <tr><td><span class="badge badge-red">SUSPENDED</span></td><td>Temporary disciplinary hold on login and access.</td></tr>
+                <tr><td><span class="badge badge-gray">TERMINATED</span></td><td>Offboarded staff; login revoked; payroll frozen.</td></tr>
+              </table>
+            </div>
+          </div>
+        `,
+        notes: "Point out that changing status to TERMINATED automatically freezes payroll payouts and revokes platform login privileges."
+      },
+      // 14
+      {
+        id: 14,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "Compliance Document Vault & Onboarding",
+        subtitle: "Secure document storage, expiry tracking, and onboarding stages",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Managing Personnel Documents</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">In the Employee Directory, click <strong>View Profile</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Open the <strong>Documents</strong> tab in the side drawer.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Click <strong>Upload Document</strong>: choose contract, passport, or degree.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Enter Expiry Date for work permits or health certifications.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Documents are checksummed and encrypted in backend storage.</div></div>
+            </div>
+            <div class="card">
+              <h3>Onboarding Status Progression</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><span class="badge badge-amber">PENDING_DOCUMENTS</span> Awaiting employee to upload signed contract and bank confirmation.</li>
+                <li><span class="badge badge-blue">IN_REVIEW</span> HR Admin verifying authenticity and compliance.</li>
+                <li><span class="badge badge-green">COMPLETED</span> Full clearance granted; ready for operational rostering.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            🔒 <strong>Strict Privacy:</strong> Personnel documents are restricted exclusively to <code>HEAD_OF_HR</code> and <code>HR_ADMIN</code> roles.
+          </div>
+        `,
+        notes: "Document uploads automatically check file extensions and size to prevent malware execution."
+      },
+      // 15
+      {
+        id: 15,
+        section: "HR Admin Guide",
+        role: "HR_ADMIN",
+        title: "Department Transfers & Promotions",
+        subtitle: "Initiating role transitions, compensation adjustments, and history audit",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Submitting a Promotion / Transfer</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Open target employee's <strong>Detail Drawer</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <strong>Update Position / Promote</strong>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Select New Department (if transferring) and New Position Title.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Input Updated Base Salary and Effective Date.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Provide justification remarks and click <strong>Submit Request</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Executive Approval & Historical Audit</h3>
+              <p>The submission generates a <code>PROMOTION</code> task in <code>/tasks</code> for <code>HEAD_OF_HR</code> sign-off.</p>
+              <div class="card card-highlight" style="margin-top: 12px;">
+                <h4>Position History Log</h4>
+                <p style="font-size: 13px;">The system logs every historical change: Previous Title, New Title, Salary Delta ($), Approving Executive, and Timestamp. This history is immutable and visible during audits.</p>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Explain that new compensation only takes effect in payroll after Head of HR grants approval."
+      },
+      // 16
+      {
+        id: 16,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "HR Recruitment Specialist Overview",
+        subtitle: "Talent acquisition pipeline, applicant tracking (ATS), and hiring workflow",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Role Profile & Scope</h3>
+              <p><strong>Primary Modules:</strong> <code>/workforce</code>, <code>/recruitment</code>, <code>/tasks</code></p>
+              <p><strong>Permissions:</strong> Workforce creation, Job Requisitions, Job Postings, Candidate Sourcing, Interview Scheduling, Evaluations, Offers.</p>
+              <p style="margin-top: 10px;"><strong>Dashboard KPIs:</strong></p>
+              <ul style="padding-left: 20px; font-size: 13px;">
+                <li>Open Job Vacancies</li>
+                <li>Total Candidate Applications</li>
+                <li>Shortlisted Candidates</li>
+                <li>Scheduled Interviews This Week</li>
+                <li>Offers Extended vs. Accepted</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Talent Acquisition Stages</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content"><strong>Workforce Planning:</strong> Budgeted headcount requests</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content"><strong>Job Requisitions:</strong> Approved hiring authorizations</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>Job Postings:</strong> Internal & external job ads</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content"><strong>Applicant Tracking:</strong> Kanban pipeline screening</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content"><strong>Interviews:</strong> Scheduling, panel feedback & rubrics</div></div>
+              <div class="step-box"><div class="step-num">6</div><div class="step-content"><strong>Hiring Handoff:</strong> Auto-converting candidate to staff</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Recruitment is directly tied to Workforce Planning to ensure no hiring takes place outside approved budgets."
+      },
+      // 17
+      {
+        id: 17,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "Workforce Planning & Quotas (`/workforce`)",
+        subtitle: "Submitting expansion headcount requests with budget justifications",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Submitting a Workforce Request</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>Organization & Workforce > Workforce Planning</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>+ New Workforce Request</code>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Select Target Department and Position to expand.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Enter Headcount Quantity (e.g. <code>3</code>) and Estimated Annual Budget.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Input business justification and click <strong>Submit for Approval</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Request Status Lifecycle</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><span class="badge badge-blue">DRAFT</span> Editable by recruiter.</li>
+                <li><span class="badge badge-amber">SUBMITTED</span> Routed to Head of HR inbox for review.</li>
+                <li><span class="badge badge-green">APPROVED</span> Headcount unlocked; ready to link requisitions.</li>
+                <li><span class="badge badge-red">REJECTED</span> Feedback provided; adjustments needed.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            💡 <strong>Guardrail:</strong> A Job Requisition cannot be created without referencing an Approved Workforce Request ID.
+          </div>
+        `,
+        notes: "Walk through the link between approved headcount and requisition creation."
+      },
+      // 18
+      {
+        id: 18,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "Job Requisitions & Postings (`/recruitment`)",
+        subtitle: "From approved headcount to published job listings",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Creating Job Requisitions</h3>
+              <p>Switch to the <strong>Job Requisitions</strong> tab on <code>/recruitment</code>:</p>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Click <code>+ Create Requisition</code>.</li>
+                <li>Select approved Workforce Request ID from dropdown.</li>
+                <li>Specify Hiring Manager and target onboarding date.</li>
+                <li>System verifies that requested quota does not exceed approved workforce headcount.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>2. Publishing Job Postings</h3>
+              <p>Switch to the <strong>Job Postings</strong> tab:</p>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Click <code>+ Create Posting</code> and select open requisition.</li>
+                <li>Input Job Description, Required Skills, and Experience.</li>
+                <li>Set Location Type: <em>Remote, Hybrid, Onsite</em>.</li>
+                <li>Set Status: <span class="badge badge-blue">DRAFT</span> ➔ <span class="badge badge-green">PUBLISHED</span> ➔ <span class="badge badge-gray">CLOSED</span>.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Explain that job postings can be temporarily un-published or closed if an overwhelming volume of applicants is received."
+      },
+      // 19
+      {
+        id: 19,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "Candidate Sourcing & Kanban Pipeline",
+        subtitle: "Visual applicant management with data privacy masking",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Sourcing & Application Intake</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Open <strong>Candidates</strong> tab and click <code>+ Add Candidate</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Enter candidate contact details and upload PDF resume.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Link candidate to the active Job Posting.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Candidate profile is placed in <code>APPLIED</code> status stage.</div></div>
+            </div>
+            <div class="card">
+              <h3>Contact Masking Protection</h3>
+              <p>To adhere to data privacy regulations (GDPR/APPI):</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px;">
+                <li>General users and interviewers see masked contacts: <code>j***@example.com</code>, <code>+1 ***-***-8821</code>.</li>
+                <li>Only authorized Recruiters and Head of HR can toggle unmasking to contact candidates directly.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="flow-row">
+            <div class="flow-step"><h5>APPLIED</h5><span>New Submissions</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>SCREENING</h5><span>Resume Vetting</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step active"><h5>INTERVIEWS</h5><span>Panel Evaluation</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>OFFERED</h5><span>Compensation Letter</span></div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-step"><h5>HIRED</h5><span>Conversion</span></div>
+          </div>
+        `,
+        notes: "Demonstrate switching between Table View and Kanban Board View for visual drag-and-drop applicant tracking."
+      },
+      // 20
+      {
+        id: 20,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "Interview Scheduling & Panel Scoring",
+        subtitle: "Calibrated rubrics, panel feedback, and hiring recommendations",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Scheduling Interviews</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Click <strong>Schedule Interview</strong> on candidate card.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Select Round: <em>Screening, Technical, Leadership, Culture Fit</em>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Assign panel interviewers and set meeting date/time.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Input virtual meeting link or office conference room.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Evaluation Scoring Rubric</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Interviewer clicks <strong>Submit Evaluation</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Rate criteria (1.0 to 5.0): Technical, Communication, Culture.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Submit recommendation: <code>STRONG_HIRE</code>, <code>HIRE</code>, <code>HOLD</code>, or <code>REJECT</code>.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">System computes aggregated panel consensus score.</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Standardized evaluation rubrics eliminate interviewer bias and ensure candidates are assessed objectively."
+      },
+      // 21
+      {
+        id: 21,
+        section: "HR Recruitment Guide",
+        role: "HR_RECRUITMENT",
+        title: "Offer Extension & Employee Handoff",
+        subtitle: "Extending offers and seamlessly converting candidates to personnel records",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Extending the Offer</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Update candidate stage to <code>OFFERED</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Specify proposed base salary, start date, and probation term.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">System validates that compensation is within position range.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Dispatch formal offer package to candidate.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Converting to Employee Record</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Upon signed offer, transition status to <code>HIRED</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <strong>Convert to Employee Record</strong>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Profile, resume, and salary automatically transfer to Employee Directory.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Workforce Request remaining vacancies count auto-decrements by 1.</div></div>
+            </div>
+          </div>
+          <div class="alert-banner success">
+            🎉 <strong>Zero Data Re-entry:</strong> Personal info, position link, and compensation terms migrate in a single automated step.
+          </div>
+        `,
+        notes: "Point out how the vacancy counter automatically decrements, preventing accidental over-hiring."
+      },
+      // 22
+      {
+        id: 22,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "HR Attendance Officer (`HR_ATTENDANCE`) Overview",
+        subtitle: "Managing shifts, live punch streams, corrections, leaves, and overtime",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Role Profile & Scope</h3>
+              <p><strong>Primary Modules:</strong> <code>/attendance</code>, <code>/tasks</code></p>
+              <p><strong>Permissions:</strong> Shifts, Employee Rostering, Punch Logs, Anomaly Correction, Leave Approvals, Overtime Review, Timesheets.</p>
+              <p style="margin-top: 10px;"><strong>Dashboard KPIs:</strong></p>
+              <ul style="padding-left: 20px; font-size: 13px;">
+                <li>Today's Punch Breakdown (Present, Late, Absent, Half Day)</li>
+                <li>Pending Leave Applications</li>
+                <li>Approved Overtime Hours This Month</li>
+                <li>Unresolved Attendance Anomalies Count</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>The 6 Attendance Tabs</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content"><strong>Attendance Overview:</strong> Live punch feed & anomaly flags</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content"><strong>Leave Approvals:</strong> Balance tracking & leave requests</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>Shifts & Rostering:</strong> Shift templates & staff assignments</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content"><strong>Overtime Review:</strong> Overtime claim auditing & rate checks</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content"><strong>Timesheets:</strong> Monthly generation & payroll lock</div></div>
+              <div class="step-box"><div class="step-num">6</div><div class="step-content"><strong>Audit History:</strong> Immutable record of corrections</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Attendance data is the direct input for payroll overtime and unpaid leave calculations."
+      },
+      // 23
+      {
+        id: 23,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "Shift Templates & Rostering",
+        subtitle: "Defining standard schedules, grace periods, and assigning rosters",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Creating Shift Templates</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">On <code>/attendance</code>, open <strong>Shifts & Rostering</strong> tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>+ Create Shift</code>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Specify Start Time & End Time (e.g. <code>09:00 - 18:00</code>).</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Set <strong>Grace Period</strong> (e.g. 15 min) and Break Duration.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Check <em>"Spans Midnight"</em> for graveyard shifts.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Assigning Rosters</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Click <strong>Assign Shift</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Select target: Individual employee or entire Department.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Pick shift template and effective date window.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">System evaluates future clock-ins against this shift.</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Shifts provide the baseline expected schedule against which tardiness and overtime are measured."
+      },
+      // 24
+      {
+        id: 24,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "Punch Records & Anomaly Detection",
+        subtitle: "Real-time clock-in monitoring and exception handling",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Attendance Status Tags</h3>
+              <table class="data-table">
+                <tr><th>Tag</th><th>Condition</th></tr>
+                <tr><td><span class="badge badge-green">PRESENT</span></td><td>Punched in within shift start + grace period.</td></tr>
+                <tr><td><span class="badge badge-amber">LATE</span></td><td>Punched in after grace period expired.</td></tr>
+                <tr><td><span class="badge badge-amber">EARLY_DEPARTURE</span></td><td>Clocked out before official shift end.</td></tr>
+                <tr><td><span class="badge badge-purple">HALF_DAY</span></td><td>Worked less than 50% of expected shift hours.</td></tr>
+                <tr><td><span class="badge badge-red">ABSENT</span></td><td>No punch recorded during active shift window.</td></tr>
+              </table>
+            </div>
+            <div class="card">
+              <h3>Automated Anomaly Detection</h3>
+              <p>The system automatically flags suspicious punches:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li><strong>Missing Check-Out:</strong> Staff clocked in but never clocked out before midnight.</li>
+                <li><strong>Unassigned Punch:</strong> Punches recorded on unassigned off-days.</li>
+                <li><strong>Geo-Fence Breach:</strong> Clock-in IP outside corporate perimeter.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Anomalies must be corrected before generating monthly timesheets for payroll."
+      },
+      // 25
+      {
+        id: 25,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "Attendance Correction Workflow",
+        subtitle: "Manual adjustments with mandatory reasons and compliance audit logs",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Applying a Correction</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Find the flagged record in the <strong>Attendance Overview</strong> table.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click the <code>Correct</code> action button.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Enter adjusted Check-In and Check-Out timestamps.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Select Reason: <em>Badge Malfunction, Network Outage, Field Duty</em>.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Provide justification note and click <strong>Apply Correction</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Audit Trail & Badge Indication</h3>
+              <p>To preserve legal compliance during labor audits:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li>The row receives an <span class="badge badge-blue">EDITED</span> tag.</li>
+                <li>Original raw punch timestamps remain permanently in the database.</li>
+                <li>The <strong>Audit History</strong> tab records the officer ID, old values, new values, timestamp, and justification reason.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Emphasize that the original punch is never overwritten; the system stores an immutable revision history."
+      },
+      // 26
+      {
+        id: 26,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "Leave Administration & Entitlements",
+        subtitle: "Reviewing leave requests, verifying balances, and payroll impact",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Leave Request Review</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Open <strong>Leave Reference & Approvals</strong> tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Review employee leave details: type, dates, attached doctor notes.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">System validates remaining balance against statutory rules.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <strong>Approve</strong> or <strong>Reject</strong> (with remarks).</div></div>
+            </div>
+            <div class="card">
+              <h3>Leave Types & Payroll Feed</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><strong>Annual Leave:</strong> Accrues monthly based on tenure; paid.</li>
+                <li><strong>Sick Leave:</strong> Validates against certified medical quota; paid.</li>
+                <li><strong>Unpaid Leave (LWP):</strong> Directly cascades to payroll as an automatic prorated salary deduction!</li>
+                <li><strong>Maternity / Paternity:</strong> Extended parental leave.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            💡 <strong>Integration:</strong> Approved Unpaid Leaves are automatically ingested by the payroll calculation engine.
+          </div>
+        `,
+        notes: "Explain how unpaid leave approvals automatically reduce gross pay during the payroll run."
+      },
+      // 27
+      {
+        id: 27,
+        section: "HR Attendance Guide",
+        role: "HR_ATTENDANCE",
+        title: "Overtime Audits & Monthly Timesheets",
+        subtitle: "Validating extra hours and locking attendance for payroll processing",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Overtime Review</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Open <strong>Overtime Review</strong> tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Inspect claimed overtime hours and project reason.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Cross-reference physical punch timestamps to verify actual attendance.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <strong>Approve Overtime</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Generating Timesheets</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Switch to <strong>Timesheets</strong> tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>Generate Timesheet</code> for target calendar month.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">System aggregates Regular Hours, Overtime, and Unpaid Leave.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Submit Timesheet to lock data for Payroll processing.</div></div>
+            </div>
+          </div>
+          <div class="alert-banner">
+            🔒 <strong>Freeze Point:</strong> Generating and locking timesheets prevents further attendance modifications for that month.
+          </div>
+        `,
+        notes: "Timesheets act as the formal handoff bridge between the Attendance department and the Payroll department."
+      },
+      // 28
+      {
+        id: 28,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "HR Payroll Specialist (`HR_PAYROLL`) Overview",
+        subtitle: "Deterministic salary engine, adjustments, pre-submission scan, and payslips",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Role Profile & Scope</h3>
+              <p><strong>Primary Modules:</strong> <code>/payroll</code>, <code>/tasks</code></p>
+              <p><strong>Permissions:</strong> Pay Periods, Calculations, Adjustments, Pre-submission Validation, Payslips, Export.</p>
+              <p style="margin-top: 10px;"><strong>Dashboard KPIs:</strong></p>
+              <ul style="padding-left: 20px; font-size: 13px;">
+                <li>Total Pay Runs Processed</li>
+                <li>Net Payroll Payout ($)</li>
+                <li>Gross Earnings vs. Base Salaries</li>
+                <li>Allowances & Overtime Disbursements ($)</li>
+                <li>Total Statutory Deductions Breakdown ($)</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>10-Step Payroll Cycle</h3>
+              <p style="font-size: 13px; line-height: 1.8;">
+                <strong>1.</strong> Create Period ➔ 
+                <strong>2.</strong> Run Calculation ➔ 
+                <strong>3.</strong> Inspect Calculations ➔ 
+                <strong>4.</strong> Add Adjustments ➔ 
+                <strong>5.</strong> Recalculate ➔ 
+                <strong>6.</strong> Validation Scan ➔ 
+                <strong>7.</strong> Preview Payslips ➔ 
+                <strong>8.</strong> Submit to Executive ➔ 
+                <strong>9.</strong> Executive Approval ➔ 
+                <strong>10.</strong> Period Lock & CSV Export.
+              </p>
+            </div>
+          </div>
+        `,
+        notes: "Separation of Duties Policy: HR Payroll prepares; Head of HR approves and locks."
+      },
+      // 29
+      {
+        id: 29,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Creating a Pay Run Period",
+        subtitle: "Setting calendar dates and cycle parameters",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Period Setup Procedure</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>Operations & Payroll > Payroll Processing</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click the blue <code>+ New Payroll Period</code> button in header.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Input Period Name (e.g. <code>November 2026 Monthly Payroll</code>).</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Select Start Date (<code>2026-11-01</code>) and End Date (<code>2026-11-30</code>).</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Click <strong>Create Period</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Period Status Indicators</h3>
+              <table class="data-table">
+                <tr><th>Status</th><th>Operational Meaning</th></tr>
+                <tr><td><span class="badge badge-blue">DRAFT</span></td><td>Open for calculations, adjustments, and corrections.</td></tr>
+                <tr><td><span class="badge badge-amber">SUBMITTED</span></td><td>Frozen for preparation; under Head of HR review.</td></tr>
+                <tr><td><span class="badge badge-green">APPROVED</span></td><td>Executive sign-off granted; awaiting disbursement.</td></tr>
+                <tr><td><span class="badge badge-purple">LOCKED</span></td><td>Finalized disbursement; immutable; payslips visible.</td></tr>
+                <tr><td><span class="badge badge-red">REJECTED</span></td><td>Returned by executive with mandatory notes for revision.</td></tr>
+              </table>
+            </div>
+          </div>
+        `,
+        notes: "Dates must be unique; overlapping pay runs for the same group are rejected by backend constraints."
+      },
+      // 30
+      {
+        id: 30,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Authoritative Calculation Engine",
+        subtitle: "Deterministic mathematics applied across all active personnel",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Authoritative Formulas</h3>
+              <div class="card card-highlight" style="margin-bottom: 10px;">
+                <strong>1. Overtime Formula:</strong>
+                <p style="font-family: monospace; font-size: 13px; margin-top: 4px;">
+                  Hourly Rate = Base Salary / 160<br>
+                  OT Pay = Hourly Rate × 1.5 × Approved OT Hours
+                </p>
+              </div>
+              <div class="card card-highlight">
+                <strong>2. Gross & Net Pay:</strong>
+                <p style="font-family: monospace; font-size: 13px; margin-top: 4px;">
+                  Gross = Base + Allowances + OT + Adjustments<br>
+                  Net = Gross - Statutory Deductions - Taxes
+                </p>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Execution Architecture</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Select active period in dropdown and click <code>Calculate Payroll</code>.</li>
+                <li>Prisma executes an atomic transaction iterating over all active employee profiles.</li>
+                <li>Pulls approved timesheet hours from Attendance tables.</li>
+                <li>The 6 KPI cards (Gross, Net, Base, OT, Allowances, Deductions) and Register Table update immediately.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Emphasize that the 160-hour monthly basis is standard labor regulation compliance."
+      },
+      // 31
+      {
+        id: 31,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Calculation Inspector Drawer",
+        subtitle: "Granular mathematical audit down to the cent",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Inspecting Employee Calculation</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Locate target employee in the Payroll Register Table.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click the <code>Inspect Calculation</code> action button.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">The <strong>Calculation Inspector Drawer</strong> slides open from right.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Inspect full mathematical breakdown: base salary, prorations, timesheet link, overtime rate math, allowances, and deductions.</div></div>
+            </div>
+            <div class="card">
+              <h3>Audit & Dispute Resolution Benefits</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><strong>No "Black Box" Figures:</strong> Shows the exact arithmetic for every line item.</li>
+                <li><strong>Pre-lock Auditing:</strong> Quickly verify why an employee's take-home pay shifted compared to last month.</li>
+                <li><strong>Auditor Verification:</strong> Easily share calculation sheets with internal and external financial auditors.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "The Calculation Inspector eliminates mystery payroll calculations and builds trust with employees."
+      },
+      // 32
+      {
+        id: 32,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Manual Adjustments & Recalculation",
+        subtitle: "Bonuses, commissions, loan deductions, and tax corrections",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Adding a Payroll Adjustment</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Click <strong>Add Adjustment</strong> on target employee row.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Select Type: <em>Allowance, Bonus, Commission, Reimbursement, Deduction, Loan Repayment</em>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Enter numerical amount ($).</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Enter itemized description (e.g. <code>Q3 Performance Milestone Bonus</code>).</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Toggle <em>"Recurring"</em> if applicable and click <strong>Apply</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>Recalculation & Row Tagging</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Employees with pending adjustments display an <span class="badge badge-amber">ADJUSTED</span> badge.</li>
+                <li>Click <code>Recalculate Payroll</code> to re-run taxes, gross totals, and net take-home pay.</li>
+                <li>All adjustments are permanently logged for financial compliance.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Every adjustment requires an itemized description for financial transparency."
+      },
+      // 33
+      {
+        id: 33,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Pre-Submission Validation Scan",
+        subtitle: "Automated pre-flight audit detecting blocking errors before sign-off",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Automated Pre-Flight Checks</h3>
+              <p>Switch to the <strong>Payroll Validation</strong> tab:</p>
+              <div class="step-box"><div class="step-num" style="background:#dc2626;">🔴</div><div class="step-content"><strong>Zero / Negative Net Pay:</strong> Deductions exceed earnings.</div></div>
+              <div class="step-box"><div class="step-num" style="background:#d97706;">🟡</div><div class="step-content"><strong>Missing Attendance:</strong> Active staff with 0 timesheet hours.</div></div>
+              <div class="step-box"><div class="step-num" style="background:#d97706;">🟡</div><div class="step-content"><strong>High Salary Deviation:</strong> Payout varies >20% from baseline.</div></div>
+              <div class="step-box"><div class="step-num" style="background:#dc2626;">🔴</div><div class="step-content"><strong>Missing Bank Data:</strong> Unverified account numbers.</div></div>
+            </div>
+            <div class="card">
+              <h3>Remediation Workflow</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Review the itemized error list showing employee name, error code, and severity.</li>
+                <li>Click <strong>Inspect Issue</strong> to navigate directly to the root cause.</li>
+                <li>Remedy the record and click <strong>Re-run Validation Scan</strong>.</li>
+                <li>Submission is unlocked once 0 blocking errors remain!</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner">
+            🔒 <strong>Enforcement:</strong> The <em>"Submit for Approval"</em> button remains disabled while critical red errors are unresolved.
+          </div>
+        `,
+        notes: "Emphasize how this pre-flight scan catches mistakes before payroll ever reaches the executive approver."
+      },
+      // 34
+      {
+        id: 34,
+        section: "HR Payroll Guide",
+        role: "HR_PAYROLL",
+        title: "Submitting Payroll for Executive Approval",
+        subtitle: "Finalizing preparation and dispatching to Head of HR",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Submission Steps</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Verify 0 critical validation errors on the Validation tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click the green <code>Submit for Approval</code> button in controller bar.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Review executive summary modal: Total Staff, Gross Amount, Net Payout.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <strong>Confirm Submission</strong>.</div></div>
+            </div>
+            <div class="card">
+              <h3>State Transition & Handoff</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Period status updates to <span class="badge badge-amber">SUBMITTED</span>.</li>
+                <li>Preparer editing capabilities are temporarily frozen.</li>
+                <li>A high-priority notification and task are routed to <code>HEAD_OF_HR</code>.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            📬 <strong>Real-Time Alert:</strong> Head of HR receives an instant push alert in their notification center.
+          </div>
+        `,
+        notes: "Explain the handover from preparer to executive approver."
+      },
+      // 35
+      {
+        id: 35,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Head of HR (`HEAD_OF_HR`) Overview",
+        subtitle: "Master HR authority, executive review desk, and final sign-offs",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Role Profile & Scope</h3>
+              <p><strong>Primary Modules:</strong> Full platform access (all 43 permissions), <code>/dashboard</code>, <code>/tasks</code></p>
+              <p><strong>Exclusive Authority:</strong> Final sign-off on Workforce expansions, Candidate hires, Promotions, and Payroll disbursements.</p>
+              <p style="margin-top: 10px;"><strong>Executive Dashboard KPIs:</strong></p>
+              <ul style="padding-left: 20px; font-size: 13px;">
+                <li>Organization Total Headcount & Active %</li>
+                <li>Pending Approval Counters (Workforce, ATS, Leaves, Payroll)</li>
+                <li>Latest Payroll Payout Amount ($)</li>
+                <li>Daily Punch Ratios & Organization Attendance %</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Executive Governance Duties</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content"><strong>Workforce Planning:</strong> Review department headcount quotas</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content"><strong>Executive Hiring:</strong> Approve executive candidate packages</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>Promotions:</strong> Sign-off on organizational promotions</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content"><strong>Payroll Authorization:</strong> Approve, lock, and disburse pay runs</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content"><strong>Audit Inspection:</strong> Forensic review of compliance logs</div></div>
+            </div>
+          </div>
+        `,
+        notes: "The Head of HR holds final accountability for organizational compliance and company spending."
+      },
+      // 36
+      {
+        id: 36,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Executive Approval Desk (`/tasks`)",
+        subtitle: "Reviewing requests, approving, or rejecting with mandatory feedback",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Executing Approvals</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Open <strong>Tasks & Approvals</strong> from navigation menu.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">View pending items sorted by urgency and priority.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Click <strong>Review</strong> to open detailed drawer.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <code>Approve</code> for immediate database activation.</div></div>
+            </div>
+            <div class="card">
+              <h3>Rejecting with Mandatory Cause</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">If details are inadequate, click <code>Reject</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">The <strong>Task Reject Modal</strong> requires a detailed written justification.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Task status updates to <span class="badge badge-red">REJECTED</span>.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Feedback is dispatched immediately to requester for correction.</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Mandatory rejection notes ensure clear feedback and transparent governance."
+      },
+      // 37
+      {
+        id: 37,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Final Payroll Sign-Off & Disbursement Lock",
+        subtitle: "Approving monthly compensation and locking periods for bank transfer",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Executive Review & Approval</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <code>/payroll</code> and select submitted period.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Verify high-level KPIs: Total Net Payout, Gross, Deductions.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Confirm Validation Tab displays 0 blocking flags.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <strong>Approve Payroll</strong> ➔ Status becomes <span class="badge badge-green">APPROVED</span>.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Period Locking</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Click <strong>Lock Period</strong> button.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Status permanently transitions to <span class="badge badge-purple">LOCKED</span>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Freezes all salaries; prevents further edits.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Unlocks Employee Self-Service payslip views and bank CSV export.</div></div>
+            </div>
+          </div>
+          <div class="alert-banner">
+            🔒 <strong>Point of No Return:</strong> Locking finalizes the pay run and authorizes bank transfers.
+          </div>
+        `,
+        notes: "Locking the period is the final authorization step that enables employees to view their payslips."
+      },
+      // 38
+      {
+        id: 38,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Formula-Safe CSV Export & Bank Transmission",
+        subtitle: "Sanitized disbursement registers with injection protection",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Exporting Bank Files</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">On locked period, switch to <strong>Payroll Reports</strong> tab.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>Export to CSV</code>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Select template format: <em>Direct Wire, NACHA, SEPA, GL Export</em>.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">File downloads with encrypted account and payout details.</div></div>
+            </div>
+            <div class="card">
+              <h3>Formula Injection Protection</h3>
+              <p>To safeguard corporate finance workstations:</p>
+              <ul style="padding-left: 20px; font-size: 13px; margin-top: 8px; line-height: 1.8;">
+                <li>The export engine automatically sanitizes dangerous leading characters (<code>=</code>, <code>+</code>, <code>-</code>, <code>@</code>).</li>
+                <li>Neutralizes Excel Macro and CSV Injection exploits.</li>
+                <li>Generates official SHA-256 batch checksum for banking verification.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Highlight formula injection protection as an example of enterprise-grade security engineering."
+      },
+      // 39
+      {
+        id: 39,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Audit Trails & Compliance Forensics (`/audit-logs`)",
+        subtitle: "Immutable append-only logs of all system operations",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Searching Audit Logs</h3>
+              <p>Navigate to <strong>Growth & Governance > Audit & Compliance</strong>:</p>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><strong>Actor Filter:</strong> Search by user email or role.</li>
+                <li><strong>Action Filter:</strong> Filter by <code>CREATE</code>, <code>UPDATE</code>, <code>APPROVE</code>, <code>LOCK</code>, <code>PASSWORD_CHANGED</code>.</li>
+                <li><strong>Entity Filter:</strong> Filter by <code>EMPLOYEE</code>, <code>PAYROLL_PERIOD</code>, <code>WORKFORCE_REQUEST</code>.</li>
+                <li><strong>Date Range Picker:</strong> Target specific incident windows.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Forensic Diff Inspection</h3>
+              <p>Click any log record to inspect detailed JSON metadata:</p>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Exact snapshot of Old Values vs. New Values.</li>
+                <li>Client IP address and browser User-Agent.</li>
+                <li>Server execution duration (ms) and completion status.</li>
+              </ul>
+            </div>
+          </div>
+          <div class="alert-banner info">
+            🔒 <strong>Immutable:</strong> Audit logs are append-only. Nobody can edit or delete audit entries.
+          </div>
+        `,
+        notes: "Demonstrate that even system administrators cannot modify audit records, ensuring SOX compliance."
+      },
+      // 40
+      {
+        id: 40,
+        section: "Head of HR Guide",
+        role: "HEAD_OF_HR",
+        title: "Executive Reports & Analytics",
+        subtitle: "Enterprise-wide headcount metrics, cost trends, and turnover rates",
+        content: `
+          <div class="grid-3">
+            <div class="card">
+              <h4>Headcount & Turnover</h4>
+              <p>Track monthly hiring velocity, probation completion rates, voluntary vs. involuntary attrition, and departmental ratios.</p>
+            </div>
+            <div class="card">
+              <h4>Compensation Analytics</h4>
+              <p>Monitor company-wide payroll expenditure, overtime costs as a % of revenue, and departmental budget variance.</p>
+            </div>
+            <div class="card">
+              <h4>Attendance Ratios</h4>
+              <p>Review organization-wide attendance rates, average tardiness minutes, and leave balance utilization curves.</p>
+            </div>
+          </div>
+          <div class="card card-highlight" style="margin-top: 16px;">
+            <h3>Board & Executive Export</h3>
+            <p style="font-size: 13px;">Generate presentation-ready executive report summaries and charts for Quarterly Business Reviews (QBR) and Board of Directors presentations.</p>
+          </div>
+        `,
+        notes: "Executive reports roll up data across all 6 departments to give leadership an accurate picture of organizational health."
+      },
+      // 41
+      {
+        id: 41,
+        section: "Growth & Governance",
+        role: "HR_PERFORMANCE",
+        title: "Performance Management (`HR_PERFORMANCE`)",
+        subtitle: "Review cycles, KPI scorings, and 360-degree appraisal rubrics",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Appraisal Review Cycles (`/performance`)</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Configure review windows: Annual, Bi-Annual, or Quarterly.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Define department-specific KPI targets and score weightings.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content"><strong>360 Scoring:</strong> Self-Assessment, Manager Appraisal, Peer Feedback.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Calibrate score distribution bell curve across departments.</div></div>
+            </div>
+            <div class="card">
+              <h3>Performance Link to Growth</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Top tier ratings (4.5 - 5.0) automatically unlock promotion nominations in <code>/employees</code>.</li>
+                <li>Appraisal scores directly inform annual bonus allocations in the Payroll module.</li>
+                <li>Identified skill gaps feed training recommendations to HR L&D.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Explain how performance appraisal ratings directly feed into merit-based promotions and bonuses."
+      },
+      // 42
+      {
+        id: 42,
+        section: "Growth & Governance",
+        role: "HR_PERFORMANCE",
+        title: "Performance Improvement Plans (PIP)",
+        subtitle: "Structured milestone coaching and formal review checkpoints",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Initiating a PIP</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Identify employees needing structured performance intervention.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Set PIP Duration: 30, 60, or 90 calendar days.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Document specific improvement objectives and measurable goals.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Schedule bi-weekly check-in meetings between manager and employee.</div></div>
+            </div>
+            <div class="card">
+              <h3>PIP Outcomes & Governance</h3>
+              <table class="data-table">
+                <tr><th>Outcome</th><th>Action</th></tr>
+                <tr><td><span class="badge badge-green">SUCCESSFUL</span></td><td>Return to full good standing; milestone goals achieved.</td></tr>
+                <tr><td><span class="badge badge-amber">EXTENDED</span></td><td>Additional 30-day coaching period granted with revised goals.</td></tr>
+                <tr><td><span class="badge badge-red">FAILED</span></td><td>Transition to formal offboarding / separation workflow.</td></tr>
+              </table>
+            </div>
+          </div>
+        `,
+        notes: "A properly documented PIP ensures fair treatment of employees while protecting the company legally."
+      },
+      // 43
+      {
+        id: 43,
+        section: "Growth & Governance",
+        role: "HR_LND",
+        title: "Learning & Development (`HR_LND`)",
+        subtitle: "Course repository, competency frameworks, and skill matrices",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Course Catalog Management (`/lnd`)</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>Growth & Governance > Learning & Dev</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click <code>+ Add Training Program</code>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Specify Course Category: <em>Technical, Compliance, Leadership, Soft Skills</em>.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Link target competencies from the organizational skills matrix.</div></div>
+            </div>
+            <div class="card">
+              <h3>Training Delivery Formats</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><strong>Self-Paced eLearning:</strong> On-demand compliance modules and quizzes.</li>
+                <li><strong>Instructor-Led Workshops:</strong> Live virtual or classroom sessions.</li>
+                <li><strong>External Certifications:</strong> AWS, PMP, SHRM professional credentials.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "L&D programs ensure staff competencies scale with business expansion."
+      },
+      // 44
+      {
+        id: 44,
+        section: "Growth & Governance",
+        role: "HR_LND",
+        title: "Training Sessions & Skill Evaluations",
+        subtitle: "Rostering cohorts, tracking attendance, and certification badges",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>1. Scheduling Sessions</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Create a session cohort with date, time, and max capacity.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Nominate staff or enable self-service employee enrollment.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">System dispatches calendar invites and reminders to attendees.</div></div>
+            </div>
+            <div class="card">
+              <h3>2. Attendance & Certification</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Instructor marks physical or virtual session attendance.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Attendees complete post-course evaluation surveys (1.0 - 5.0).</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Issue digital competency certificates and update profile skill ratings.</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Certified skills automatically update the employee profile, aiding internal promotion searches."
+      },
+      // 45
+      {
+        id: 45,
+        section: "Employee Self-Service",
+        role: "EMPLOYEE",
+        title: "Employee Self-Service (ESS) Overview",
+        subtitle: "Empowering everyday staff with personal attendance, leaves, and payslips",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>The Employee Experience</h3>
+              <p>Every active staff member receives personal credentials:</p>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li><strong>Daily Attendance:</strong> One-click Clock-In / Clock-Out from browser.</li>
+                <li><strong>Shift Calendar:</strong> View scheduled working hours and upcoming off-days.</li>
+                <li><strong>My Leaves:</strong> Check balances and submit time-off requests.</li>
+                <li><strong>My Overtime:</strong> Claim extra hours worked on projects.</li>
+                <li><strong>My Payslips:</strong> 24/7 access to historical salary statements.</li>
+                <li><strong>My Profile:</strong> Keep personal contact and emergency details updated.</li>
+              </ul>
+            </div>
+            <div class="card">
+              <h3>Personal Dashboard Wireframe</h3>
+              <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; font-size: 12px;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
+                  <strong>👋 Welcome, Sarah Jenkins (EMP-0042)</strong>
+                  <span class="badge badge-green">Shift: Standard 09:00 - 18:00</span>
+                </div>
+                <div class="grid-2">
+                  <div style="background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <div>⏰ Today: <strong>Checked In (08:58 AM)</strong></div>
+                    <button class="btn-action" style="margin-top: 8px; font-size: 11px; padding: 4px 8px;">Clock Out</button>
+                  </div>
+                  <div style="background: #fff; padding: 10px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                    <div>📅 Annual Leave: <strong>14.5 Days Left</strong></div>
+                    <button class="btn-action" style="margin-top: 8px; font-size: 11px; padding: 4px 8px;">Apply Leave</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `,
+        notes: "Self-service features reduce routine HR inquiries by over 70%."
+      },
+      // 46
+      {
+        id: 46,
+        section: "Employee Self-Service",
+        role: "EMPLOYEE",
+        title: "Staff ESS: Daily Punches & Schedule",
+        subtitle: "How to record attendance and verify shift assignments",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Clocking In and Out</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Log in to the HRMS portal on desktop or mobile device.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Click the prominent <strong>Clock In</strong> button on your dashboard.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">System captures current timestamp and validates against your assigned shift.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">At end of workday, click <strong>Clock Out</strong>.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Total hours worked for the day are computed and displayed immediately.</div></div>
+            </div>
+            <div class="card">
+              <h3>Checking Your Shift Schedule</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>View your assigned monthly schedule on the calendar view.</li>
+                <li>Check official start times, grace period windows, and break durations.</li>
+                <li>Submit shift swap or adjustment requests to your supervisor if conflicts arise.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Encourage staff to check their hours daily so punch errors can be caught early in the month."
+      },
+      // 47
+      {
+        id: 47,
+        section: "Employee Self-Service",
+        role: "EMPLOYEE",
+        title: "Staff ESS: Leaves & Overtime Claims",
+        subtitle: "Self-service time-off requests and overtime filings",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Submitting a Leave Request</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>My Leaves</strong> and click <code>+ Apply for Leave</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Choose Leave Type: <em>Annual, Sick, Unpaid, Bereavement</em>.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Pick Start Date and End Date. Working days auto-calculate.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Attach medical note or documentation (if applicable).</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Click <strong>Submit</strong>; notification sent to HR Attendance.</div></div>
+            </div>
+            <div class="card">
+              <h3>Claiming Overtime</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>My Overtime</strong> and click <code>+ Submit Overtime</code>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Select date and hours worked beyond regular shift.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">Specify project code or manager justification.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">System matches claim against physical punch logs for verification.</div></div>
+            </div>
+          </div>
+        `,
+        notes: "Remind employees that overtime must match their physical clock-out punches."
+      },
+      // 48
+      {
+        id: 48,
+        section: "Employee Self-Service",
+        role: "EMPLOYEE",
+        title: "Staff ESS: \"My Payslips\" & Official PDF",
+        subtitle: "Confidential payslip access and print-optimized PDF generation",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h3>Accessing Personal Payslips</h3>
+              <div class="step-box"><div class="step-num">1</div><div class="step-content">Navigate to <strong>Operations & Payroll > My Payslips</strong>.</div></div>
+              <div class="step-box"><div class="step-num">2</div><div class="step-content">Table displays all finalized, locked pay periods.</div></div>
+              <div class="step-box"><div class="step-num">3</div><div class="step-content">View summary: Period Name, Gross Pay, Deductions, Net Payout.</div></div>
+              <div class="step-box"><div class="step-num">4</div><div class="step-content">Click <strong>View Payslip</strong> to open branded statement.</div></div>
+              <div class="step-box"><div class="step-num">5</div><div class="step-content">Click <strong>Print / Save PDF</strong> for official documentation.</div></div>
+            </div>
+            <div class="card">
+              <h3>Confidentiality & Security Guarantee</h3>
+              <ul style="padding-left: 20px; font-size: 13px; line-height: 1.8;">
+                <li>Employees can <strong>only</strong> view their own remuneration.</li>
+                <li>Cross-account access attempts return a strict 403 Forbidden.</li>
+                <li>Payslips contain digital authenticity watermark codes for verification by mortgage banks or embassies.</li>
+              </ul>
+            </div>
+          </div>
+        `,
+        notes: "Staff can safely download their payslips 24/7 without needing to contact HR."
+      },
+      // 49
+      {
+        id: 49,
+        section: "Support & Best Practices",
+        role: "ALL",
+        title: "Operational Troubleshooting & FAQ",
+        subtitle: "Quick answers to common operational questions",
+        content: `
+          <div class="grid-2">
+            <div class="card">
+              <h4>Q: Why is Net Pay showing as $0 or negative?</h4>
+              <p style="font-size: 13px; color: #475569;">A: Check manual adjustments and unpaid leaves. Deductions cannot exceed gross salary. Adjust deductions or salary advance payback schedules.</p>
+              <h4 style="margin-top: 12px;">Q: Why can't HR Payroll approve a pay period?</h4>
+              <p style="font-size: 13px; color: #475569;">A: Separation of Duties policy prevents preparers from self-approving. Only <code>HEAD_OF_HR</code> can grant final approval.</p>
+              <h4 style="margin-top: 12px;">Q: How do I resolve a "Missing Timesheet" error?</h4>
+              <p style="font-size: 13px; color: #475569;">A: In <code>/attendance > Timesheets</code>, select the month and click <code>Generate Timesheet</code> to compile attendance records.</p>
+            </div>
+            <div class="card">
+              <h4>Q: What should I do if an employee forgets their password?</h4>
+              <p style="font-size: 13px; color: #475569;">A: HR Admin can initiate an account password reset, or the employee can use the change password menu under profile.</p>
+              <h4 style="margin-top: 12px;">Q: Why are candidate contact details masked with asterisks?</h4>
+              <p style="font-size: 13px; color: #475569;">A: Data privacy rules mask emails and phones for unauthorized roles. Only HR Recruiters and Head of HR can unmask contacts.</p>
+              <h4 style="margin-top: 12px;">Q: Can a locked payroll period be unlocked?</h4>
+              <p style="font-size: 13px; color: #475569;">A: Once locked, periods are immutable. Any adjustments must be applied in the subsequent month's pay cycle.</p>
+            </div>
+          </div>
+        `,
+        notes: "Keep this troubleshooting slide handy for front-line IT and HR helpdesk teams."
+      },
+      // 50
+      {
+        id: 50,
+        section: "Support & Best Practices",
+        role: "ALL",
+        isTitle: true,
+        title: "THANK YOU",
+        subtitle: "HRMS Enterprise Suite — Empowering People & Operations",
+        meta: [
+          { label: "Internal Support Desk", value: "hr-support@company.internal" },
+          { label: "Internal Extension", value: "x4400 (People Ops Desk)" },
+          { label: "Documentation Reference", value: "/hrms/docs/user_guide_slides.md" },
+          { label: "Security Helpline", value: "security-ops@company.internal" }
+        ],
+        notes: "Thank you for reviewing the HRMS operational manual. Continuous learning and adherence to compliance protocols guarantee a secure, efficient workplace."
+      }
+    ];
+
+    let currentSlideIndex = 0;
+    let activeFilter = 'ALL';
+    let filteredIndices = slidesData.map((_, i) => i);
+
+    function renderSlide(index) {
+      const slide = slidesData[index];
+      const stage = document.getElementById('stage-container');
+      const counter = document.getElementById('slide-counter');
+      const progressBar = document.getElementById('progress-bar');
+      const sectionBadge = document.getElementById('current-section-badge');
+      const notesContent = document.getElementById('notes-content');
+
+      // Update Header & Progress
+      const filterPos = filteredIndices.indexOf(index);
+      counter.textContent = `Slide ${filterPos + 1} / ${filteredIndices.length} (Total: ${slide.id}/50)`;
+      const pct = ((filterPos + 1) / filteredIndices.length) * 100;
+      progressBar.style.width = `${pct}%`;
+      sectionBadge.textContent = slide.section;
+
+      // Update Notes Drawer
+      notesContent.innerHTML = `
+        <div style="margin-bottom: 8px;"><strong>Slide ${slide.id}: ${slide.title}</strong></div>
+        <p>${slide.notes || 'No specific speaker notes for this slide.'}</p>
+      `;
+
+      // Render Slide Content
+      if (slide.isTitle) {
+        stage.innerHTML = `
+          <div class="slide-wrapper title-slide">
+            <h1>${slide.title}</h1>
+            <h2>${slide.subtitle}</h2>
+            <div class="meta-box">
+              ${slide.meta ? slide.meta.map(m => `<div><strong>${m.label}:</strong><br><span style="color:#93c5fd;">${m.value}</span></div>`).join('') : ''}
+            </div>
+          </div>
+        `;
+      } else {
+        stage.innerHTML = `
+          <div class="slide-wrapper">
+            <div class="slide-header">
+              <div class="slide-header-left">
+                <h1>${slide.title}</h1>
+                <p class="subheading">${slide.subtitle}</p>
+              </div>
+              <div class="slide-header-right">
+                <span class="badge badge-blue">${slide.section}</span>
+                <span class="badge badge-purple">Role: ${slide.role}</span>
+              </div>
+            </div>
+            <div class="slide-body">
+              ${slide.content}
+            </div>
+            <div class="slide-footer">
+              <span>HRMS Enterprise Operations Manual • Confidential</span>
+              <span>Slide ${slide.id} of 50</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // Update overview active border
+      updateOverviewActive();
+    }
+
+    function nextSlide() {
+      const currentPos = filteredIndices.indexOf(currentSlideIndex);
+      if (currentPos < filteredIndices.length - 1) {
+        currentSlideIndex = filteredIndices[currentPos + 1];
+        renderSlide(currentSlideIndex);
+      }
+    }
+
+    function prevSlide() {
+      const currentPos = filteredIndices.indexOf(currentSlideIndex);
+      if (currentPos > 0) {
+        currentSlideIndex = filteredIndices[currentPos - 1];
+        renderSlide(currentSlideIndex);
+      }
+    }
+
+    function filterByRole(role) {
+      activeFilter = role;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.textContent.includes(role) || (role === 'ALL' && b.textContent === 'All Slides'));
+      });
+
+      if (role === 'ALL') {
+        filteredIndices = slidesData.map((_, i) => i);
+      } else {
+        filteredIndices = slidesData
+          .map((s, idx) => ({ ...s, originalIndex: idx }))
+          .filter(s => s.role === 'ALL' || s.role === role || s.isTitle)
+          .map(s => s.originalIndex);
+      }
+
+      // Reset or jump to first available
+      if (!filteredIndices.includes(currentSlideIndex)) {
+        currentSlideIndex = filteredIndices[0] || 0;
+      }
+      renderSlide(currentSlideIndex);
+      populateOverviewGrid();
+    }
+
+    function toggleNotes() {
+      const drawer = document.getElementById('notes-drawer');
+      drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
+    }
+
+    function toggleOverview() {
+      const modal = document.getElementById('overview-modal');
+      const isVisible = modal.style.display === 'block';
+      modal.style.display = isVisible ? 'none' : 'block';
+      if (!isVisible) {
+        populateOverviewGrid();
+      }
+    }
+
+    function populateOverviewGrid() {
+      const container = document.getElementById('overview-grid-container');
+      container.innerHTML = filteredIndices.map(idx => {
+        const s = slidesData[idx];
+        const isActive = idx === currentSlideIndex;
+        return `
+          <div class="overview-thumb ${isActive ? 'active' : ''}" onclick="jumpToSlide(${idx})">
+            <div>
+              <div style="font-size: 10px; color: #2563eb; font-weight: 700; margin-bottom: 4px;">#${s.id} • ${s.section}</div>
+              <div class="overview-thumb-title">${s.title}</div>
+            </div>
+            <div class="overview-thumb-meta">
+              <span>${s.role}</span>
+              <span>Slide ${s.id}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateOverviewActive() {
+      document.querySelectorAll('.overview-thumb').forEach((thumb, i) => {
+        const originalIdx = filteredIndices[i];
+        thumb.classList.toggle('active', originalIdx === currentSlideIndex);
+      });
+    }
+
+    function jumpToSlide(index) {
+      currentSlideIndex = index;
+      renderSlide(currentSlideIndex);
+      toggleOverview();
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        prevSlide();
+      } else if (e.key === 'Home') {
+        currentSlideIndex = filteredIndices[0];
+        renderSlide(currentSlideIndex);
+      } else if (e.key === 'End') {
+        currentSlideIndex = filteredIndices[filteredIndices.length - 1];
+        renderSlide(currentSlideIndex);
+      } else if (e.key.toLowerCase() === 'n') {
+        toggleNotes();
+      } else if (e.key.toLowerCase() === 'o') {
+        toggleOverview();
+      } else if (e.key === 'Escape') {
+        document.getElementById('overview-modal').style.display = 'none';
+        document.getElementById('notes-drawer').style.display = 'none';
+      }
+    });
+
+    // Initialize
+    renderSlide(0);
+  </script>
+</body>
+</html>
