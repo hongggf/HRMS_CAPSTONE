@@ -1,6 +1,7 @@
 export type TrainingType = 'INTERNAL' | 'EXTERNAL' | 'ONLINE' | 'CLASSROOM';
 export type TrainingStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
-export type TrainingPlanStatus = 'DRAFT' | 'APPROVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+export type TrainingPlanStatus =
+  'DRAFT' | 'APPROVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 export type TrainingAttendanceStatus = 'REGISTERED' | 'ATTENDED' | 'ABSENT';
 export type SkillLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED' | 'EXPERT';
 

@@ -77,18 +77,27 @@ export const AttendancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>('overview');
 
   // Filters
-  const [selectedEmployeeId, setSelectedEmployeeId] = useState<number | undefined>(undefined);
-  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(undefined);
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | undefined>(undefined);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<
+    number | undefined
+  >(undefined);
+  const [selectedStatus, setSelectedStatus] = useState<string | undefined>(
+    undefined,
+  );
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<
+    number | undefined
+  >(undefined);
 
   // Modals & Drawers state
-  const [correctionModalOpen, setCorrectionModalOpen] = useState<boolean>(false);
-  const [selectedRecordForCorrection, setSelectedRecordForCorrection] = useState<AttendanceRecord | null>(null);
+  const [correctionModalOpen, setCorrectionModalOpen] =
+    useState<boolean>(false);
+  const [selectedRecordForCorrection, setSelectedRecordForCorrection] =
+    useState<AttendanceRecord | null>(null);
   const [createShiftOpen, setCreateShiftOpen] = useState<boolean>(false);
   const [assignShiftOpen, setAssignShiftOpen] = useState<boolean>(false);
   const [createLeaveOpen, setCreateLeaveOpen] = useState<boolean>(false);
   const [createOvertimeOpen, setCreateOvertimeOpen] = useState<boolean>(false);
-  const [generateTimesheetOpen, setGenerateTimesheetOpen] = useState<boolean>(false);
+  const [generateTimesheetOpen, setGenerateTimesheetOpen] =
+    useState<boolean>(false);
 
   // Detail Drawer state
   const [detailItem, setDetailItem] = useState<DetailItem | null>(null);
@@ -211,12 +220,20 @@ export const AttendancePage: React.FC = () => {
 
   // ================= Mutations =================
   const leaveStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: 'APPROVED' | 'REJECTED' }) => {
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: number;
+      status: 'APPROVED' | 'REJECTED';
+    }) => {
       setProcessingId(`leave-${id}`);
       return attendanceApi.updateLeaveStatus(id, status);
     },
     onSuccess: (_, variables) => {
-      message.success(`Leave request ${variables.status.toLowerCase()} successfully`);
+      message.success(
+        `Leave request ${variables.status.toLowerCase()} successfully`,
+      );
       queryClient.invalidateQueries({ queryKey: ['leave-requests-list'] });
       setProcessingId(null);
     },
@@ -228,12 +245,20 @@ export const AttendancePage: React.FC = () => {
   });
 
   const overtimeStatusMutation = useMutation({
-    mutationFn: async ({ id, status }: { id: number; status: 'APPROVED' | 'REJECTED' }) => {
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: number;
+      status: 'APPROVED' | 'REJECTED';
+    }) => {
       setProcessingId(`overtime-${id}`);
       return attendanceApi.updateOvertimeStatus(id, status);
     },
     onSuccess: (_, variables) => {
-      message.success(`Overtime request ${variables.status.toLowerCase()} successfully`);
+      message.success(
+        `Overtime request ${variables.status.toLowerCase()} successfully`,
+      );
       queryClient.invalidateQueries({ queryKey: ['overtime-requests-list'] });
       setProcessingId(null);
     },
@@ -254,15 +279,19 @@ export const AttendancePage: React.FC = () => {
   }, [employees]);
 
   const todayPresentCount = useMemo(() => {
-    return attendances.filter((a) => a.status === 'PRESENT' || a.status === 'LATE').length;
+    return attendances.filter(
+      (a) => a.status === 'PRESENT' || a.status === 'LATE',
+    ).length;
   }, [attendances]);
 
   const lateArrivalsCount = useMemo(() => {
-    return attendances.filter((a) => a.lateMinutes > 0 || a.status === 'LATE').length;
+    return attendances.filter((a) => a.lateMinutes > 0 || a.status === 'LATE')
+      .length;
   }, [attendances]);
 
   const missingCheckOutCount = useMemo(() => {
-    return attendances.filter((a) => a.checkIn !== null && a.checkOut === null).length;
+    return attendances.filter((a) => a.checkIn !== null && a.checkOut === null)
+      .length;
   }, [attendances]);
 
   const pendingLeavesCount = useMemo(() => {
@@ -276,7 +305,11 @@ export const AttendancePage: React.FC = () => {
   // Exceptions dataset
   const exceptionRecords = useMemo(() => {
     return attendances.filter(
-      (a) => a.checkOut === null || a.lateMinutes > 0 || a.status === 'LATE' || a.status === 'ABSENT',
+      (a) =>
+        a.checkOut === null ||
+        a.lateMinutes > 0 ||
+        a.status === 'LATE' ||
+        a.status === 'ABSENT',
     );
   }, [attendances]);
 
@@ -290,10 +323,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -314,7 +350,8 @@ export const AttendancePage: React.FC = () => {
       title: 'Check-Out',
       dataIndex: 'checkOut',
       key: 'checkOut',
-      render: (val) => (val ? formatTimestamp(val) : <Tag color="warning">Open (Unclosed)</Tag>),
+      render: (val) =>
+        val ? formatTimestamp(val) : <Tag color="warning">Open (Unclosed)</Tag>,
     },
     {
       title: 'Working Hours',
@@ -339,7 +376,9 @@ export const AttendancePage: React.FC = () => {
         return (
           <Space>
             <Tag color={color}>{status}</Tag>
-            {r.lateMinutes > 0 && <Tag color="volcano">{r.lateMinutes}m Late</Tag>}
+            {r.lateMinutes > 0 && (
+              <Tag color="volcano">{r.lateMinutes}m Late</Tag>
+            )}
           </Space>
         );
       },
@@ -379,10 +418,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -419,7 +461,8 @@ export const AttendancePage: React.FC = () => {
       title: 'Recorded Check-Out',
       dataIndex: 'checkOut',
       key: 'checkOut',
-      render: (val) => (val ? formatTimestamp(val) : <Tag color="warning">Missing</Tag>),
+      render: (val) =>
+        val ? formatTimestamp(val) : <Tag color="warning">Missing</Tag>,
     },
     {
       title: 'Actions',
@@ -514,10 +557,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -525,7 +571,9 @@ export const AttendancePage: React.FC = () => {
     {
       title: 'Assigned Shift',
       key: 'shift',
-      render: (_, r) => <Tag color="cyan">{r.shift?.name || `Shift #${r.shiftId}`}</Tag>,
+      render: (_, r) => (
+        <Tag color="cyan">{r.shift?.name || `Shift #${r.shiftId}`}</Tag>
+      ),
     },
     {
       title: 'Shift Timings',
@@ -543,7 +591,8 @@ export const AttendancePage: React.FC = () => {
       title: 'Effective End',
       dataIndex: 'endDate',
       key: 'endDate',
-      render: (val) => (val ? formatDateOnly(val) : <Tag color="green">Ongoing Active</Tag>),
+      render: (val) =>
+        val ? formatDateOnly(val) : <Tag color="green">Ongoing Active</Tag>,
     },
   ];
 
@@ -555,10 +604,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -567,13 +619,16 @@ export const AttendancePage: React.FC = () => {
       title: 'Leave Type',
       key: 'leaveType',
       render: (_, r) => (
-        <Tag color="purple">{r.leaveType?.name || `Type #${r.leaveTypeId}`}</Tag>
+        <Tag color="purple">
+          {r.leaveType?.name || `Type #${r.leaveTypeId}`}
+        </Tag>
       ),
     },
     {
       title: 'Period (UTC)',
       key: 'period',
-      render: (_, r) => `${formatDateOnly(r.startDate)} — ${formatDateOnly(r.endDate)}`,
+      render: (_, r) =>
+        `${formatDateOnly(r.startDate)} — ${formatDateOnly(r.endDate)}`,
     },
     {
       title: 'Reason',
@@ -685,10 +740,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -815,10 +873,13 @@ export const AttendancePage: React.FC = () => {
       render: (_, r) => (
         <div>
           <Text strong>
-            {r.employee ? `${r.employee.firstName} ${r.employee.lastName}` : `ID: ${r.employeeId}`}
+            {r.employee
+              ? `${r.employee.firstName} ${r.employee.lastName}`
+              : `ID: ${r.employeeId}`}
           </Text>
           <div style={{ fontSize: 12, color: '#888' }}>
-            {r.employee?.employeeId} | {r.employee?.department?.name || 'No Dept'}
+            {r.employee?.employeeId} |{' '}
+            {r.employee?.department?.name || 'No Dept'}
           </div>
         </div>
       ),
@@ -826,7 +887,8 @@ export const AttendancePage: React.FC = () => {
     {
       title: 'Period Range',
       key: 'period',
-      render: (_, r) => `${formatDateOnly(r.startDate)} — ${formatDateOnly(r.endDate)}`,
+      render: (_, r) =>
+        `${formatDateOnly(r.startDate)} — ${formatDateOnly(r.endDate)}`,
     },
     {
       title: 'Regular Hours',
@@ -839,7 +901,9 @@ export const AttendancePage: React.FC = () => {
       dataIndex: 'overtimeHours',
       key: 'overtimeHours',
       render: (val) => (
-        <span style={{ color: val > 0 ? '#fa8c16' : undefined }}>{val} hrs</span>
+        <span style={{ color: val > 0 ? '#fa8c16' : undefined }}>
+          {val} hrs
+        </span>
       ),
     },
     {
@@ -929,21 +993,35 @@ export const AttendancePage: React.FC = () => {
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={4}>
-              <Card bordered hoverable onClick={() => setActiveTab('exceptions')}>
+              <Card
+                bordered
+                hoverable
+                onClick={() => setActiveTab('exceptions')}
+              >
                 <Statistic
                   title="Late Arrivals"
                   value={lateArrivalsCount}
-                  valueStyle={{ color: lateArrivalsCount > 0 ? '#fa8c16' : '#52c41a', fontWeight: 600 }}
+                  valueStyle={{
+                    color: lateArrivalsCount > 0 ? '#fa8c16' : '#52c41a',
+                    fontWeight: 600,
+                  }}
                   prefix={<ExclamationCircleOutlined />}
                 />
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={4}>
-              <Card bordered hoverable onClick={() => setActiveTab('exceptions')}>
+              <Card
+                bordered
+                hoverable
+                onClick={() => setActiveTab('exceptions')}
+              >
                 <Statistic
                   title="Missing Check-Out"
                   value={missingCheckOutCount}
-                  valueStyle={{ color: missingCheckOutCount > 0 ? '#ff4d4f' : '#52c41a', fontWeight: 600 }}
+                  valueStyle={{
+                    color: missingCheckOutCount > 0 ? '#ff4d4f' : '#52c41a',
+                    fontWeight: 600,
+                  }}
                   prefix={<WarningOutlined />}
                   suffix="open"
                 />
@@ -965,7 +1043,10 @@ export const AttendancePage: React.FC = () => {
                 <Statistic
                   title="Pending Leaves"
                   value={pendingLeavesCount}
-                  valueStyle={{ color: pendingLeavesCount > 0 ? '#13c2c2' : '#888', fontWeight: 600 }}
+                  valueStyle={{
+                    color: pendingLeavesCount > 0 ? '#13c2c2' : '#888',
+                    fontWeight: 600,
+                  }}
                   prefix={<CalendarOutlined />}
                 />
               </Card>
@@ -975,7 +1056,10 @@ export const AttendancePage: React.FC = () => {
                 <Statistic
                   title="Pending Overtime"
                   value={pendingOvertimeCount}
-                  valueStyle={{ color: pendingOvertimeCount > 0 ? '#eb2f96' : '#888', fontWeight: 600 }}
+                  valueStyle={{
+                    color: pendingOvertimeCount > 0 ? '#eb2f96' : '#888',
+                    fontWeight: 600,
+                  }}
                   prefix={<FieldTimeOutlined />}
                 />
               </Card>
@@ -994,11 +1078,17 @@ export const AttendancePage: React.FC = () => {
             <Col xs={24} md={12}>
               <Card title="Quick Review Shortcuts" bordered>
                 <Space direction="vertical" style={{ width: '100%' }}>
-                  <Button block type="primary" onClick={() => setActiveTab('records')}>
-                    Inspect Daily Attendance Records ({attendances.length} total)
+                  <Button
+                    block
+                    type="primary"
+                    onClick={() => setActiveTab('records')}
+                  >
+                    Inspect Daily Attendance Records ({attendances.length}{' '}
+                    total)
                   </Button>
                   <Button block onClick={() => setActiveTab('exceptions')}>
-                    Review Attendance Exceptions ({exceptionRecords.length} flagged)
+                    Review Attendance Exceptions ({exceptionRecords.length}{' '}
+                    flagged)
                   </Button>
                   <Button block onClick={() => setActiveTab('corrections')}>
                     Employee Correction Requests Desk
@@ -1013,16 +1103,25 @@ export const AttendancePage: React.FC = () => {
               <Card title="Operational Governance" bordered>
                 <div style={{ fontSize: 13, lineHeight: '22px' }}>
                   <p>
-                    <SafetyCertificateOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-                    <strong>Self-Approval Prevention:</strong> Officers cannot approve their own leave or overtime requests.
+                    <SafetyCertificateOutlined
+                      style={{ color: '#52c41a', marginRight: 8 }}
+                    />
+                    <strong>Self-Approval Prevention:</strong> Officers cannot
+                    approve their own leave or overtime requests.
                   </p>
                   <p>
-                    <ClockCircleOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-                    <strong>Documented Timezone:</strong> All dates, timestamps, and durations adhere to documented standard UTC.
+                    <ClockCircleOutlined
+                      style={{ color: '#1890ff', marginRight: 8 }}
+                    />
+                    <strong>Documented Timezone:</strong> All dates, timestamps,
+                    and durations adhere to documented standard UTC.
                   </p>
                   <p>
-                    <HistoryOutlined style={{ color: '#722ed1', marginRight: 8 }} />
-                    <strong>Full Audit Trail:</strong> All record status changes and shift assignments are recorded in system audit logs.
+                    <HistoryOutlined
+                      style={{ color: '#722ed1', marginRight: 8 }}
+                    />
+                    <strong>Full Audit Trail:</strong> All record status changes
+                    and shift assignments are recorded in system audit logs.
                   </p>
                 </div>
               </Card>
@@ -1043,7 +1142,9 @@ export const AttendancePage: React.FC = () => {
           {/* Subtitle explaining HR Administrative Role */}
           <div style={{ marginBottom: 16 }}>
             <Text type="secondary">
-              Review officially recorded employee attendance punches, working hours, and statuses. Employees record attendance via approved devices or portals.
+              Review officially recorded employee attendance punches, working
+              hours, and statuses. Employees record attendance via approved
+              devices or portals.
             </Text>
           </div>
 
@@ -1179,7 +1280,13 @@ export const AttendancePage: React.FC = () => {
             style={{ marginBottom: 16 }}
           />
 
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'flex-end',
+            }}
+          >
             <Button
               type="primary"
               icon={<PlusOutlined />}
@@ -1224,12 +1331,21 @@ export const AttendancePage: React.FC = () => {
       ),
       children: (
         <div>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
             <Space wrap>
               <Text strong>Configured Leave Types:</Text>
               {leaveTypes.map((lt) => (
                 <Tag color="cyan" key={lt.id}>
-                  {lt.name} ({lt.daysAllowed} days{lt.isPaid ? ' / Paid' : ' / Unpaid'})
+                  {lt.name} ({lt.daysAllowed} days
+                  {lt.isPaid ? ' / Paid' : ' / Unpaid'})
                 </Tag>
               ))}
             </Space>
@@ -1270,9 +1386,18 @@ export const AttendancePage: React.FC = () => {
       ),
       children: (
         <div>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
             <Text type="secondary">
-              Configure organizational shift schedules, working day masks, and assign roster timings to staff.
+              Configure organizational shift schedules, working day masks, and
+              assign roster timings to staff.
             </Text>
             <Space>
               <Button
@@ -1329,9 +1454,18 @@ export const AttendancePage: React.FC = () => {
       ),
       children: (
         <div>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
             <Text type="secondary">
-              Review and approve employee overtime claims. Official overtime is subject to verification against logged work hours.
+              Review and approve employee overtime claims. Official overtime is
+              subject to verification against logged work hours.
             </Text>
             <Button
               type="primary"
@@ -1370,9 +1504,18 @@ export const AttendancePage: React.FC = () => {
       ),
       children: (
         <div>
-          <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+          <div
+            style={{
+              marginBottom: 16,
+              display: 'flex',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 8,
+            }}
+          >
             <Text type="secondary">
-              Official regular and overtime totals calculated strictly by backend business logic.
+              Official regular and overtime totals calculated strictly by
+              backend business logic.
             </Text>
             <Button
               type="primary"
@@ -1464,31 +1607,57 @@ export const AttendancePage: React.FC = () => {
 
           <Row gutter={[16, 16]}>
             <Col xs={24} md={12}>
-              <Card title="Attendance by Status" bordered loading={loadingReport}>
+              <Card
+                title="Attendance by Status"
+                bordered
+                loading={loadingReport}
+              >
                 {Object.keys(reportData?.attendance || {}).length === 0 ? (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No attendance records in reporting window" />
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="No attendance records in reporting window"
+                  />
                 ) : (
                   <Space wrap>
-                    {Object.entries(reportData?.attendance || {}).map(([st, cnt]) => (
-                      <Tag key={st} color="blue" style={{ padding: '6px 12px', fontSize: 13 }}>
-                        {st}: <strong>{cnt as number}</strong>
-                      </Tag>
-                    ))}
+                    {Object.entries(reportData?.attendance || {}).map(
+                      ([st, cnt]) => (
+                        <Tag
+                          key={st}
+                          color="blue"
+                          style={{ padding: '6px 12px', fontSize: 13 }}
+                        >
+                          {st}: <strong>{cnt as number}</strong>
+                        </Tag>
+                      ),
+                    )}
                   </Space>
                 )}
               </Card>
             </Col>
             <Col xs={24} md={12}>
-              <Card title="Leave Requests by Status" bordered loading={loadingReport}>
+              <Card
+                title="Leave Requests by Status"
+                bordered
+                loading={loadingReport}
+              >
                 {Object.keys(reportData?.leaves || {}).length === 0 ? (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No leave requests in reporting window" />
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="No leave requests in reporting window"
+                  />
                 ) : (
                   <Space wrap>
-                    {Object.entries(reportData?.leaves || {}).map(([st, cnt]) => (
-                      <Tag key={st} color="cyan" style={{ padding: '6px 12px', fontSize: 13 }}>
-                        {st}: <strong>{cnt as number}</strong>
-                      </Tag>
-                    ))}
+                    {Object.entries(reportData?.leaves || {}).map(
+                      ([st, cnt]) => (
+                        <Tag
+                          key={st}
+                          color="cyan"
+                          style={{ padding: '6px 12px', fontSize: 13 }}
+                        >
+                          {st}: <strong>{cnt as number}</strong>
+                        </Tag>
+                      ),
+                    )}
                   </Space>
                 )}
               </Card>
@@ -1555,7 +1724,8 @@ export const AttendancePage: React.FC = () => {
           </Title>
           <Space style={{ marginTop: 4 }}>
             <Text type="secondary">
-              Administrative attendance monitoring, exceptions, corrections, leave reference & overtime audit
+              Administrative attendance monitoring, exceptions, corrections,
+              leave reference & overtime audit
             </Text>
             <Tag color="geekblue" variant="filled">
               Documented Timezone: {DOCUMENTED_TIMEZONE}
@@ -1588,7 +1758,9 @@ export const AttendancePage: React.FC = () => {
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ['attendance-records'] });
-          queryClient.invalidateQueries({ queryKey: ['attendance-audit-logs'] });
+          queryClient.invalidateQueries({
+            queryKey: ['attendance-audit-logs'],
+          });
         }}
         employees={employees}
         selectedRecord={selectedRecordForCorrection}
@@ -1626,7 +1798,9 @@ export const AttendancePage: React.FC = () => {
         open={createOvertimeOpen}
         onClose={() => setCreateOvertimeOpen(false)}
         onSuccess={() => {
-          queryClient.invalidateQueries({ queryKey: ['overtime-requests-list'] });
+          queryClient.invalidateQueries({
+            queryKey: ['overtime-requests-list'],
+          });
         }}
         employees={employees}
       />

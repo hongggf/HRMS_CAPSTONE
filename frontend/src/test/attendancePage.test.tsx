@@ -210,15 +210,27 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
 
     // Default API mocks
     vi.spyOn(employeeApi, 'list').mockResolvedValue(mockEmployees);
-    vi.spyOn(attendanceApi, 'getAttendances').mockResolvedValue(mockAttendances);
+    vi.spyOn(attendanceApi, 'getAttendances').mockResolvedValue(
+      mockAttendances,
+    );
     vi.spyOn(attendanceApi, 'getShifts').mockResolvedValue(mockShifts);
-    vi.spyOn(attendanceApi, 'getEmployeeShifts').mockResolvedValue(mockEmpShifts);
+    vi.spyOn(attendanceApi, 'getEmployeeShifts').mockResolvedValue(
+      mockEmpShifts,
+    );
     vi.spyOn(attendanceApi, 'getLeaveTypes').mockResolvedValue(mockLeaveTypes);
-    vi.spyOn(attendanceApi, 'getLeaveRequests').mockResolvedValue(mockLeaveRequests);
-    vi.spyOn(attendanceApi, 'getOvertimeRequests').mockResolvedValue(mockOvertimeRequests);
+    vi.spyOn(attendanceApi, 'getLeaveRequests').mockResolvedValue(
+      mockLeaveRequests,
+    );
+    vi.spyOn(attendanceApi, 'getOvertimeRequests').mockResolvedValue(
+      mockOvertimeRequests,
+    );
     vi.spyOn(attendanceApi, 'getTimesheets').mockResolvedValue(mockTimesheets);
-    vi.spyOn(attendanceApi, 'getAttendanceReport').mockResolvedValue(mockReportData);
-    vi.spyOn(attendanceApi, 'getAttendanceAuditLogs').mockResolvedValue(mockAuditLogs);
+    vi.spyOn(attendanceApi, 'getAttendanceReport').mockResolvedValue(
+      mockReportData,
+    );
+    vi.spyOn(attendanceApi, 'getAttendanceAuditLogs').mockResolvedValue(
+      mockAuditLogs,
+    );
 
     // Default logged in user: HR Manager (User ID: 99 - not Alice, not Bob)
     useAuthStore.setState({
@@ -226,7 +238,13 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
         id: 99,
         email: 'hr_manager@company.local',
         roles: ['HEAD_OF_HR', 'HR_ATTENDANCE'],
-        permissions: ['ATTENDANCE_CREATE', 'ATTENDANCE_UPDATE', 'LEAVE_UPDATE', 'OVERTIME_UPDATE', 'TIMESHEET_READ'],
+        permissions: [
+          'ATTENDANCE_CREATE',
+          'ATTENDANCE_UPDATE',
+          'LEAVE_UPDATE',
+          'OVERTIME_UPDATE',
+          'TIMESHEET_READ',
+        ],
       },
       isAuthenticated: true,
     });
@@ -263,9 +281,15 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     });
 
     // Verification: HR interface must NOT provide ordinary employee clock in/out buttons
-    expect(screen.queryByRole('button', { name: /Clock In \/ Out/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Clock In$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Clock Out$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /Clock In \/ Out/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Clock In$/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Clock Out$/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('renders Daily Records table with formatted timestamps, durations, and details action', async () => {
@@ -294,13 +318,21 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
       expect(screen.getByText("Today's Punches")).toBeInTheDocument();
     });
 
-    const exceptionsTab = screen.getByRole('tab', { name: /Attendance Exceptions/i });
+    const exceptionsTab = screen.getByRole('tab', {
+      name: /Attendance Exceptions/i,
+    });
     fireEvent.click(exceptionsTab);
 
     await waitFor(() => {
-      expect(screen.getByText('Unresolved Attendance Exceptions')).toBeInTheDocument();
-      expect(screen.getByText('Missing Check-Out (Open Punch)')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /Submit Correction/i })).toBeInTheDocument();
+      expect(
+        screen.getByText('Unresolved Attendance Exceptions'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Missing Check-Out (Open Punch)'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Submit Correction/i }),
+      ).toBeInTheDocument();
     });
   });
 
@@ -322,9 +354,15 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(correctBtns[1]); // Correct Bob's punch
 
     await waitFor(() => {
-      expect(screen.getByText(/Administrative Attendance Correction \(UTC\)/i)).toBeInTheDocument();
-      expect(screen.getByText('Original Attendance Record:')).toBeInTheDocument();
-      expect(screen.getByText(/Mandatory Correction Reason & Justification/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/Administrative Attendance Correction \(UTC\)/i),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Original Attendance Record:'),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/Mandatory Correction Reason & Justification/i),
+      ).toBeInTheDocument();
     });
   });
 
@@ -347,15 +385,17 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
   });
 
   it('generates timesheet via modal and shows official server response without frontend calculation', async () => {
-    const generateSpy = vi.spyOn(attendanceApi, 'generateTimesheet').mockResolvedValue({
-      id: 101,
-      employeeId: 1,
-      startDate: '2026-10-01T00:00:00.000Z',
-      endDate: '2026-10-31T00:00:00.000Z',
-      regularHours: 160,
-      overtimeHours: 15,
-      totalHours: 175,
-    });
+    const generateSpy = vi
+      .spyOn(attendanceApi, 'generateTimesheet')
+      .mockResolvedValue({
+        id: 101,
+        employeeId: 1,
+        startDate: '2026-10-01T00:00:00.000Z',
+        endDate: '2026-10-31T00:00:00.000Z',
+        regularHours: 160,
+        overtimeHours: 15,
+        totalHours: 175,
+      });
 
     renderComponent();
 
@@ -367,16 +407,24 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(timesheetTab);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Generate Timesheet/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Generate Timesheet/i }),
+      ).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole('button', { name: /Generate Timesheet/i }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Generate Timesheet/i }),
+    );
 
     await waitFor(() => {
-      expect(screen.getByText('Generate Official Timesheet')).toBeInTheDocument();
+      expect(
+        screen.getByText('Generate Official Timesheet'),
+      ).toBeInTheDocument();
     });
 
-    const submitGenBtn = screen.getByRole('button', { name: 'Generate Timesheet' });
+    const submitGenBtn = screen.getByRole('button', {
+      name: 'Generate Timesheet',
+    });
     fireEvent.click(submitGenBtn);
 
     await waitFor(() => {
@@ -400,19 +448,23 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
       expect(screen.getAllByText('Morning Standard').length).toBeGreaterThan(0);
       expect(screen.getAllByText('09:00 — 17:00').length).toBeGreaterThan(0);
       expect(screen.getByText('60 minutes')).toBeInTheDocument();
-      expect(screen.getByText('Staff Shift Assignments (1)')).toBeInTheDocument();
+      expect(
+        screen.getByText('Staff Shift Assignments (1)'),
+      ).toBeInTheDocument();
     });
   });
 
   it('creates a new shift schedule with valid working days and times', async () => {
-    const createShiftSpy = vi.spyOn(attendanceApi, 'createShift').mockResolvedValue({
-      id: 2,
-      name: 'Evening Shift',
-      startTime: '16:00',
-      endTime: '00:00',
-      breakDuration: 45,
-      workingDays: '1,2,3,4,5',
-    });
+    const createShiftSpy = vi
+      .spyOn(attendanceApi, 'createShift')
+      .mockResolvedValue({
+        id: 2,
+        name: 'Evening Shift',
+        startTime: '16:00',
+        endTime: '00:00',
+        breakDuration: 45,
+        workingDays: '1,2,3,4,5',
+      });
 
     renderComponent();
 
@@ -424,7 +476,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(shiftsTab);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create Shift/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /Create Shift/i }),
+      ).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByRole('button', { name: /Create Shift/i }));
@@ -433,7 +487,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
       expect(screen.getByText('Create Shift Schedule')).toBeInTheDocument();
     });
 
-    const nameInput = screen.getByPlaceholderText('e.g. Standard Morning Shift');
+    const nameInput = screen.getByPlaceholderText(
+      'e.g. Standard Morning Shift',
+    );
     fireEvent.change(nameInput, { target: { value: 'Evening Shift' } });
 
     const submitBtn = screen.getByRole('button', { name: 'Create Shift' });
@@ -445,18 +501,20 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
   });
 
   it('switches to Leave tab and approves a leave request', async () => {
-    const updateLeaveSpy = vi.spyOn(attendanceApi, 'updateLeaveStatus').mockResolvedValue({
-      id: 10,
-      employeeId: 1,
-      leaveTypeId: 1,
-      startDate: '2026-11-01T00:00:00.000Z',
-      endDate: '2026-11-05T00:00:00.000Z',
-      status: 'APPROVED',
-      reason: 'Family holiday',
-      approvedBy: 99,
-      createdAt: '2026-10-15T00:00:00.000Z',
-      updatedAt: '2026-10-15T00:00:00.000Z',
-    });
+    const updateLeaveSpy = vi
+      .spyOn(attendanceApi, 'updateLeaveStatus')
+      .mockResolvedValue({
+        id: 10,
+        employeeId: 1,
+        leaveTypeId: 1,
+        startDate: '2026-11-01T00:00:00.000Z',
+        endDate: '2026-11-05T00:00:00.000Z',
+        status: 'APPROVED',
+        reason: 'Family holiday',
+        approvedBy: 99,
+        createdAt: '2026-10-15T00:00:00.000Z',
+        updatedAt: '2026-10-15T00:00:00.000Z',
+      });
 
     renderComponent();
 
@@ -464,7 +522,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
       expect(screen.getByText("Today's Punches")).toBeInTheDocument();
     });
 
-    const leaveTab = screen.getByRole('tab', { name: /Leave Reference & Approvals/i });
+    const leaveTab = screen.getByRole('tab', {
+      name: /Leave Reference & Approvals/i,
+    });
     fireEvent.click(leaveTab);
 
     await waitFor(() => {
@@ -476,7 +536,11 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(approveBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Are you sure you want to approve this leave request\?/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          /Are you sure you want to approve this leave request\?/i,
+        ),
+      ).toBeInTheDocument();
     });
 
     const confirmBtn = screen.getByRole('button', { name: 'Approve' });
@@ -504,7 +568,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
       expect(screen.getByText("Today's Punches")).toBeInTheDocument();
     });
 
-    const leaveTab = screen.getByRole('tab', { name: /Leave Reference & Approvals/i });
+    const leaveTab = screen.getByRole('tab', {
+      name: /Leave Reference & Approvals/i,
+    });
     fireEvent.click(leaveTab);
 
     await waitFor(() => {
@@ -513,7 +579,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
 
     // Alice is looking at her own leave request #10: self-approval blocked
     expect(screen.getByText('Self-Approval Blocked')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Approve$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Approve$/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('blocks self-approval when current logged-in user is the requester (overtime)', async () => {
@@ -537,12 +605,16 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(otTab);
 
     await waitFor(() => {
-      expect(screen.getByText('Production deployment release')).toBeInTheDocument();
+      expect(
+        screen.getByText('Production deployment release'),
+      ).toBeInTheDocument();
     });
 
     // Alice's overtime request cannot be self-approved
     expect(screen.getByText('Self-Approval Blocked')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Approve$/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: /^Approve$/i }),
+    ).not.toBeInTheDocument();
   });
 
   it('switches to Reports tab and displays aggregated metrics', async () => {
@@ -573,7 +645,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     fireEvent.click(auditTab);
 
     await waitFor(() => {
-      expect(screen.getByText('System Audit Trail (Attendance Module)')).toBeInTheDocument();
+      expect(
+        screen.getByText('System Audit Trail (Attendance Module)'),
+      ).toBeInTheDocument();
       expect(screen.getByText('ATTENDANCE_CHECK_IN')).toBeInTheDocument();
     });
   });
@@ -594,7 +668,9 @@ describe('Real-World HR Attendance & Enterprise Governance Tests', () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByText('Attendance & Schedule Record Detail')).toBeInTheDocument();
+      expect(
+        screen.getByText('Attendance & Schedule Record Detail'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Attendance Punch Details')).toBeInTheDocument();
       expect(screen.getByText('System Timezone')).toBeInTheDocument();
     });

@@ -16,8 +16,13 @@ import {
   ExclamationCircleOutlined,
   SafetyCertificateOutlined,
   ReloadOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
-import { Payroll, PayrollPeriod, PayrollValidationIssue } from '../../../types/payroll';
+import {
+  Payroll,
+  PayrollPeriod,
+  PayrollValidationIssue,
+} from '../../../types/payroll';
 import { Employee } from '../../../types/employee';
 
 const { Title, Text } = Typography;
@@ -28,6 +33,9 @@ interface PayrollValidationTabProps {
   allEmployees: Employee[];
   onRefresh: () => void;
   onSelectEmployee?: (payrollId: number) => void;
+  onRecalculate?: () => void;
+  isRecalculating?: boolean;
+  isHeadOfHr?: boolean;
 }
 
 export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
@@ -36,6 +44,9 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
   allEmployees,
   onRefresh,
   onSelectEmployee: _onSelectEmployee,
+  onRecalculate,
+  isRecalculating,
+  isHeadOfHr = true,
 }) => {
   // Comprehensive automated validation scan
   const issues = useMemo<PayrollValidationIssue[]>(() => {
@@ -49,27 +60,36 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
         id: 'no-records',
         type: 'ERROR',
         category: 'DATA_INCONSISTENCY',
-        message: 'No employee payroll records exist for this period. Run calculation to generate records.',
+        message:
+          'No employee payroll records exist for this period. Run calculation to generate records.',
         blocking: true,
       });
     }
 
-    // 2. Active employees without compensation / skipped in calculation
+    // 2. Active employees not yet included in calculation run
     const activeStaff = allEmployees.filter((e) => e.status === 'ACTIVE');
     const processedEmpIds = new Set(payrolls.map((p) => p.employeeId));
 
     activeStaff.forEach((emp) => {
       if (!processedEmpIds.has(emp.id)) {
+        const hasSalaryInfo =
+          (emp as any).compensation?.basicSalary ||
+          (emp.salaryHistory && emp.salaryHistory.length > 0) ||
+          emp.position?.salaryMin;
+
         list.push({
-          id: `missing-comp-${emp.id}`,
+          id: `unprocessed-${emp.id}`,
           type: 'ERROR',
-          category: 'MISSING_COMPENSATION',
+          category: hasSalaryInfo
+            ? 'PENDING_RECALCULATION'
+            : 'MISSING_COMPENSATION',
           employeeId: emp.id,
           employeeCode: emp.employeeId,
           employeeName: `${emp.firstName} ${emp.lastName}`,
           departmentName: emp.department?.name,
-          message:
-            'Active employee was skipped during calculation because no active compensation record was defined.',
+          message: hasSalaryInfo
+            ? 'Active employee was skipped during calculation (pending recalculation). Click "Recalculate Payroll" to include them in this period.'
+            : 'Active employee was skipped during calculation because no active compensation record was defined.',
           blocking: true,
         });
       }
@@ -80,7 +100,9 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
 
     payrolls.forEach((p) => {
       const emp = p.employee;
-      const empName = emp ? `${emp.firstName} ${emp.lastName}` : `EMP #${p.employeeId}`;
+      const empName = emp
+        ? `${emp.firstName} ${emp.lastName}`
+        : `EMP #${p.employeeId}`;
 
       // Duplicate entries
       if (seenEmpIds.has(p.employeeId)) {
@@ -92,7 +114,8 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
           employeeCode: emp?.employeeId,
           employeeName: empName,
           departmentName: emp?.department?.name,
-          message: 'Duplicate payroll entry detected for the same employee in this period.',
+          message:
+            'Duplicate payroll entry detected for the same employee in this period.',
           blocking: true,
         });
       }
@@ -114,7 +137,10 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
       }
 
       // Review Warning: Deductions exceed 40% of gross
-      const gross = (p.basicSalary || 0) + (p.totalAllowances || 0) + (p.totalOvertime || 0);
+      const gross =
+        (p.basicSalary || 0) +
+        (p.totalAllowances || 0) +
+        (p.totalOvertime || 0);
       if (gross > 0 && p.totalDeductions > gross * 0.4) {
         list.push({
           id: `high-ded-${p.id}`,
@@ -196,10 +222,20 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
       width: 220,
       render: (_: any, record: PayrollValidationIssue) => (
         <div>
-          <Text strong>{record.employeeName || '—'}</Text>
+          {isHeadOfHr ? (
+            <Text strong>{record.employeeName || '—'}</Text>
+          ) : (
+            <Tag icon={<LockOutlined />} color="default">
+              Confidential Personnel
+            </Tag>
+          )}
           {record.employeeCode && (
-            <Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
-              {record.employeeCode} {record.departmentName ? `• ${record.departmentName}` : ''}
+            <Text
+              type="secondary"
+              style={{ display: 'block', fontSize: 11, marginTop: 2 }}
+            >
+              {record.employeeCode}{' '}
+              {record.departmentName ? `• ${record.departmentName}` : ''}
             </Text>
           )}
         </div>
@@ -212,9 +248,27 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
       render: (val: string, record: PayrollValidationIssue) => (
         <div>
           <Text>{val}</Text>
-          {record.blocking && (
-            <Text type="danger" style={{ display: 'block', fontSize: 12, marginTop: 4 }}>
-              Action Required: Resolve this issue before submitting payroll for review.
+          {record.category === 'PENDING_RECALCULATION' && onRecalculate && (
+            <div style={{ marginTop: 6 }}>
+              <Button
+                size="small"
+                type="primary"
+                ghost
+                icon={<ReloadOutlined />}
+                loading={isRecalculating}
+                onClick={onRecalculate}
+              >
+                Recalculate Payroll Now
+              </Button>
+            </div>
+          )}
+          {record.blocking && record.category !== 'PENDING_RECALCULATION' && (
+            <Text
+              type="danger"
+              style={{ display: 'block', fontSize: 12, marginTop: 4 }}
+            >
+              Action Required: Resolve this issue before submitting payroll for
+              review.
             </Text>
           )}
         </div>
@@ -230,7 +284,9 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
           <Card variant="outlined">
             <Statistic
               title="Validation Status"
-              value={hasBlockingErrors ? 'Action Required' : 'Validation Cleared'}
+              value={
+                hasBlockingErrors ? 'Action Required' : 'Validation Cleared'
+              }
               valueStyle={{
                 color: hasBlockingErrors ? '#ff4d4f' : '#52c41a',
                 fontSize: 20,
@@ -251,7 +307,9 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
             <Statistic
               title="Blocking Errors (Blocks Submission)"
               value={blockingErrors.length}
-              valueStyle={{ color: blockingErrors.length > 0 ? '#ff4d4f' : undefined }}
+              valueStyle={{
+                color: blockingErrors.length > 0 ? '#ff4d4f' : undefined,
+              }}
               prefix={<CloseCircleOutlined />}
             />
           </Card>
@@ -262,7 +320,9 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
             <Statistic
               title="Review Warnings (Human Audit)"
               value={reviewWarnings.length}
-              valueStyle={{ color: reviewWarnings.length > 0 ? '#fa8c16' : undefined }}
+              valueStyle={{
+                color: reviewWarnings.length > 0 ? '#fa8c16' : undefined,
+              }}
               prefix={<ExclamationCircleOutlined />}
             />
           </Card>
@@ -278,7 +338,12 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
           showIcon
           style={{ marginBottom: 20 }}
           action={
-            <Button size="small" danger onClick={onRefresh} icon={<ReloadOutlined />}>
+            <Button
+              size="small"
+              danger
+              onClick={onRefresh}
+              icon={<ReloadOutlined />}
+            >
               Re-scan Validation
             </Button>
           }
@@ -306,7 +371,13 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
       <Card
         variant="outlined"
         title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <span>Pre-Submission Integrity Exceptions Log</span>
             <Button icon={<ReloadOutlined />} onClick={onRefresh} size="small">
               Refresh Integrity Scan
@@ -322,9 +393,14 @@ export const PayrollValidationTab: React.FC<PayrollValidationTabProps> = ({
           locale={{
             emptyText: (
               <div style={{ padding: '24px 0', textAlign: 'center' }}>
-                <CheckCircleOutlined style={{ fontSize: 36, color: '#52c41a', marginBottom: 12 }} />
+                <CheckCircleOutlined
+                  style={{ fontSize: 36, color: '#52c41a', marginBottom: 12 }}
+                />
                 <Title level={5}>Zero Exceptions Found</Title>
-                <Text type="secondary">All payroll inputs and calculation totals comply with governance rules.</Text>
+                <Text type="secondary">
+                  All payroll inputs and calculation totals comply with
+                  governance rules.
+                </Text>
               </div>
             ),
           }}

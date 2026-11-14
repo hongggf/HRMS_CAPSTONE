@@ -49,7 +49,9 @@ export const RequisitionModal: React.FC<RequisitionModalProps> = ({
       recruitmentApi.createRequisition(values),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['recruitment-requisitions'] });
-      queryClient.invalidateQueries({ queryKey: ['approved-workforce-requests'] });
+      queryClient.invalidateQueries({
+        queryKey: ['approved-workforce-requests'],
+      });
       form.resetFields();
       if (onSuccess) onSuccess();
       onClose();
@@ -88,7 +90,8 @@ export const RequisitionModal: React.FC<RequisitionModalProps> = ({
     >
       <div style={{ marginTop: 12, marginBottom: 16 }}>
         <Text type="secondary">
-          Select an approved workforce planning request to initiate a recruitment job requisition.
+          Select an approved workforce planning request to initiate a
+          recruitment job requisition.
         </Text>
       </div>
 

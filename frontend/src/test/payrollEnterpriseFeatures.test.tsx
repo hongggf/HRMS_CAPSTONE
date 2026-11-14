@@ -138,8 +138,22 @@ const mockPayrolls: Payroll[] = [
 ];
 
 const mockDepartments = [
-  { id: 1, name: 'Engineering', code: 'ENG', status: 'ACTIVE' as const, createdAt: '', updatedAt: '' },
-  { id: 2, name: 'Finance', code: 'FIN', status: 'ACTIVE' as const, createdAt: '', updatedAt: '' },
+  {
+    id: 1,
+    name: 'Engineering',
+    code: 'ENG',
+    status: 'ACTIVE' as const,
+    createdAt: '',
+    updatedAt: '',
+  },
+  {
+    id: 2,
+    name: 'Finance',
+    code: 'FIN',
+    status: 'ACTIVE' as const,
+    createdAt: '',
+    updatedAt: '',
+  },
 ];
 
 const mockEmployees = [
@@ -201,7 +215,9 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
     vi.clearAllMocks();
 
     vi.spyOn(payrollApi, 'getPeriods').mockResolvedValue([...mockPeriods]);
-    vi.spyOn(payrollApi, 'getPayrollsByPeriod').mockResolvedValue([...mockPayrolls]);
+    vi.spyOn(payrollApi, 'getPayrollsByPeriod').mockResolvedValue([
+      ...mockPayrolls,
+    ]);
     vi.spyOn(payrollApi, 'getPayslip').mockResolvedValue(mockPayrolls[0]);
     vi.spyOn(payrollApi, 'getMyPayslips').mockResolvedValue([
       {
@@ -233,7 +249,12 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
         id: 1,
         email: 'head@hr.local',
         roles: ['HEAD_OF_HR'],
-        permissions: ['PAYROLL_CREATE', 'PAYROLL_READ', 'PAYROLL_APPROVE', 'PAYROLL_LOCK'],
+        permissions: [
+          'PAYROLL_CREATE',
+          'PAYROLL_READ',
+          'PAYROLL_APPROVE',
+          'PAYROLL_LOCK',
+        ],
       },
       isAuthenticated: true,
       accessToken: 'valid-token',
@@ -252,7 +273,9 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
 
     // Cambodia labor law notice
     expect(
-      await screen.findByText(/Cambodia Statutory Payroll & Labor Law Compliance Standard/i),
+      await screen.findByText(
+        /Cambodia Statutory Payroll & Labor Law Compliance Standard/i,
+      ),
     ).toBeInTheDocument();
 
     // Gross payroll KPI card
@@ -267,16 +290,22 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
   it('opens calculation inspector drawer displaying hourly derivation and 1.5x overtime breakdown', async () => {
     renderComponent();
 
-    const inspectButtons = await screen.findAllByRole('button', { name: /inspect/i });
+    const inspectButtons = await screen.findAllByRole('button', {
+      name: /inspect/i,
+    });
     fireEvent.click(inspectButtons[0]);
 
-    expect(await screen.findByText('Payroll Calculation Inspector')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Payroll Calculation Inspector'),
+    ).toBeInTheDocument();
     expect(
       await screen.findByText(/1\. Contractual Base Salary & Hourly Standard/i),
     ).toBeInTheDocument();
     expect(await screen.findByText('$31.25 / hr')).toBeInTheDocument(); // 5000 / 160
     expect(screen.getByText('$46.88 / hr')).toBeInTheDocument(); // 31.25 * 1.5
-    expect(screen.getByText(/2\. Overtime Pay Derivation/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/2\. Overtime Pay Derivation/i),
+    ).toBeInTheDocument();
     expect(screen.getAllByText(/1\.5x/i).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -291,17 +320,23 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
 
     // Active employee Charlie Brown (EMP-003) is in allEmployees but not in calculated payrolls
     expect(
-      await screen.findByText(/Active employee was skipped during calculation/i),
+      await screen.findByText(
+        /Active employee was skipped during calculation/i,
+      ),
     ).toBeInTheDocument();
     expect(screen.getByText('Charlie Brown')).toBeInTheDocument();
-    expect(screen.getAllByText('Blocking Error').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Blocking Error').length).toBeGreaterThanOrEqual(
+      1,
+    );
     expect(screen.getByText(/Submission Blocked/i)).toBeInTheDocument();
   });
 
   it('switches to Periods & Lifecycle tab to view all cycles and audit approvals history', async () => {
     renderComponent();
 
-    const periodsTab = await screen.findByRole('tab', { name: /Periods & Lifecycle/i });
+    const periodsTab = await screen.findByRole('tab', {
+      name: /Periods & Lifecycle/i,
+    });
     fireEvent.click(periodsTab);
 
     expect(
@@ -310,23 +345,31 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
     expect(screen.getByText('November 2026 Payroll')).toBeInTheDocument();
 
     // Inspect period history
-    const historyButtons = await screen.findAllByRole('button', { name: /History & Audit/i });
+    const historyButtons = await screen.findAllByRole('button', {
+      name: /History & Audit/i,
+    });
     fireEvent.click(historyButtons[0]);
 
     expect(
       await screen.findByText('Payroll Period Audit & Governance Log'),
     ).toBeInTheDocument();
-    expect(await screen.findByText(/System calculation initiated/i)).toBeInTheDocument();
+    expect(
+      await screen.findByText(/System calculation initiated/i),
+    ).toBeInTheDocument();
   });
 
   it('switches to Reports & Analytics tab and queries backend reporting endpoint', async () => {
     renderComponent();
 
-    const reportsTab = await screen.findByRole('tab', { name: /Reports & Analytics/i });
+    const reportsTab = await screen.findByRole('tab', {
+      name: /Reports & Analytics/i,
+    });
     fireEvent.click(reportsTab);
 
     expect(
-      await screen.findByText('Department Cost Breakdown (Current Active Period)'),
+      await screen.findByText(
+        'Department Cost Breakdown (Current Active Period)',
+      ),
     ).toBeInTheDocument();
     expect(await screen.findByText('Processed Pay Runs')).toBeInTheDocument();
     expect(
@@ -351,9 +394,13 @@ describe('Phase 1-11: Payroll Enterprise Feature Implementation Tests', () => {
       await screen.findByText('Employee Self-Service: My Released Payslips'),
     ).toBeInTheDocument();
     expect(
-      await screen.findByText(/Payslips are released here only after final approval and locking/i),
+      await screen.findByText(
+        /Payslips are released here only after final approval and locking/i,
+      ),
     ).toBeInTheDocument();
-    expect(await screen.findByRole('button', { name: /View Payslip/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('button', { name: /View Payslip/i }),
+    ).toBeInTheDocument();
   });
 
   it('sanitizes CSV exports to protect against formula injection', () => {

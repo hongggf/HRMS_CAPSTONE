@@ -58,7 +58,12 @@ export const CreateCycleModal: React.FC<CreateCycleModalProps> = ({
         <Form.Item
           name="name"
           label="Cycle Title"
-          rules={[{ required: true, message: 'Please enter a cycle title (e.g., Q1 2026 Review)' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please enter a cycle title (e.g., Q1 2026 Review)',
+            },
+          ]}
         >
           <Input placeholder="e.g. FY2026 Annual Performance Appraisal" />
         </Form.Item>
@@ -66,13 +71,21 @@ export const CreateCycleModal: React.FC<CreateCycleModalProps> = ({
         <Form.Item
           name="dateRange"
           label="Active Date Window (Start - End)"
-          rules={[{ required: true, message: 'Please select evaluation period dates' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please select evaluation period dates',
+            },
+          ]}
         >
           <DatePicker.RangePicker style={{ width: '100%' }} />
         </Form.Item>
 
         <Form.Item name="description" label="Description & Guidelines">
-          <Input.TextArea rows={3} placeholder="Evaluation guidelines, timeline, or instructions" />
+          <Input.TextArea
+            rows={3}
+            placeholder="Evaluation guidelines, timeline, or instructions"
+          />
         </Form.Item>
       </Form>
     </Modal>

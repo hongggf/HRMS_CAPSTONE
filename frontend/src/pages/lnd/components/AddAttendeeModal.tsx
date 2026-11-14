@@ -5,7 +5,10 @@ import { Employee } from '../../../types/employee';
 interface AddAttendeeModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (employeeId: number, status: 'ATTENDED' | 'REGISTERED') => Promise<void>;
+  onSubmit: (
+    employeeId: number,
+    status: 'ATTENDED' | 'REGISTERED',
+  ) => Promise<void>;
   employees: Employee[];
   existingEmployeeIds?: number[];
   sessionTitle?: string;
@@ -34,7 +37,9 @@ export const AddAttendeeModal: React.FC<AddAttendeeModalProps> = ({
     }
   };
 
-  const availableEmployees = employees.filter((e) => !existingEmployeeIds.includes(e.id));
+  const availableEmployees = employees.filter(
+    (e) => !existingEmployeeIds.includes(e.id),
+  );
 
   return (
     <Modal
@@ -48,7 +53,11 @@ export const AddAttendeeModal: React.FC<AddAttendeeModalProps> = ({
       confirmLoading={loading}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" initialValues={{ status: 'REGISTERED' }}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ status: 'REGISTERED' }}
+      >
         <Form.Item
           name="employeeId"
           label="Select Employee"
@@ -74,7 +83,10 @@ export const AddAttendeeModal: React.FC<AddAttendeeModalProps> = ({
         >
           <Select
             options={[
-              { value: 'REGISTERED', label: 'Registered (Scheduled to attend)' },
+              {
+                value: 'REGISTERED',
+                label: 'Registered (Scheduled to attend)',
+              },
               { value: 'ATTENDED', label: 'Attended (Mark present now)' },
             ]}
           />

@@ -1,7 +1,25 @@
 export type CycleStatus = 'DRAFT' | 'OPEN' | 'IN_REVIEW' | 'CLOSED';
-export type GoalStatus = 'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-export type ReviewStatus = 'DRAFT' | 'SUBMITTED' | 'UNDER_REVIEW' | 'HEAD_OF_HR_REVIEW' | 'FINALIZED' | 'REJECTED';
-export type PromotionStatus = 'DRAFT' | 'SUBMITTED' | 'PENDING_APPROVAL' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+export type GoalStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'APPROVED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'CANCELLED';
+export type ReviewStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'UNDER_REVIEW'
+  | 'HEAD_OF_HR_REVIEW'
+  | 'FINALIZED'
+  | 'REJECTED';
+export type PromotionStatus =
+  | 'DRAFT'
+  | 'SUBMITTED'
+  | 'PENDING_APPROVAL'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED';
 export type PIPStatus = 'ACTIVE' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 export interface PerformanceCycle {

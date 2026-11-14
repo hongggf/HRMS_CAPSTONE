@@ -18,6 +18,7 @@ import {
   EditOutlined,
   ExclamationCircleOutlined,
   CheckCircleOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { Payroll } from '../../../types/payroll';
 import { Department } from '../../../types/organization';
@@ -31,6 +32,7 @@ interface PayrollRegisterTableProps {
   isLoading: boolean;
   hasPayrollCreate: boolean;
   isLocked: boolean;
+  isHeadOfHr?: boolean;
   onViewPayslip: (payrollId: number) => void;
   onInspectCalculation: (payroll: Payroll) => void;
   onOpenAdjustment: (payroll: Payroll) => void;
@@ -42,13 +44,18 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
   isLoading,
   hasPayrollCreate,
   isLocked,
+  isHeadOfHr = false,
   onViewPayslip,
   onInspectCalculation,
   onOpenAdjustment,
 }) => {
   const [searchText, setSearchText] = useState('');
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState<number | undefined>(undefined);
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ADJUSTED' | 'WARNING'>('ALL');
+  const [selectedDepartmentId, setSelectedDepartmentId] = useState<
+    number | undefined
+  >(undefined);
+  const [statusFilter, setStatusFilter] = useState<
+    'ALL' | 'ADJUSTED' | 'WARNING'
+  >('ALL');
 
   // Filtered payrolls
   const filteredPayrolls = useMemo(() => {
@@ -57,11 +64,16 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
       if (searchText.trim()) {
         const query = searchText.toLowerCase().trim();
         const emp = p.employee;
-        const matchesName =
-          emp && `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query);
         const matchesId = emp?.employeeId.toLowerCase().includes(query);
-        const matchesEmail = emp?.email.toLowerCase().includes(query);
-        if (!matchesName && !matchesId && !matchesEmail) return false;
+        const matchesDept = emp?.department?.name?.toLowerCase().includes(query);
+        const matchesName =
+          isHeadOfHr &&
+          emp &&
+          `${emp.firstName} ${emp.lastName}`.toLowerCase().includes(query);
+        const matchesEmail =
+          isHeadOfHr && emp?.email?.toLowerCase().includes(query);
+        if (!matchesId && !matchesDept && !matchesName && !matchesEmail)
+          return false;
       }
 
       // 2. Department filter
@@ -78,7 +90,7 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
 
       return true;
     });
-  }, [payrolls, searchText, selectedDepartmentId, statusFilter]);
+  }, [payrolls, searchText, selectedDepartmentId, statusFilter, isHeadOfHr]);
 
   const columns = [
     {
@@ -94,9 +106,35 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
       render: (_: any, record: Payroll) => {
         const emp = record.employee;
         if (!emp) return '—';
+        if (!isHeadOfHr) {
+          return (
+            <div>
+              <Tag
+                icon={<LockOutlined />}
+                color="default"
+                style={{ borderRadius: 10, fontWeight: 500 }}
+              >
+                Confidential
+              </Tag>
+              <Text
+                type="secondary"
+                style={{
+                  display: 'block',
+                  fontSize: 11,
+                  fontStyle: 'italic',
+                  marginTop: 2,
+                }}
+              >
+                Restricted to Head of HR
+              </Text>
+            </div>
+          );
+        }
         return (
           <div>
-            <Text strong>{emp.firstName} {emp.lastName}</Text>
+            <Text strong>
+              {emp.firstName} {emp.lastName}
+            </Text>
             <Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
               {emp.email}
             </Text>
@@ -113,7 +151,24 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
         return (
           <Space direction="vertical" size={0}>
             <Text type="secondary">{dept || '—'}</Text>
-            <Text style={{ fontSize: 12 }}>{pos || '—'}</Text>
+            {isHeadOfHr ? (
+              <Text style={{ fontSize: 12 }}>{pos || '—'}</Text>
+            ) : (
+              <Tag
+                color="default"
+                style={{
+                  fontSize: 11,
+                  borderRadius: 8,
+                  padding: '0 6px',
+                  marginTop: 2,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                }}
+              >
+                <LockOutlined style={{ fontSize: 10 }} /> Confidential
+              </Tag>
+            )}
           </Space>
         );
       },
@@ -153,8 +208,14 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
       align: 'right' as const,
       render: (_: any, r: Payroll) => {
         const gross =
-          (r.basicSalary || 0) + (r.totalAllowances || 0) + (r.totalOvertime || 0);
-        return <Text strong style={{ color: '#52c41a' }}>{formatCurrency(gross)}</Text>;
+          (r.basicSalary || 0) +
+          (r.totalAllowances || 0) +
+          (r.totalOvertime || 0);
+        return (
+          <Text strong style={{ color: '#52c41a' }}>
+            {formatCurrency(gross)}
+          </Text>
+        );
       },
     },
     {
@@ -193,11 +254,7 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
           );
         }
         if (record.adjustments && record.adjustments.length > 0) {
-          return (
-            <Tag color="orange">
-              {record.adjustments.length} Adj
-            </Tag>
-          );
+          return <Tag color="orange">{record.adjustments.length} Adj</Tag>;
         }
         return (
           <Tag color="success" icon={<CheckCircleOutlined />}>
@@ -307,7 +364,9 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
                 Component Items Breakdown:
               </Text>
               <Space wrap size={[8, 8]}>
-                <Tag color="default">Base Salary: {formatCurrency(record.basicSalary)}</Tag>
+                <Tag color="default">
+                  Base Salary: {formatCurrency(record.basicSalary)}
+                </Tag>
                 {record.items?.map((item) => (
                   <Tag
                     key={item.id}
@@ -315,11 +374,12 @@ export const PayrollRegisterTable: React.FC<PayrollRegisterTableProps> = ({
                       item.componentType === 'ALLOWANCE'
                         ? 'green'
                         : item.componentType === 'DEDUCTION'
-                        ? 'red'
-                        : 'blue'
+                          ? 'red'
+                          : 'blue'
                     }
                   >
-                    {item.componentName}: {item.componentType === 'DEDUCTION' ? '-' : '+'}
+                    {item.componentName}:{' '}
+                    {item.componentType === 'DEDUCTION' ? '-' : '+'}
                     {formatCurrency(item.amount)}
                   </Tag>
                 ))}

@@ -188,18 +188,19 @@ export const recruitmentApi = {
   },
 
   getApplication: async (id: number): Promise<Application> => {
-    const res = await apiClient.get<
-      ApiResponse<{ application: Application }>
-    >(`/recruitment/applications/${id}`);
+    const res = await apiClient.get<ApiResponse<{ application: Application }>>(
+      `/recruitment/applications/${id}`,
+    );
     return res.data.data.application;
   },
 
   createApplication: async (
     data: CreateApplicationInput,
   ): Promise<Application> => {
-    const res = await apiClient.post<
-      ApiResponse<{ application: Application }>
-    >('/recruitment/applications', data);
+    const res = await apiClient.post<ApiResponse<{ application: Application }>>(
+      '/recruitment/applications',
+      data,
+    );
     return res.data.data.application;
   },
 
@@ -208,23 +209,24 @@ export const recruitmentApi = {
     status: ApplicationStatus,
     notes?: string,
   ): Promise<Application> => {
-    const res = await apiClient.put<
-      ApiResponse<{ application: Application }>
-    >(`/recruitment/applications/${id}/status`, { status, notes });
+    const res = await apiClient.put<ApiResponse<{ application: Application }>>(
+      `/recruitment/applications/${id}/status`,
+      { status, notes },
+    );
     return res.data.data.application;
   },
 
   approveCandidate: async (id: number): Promise<Application> => {
-    const res = await apiClient.post<
-      ApiResponse<{ application: Application }>
-    >(`/recruitment/applications/${id}/approve`);
+    const res = await apiClient.post<ApiResponse<{ application: Application }>>(
+      `/recruitment/applications/${id}/approve`,
+    );
     return res.data.data.application;
   },
 
   rejectCandidate: async (id: number): Promise<Application> => {
-    const res = await apiClient.post<
-      ApiResponse<{ application: Application }>
-    >(`/recruitment/applications/${id}/reject`);
+    const res = await apiClient.post<ApiResponse<{ application: Application }>>(
+      `/recruitment/applications/${id}/reject`,
+    );
     return res.data.data.application;
   },
 

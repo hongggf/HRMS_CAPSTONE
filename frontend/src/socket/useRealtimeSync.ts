@@ -95,7 +95,9 @@ export const useRealtimeSync = () => {
               case 'DASHBOARD_UPDATED':
                 // Auto-refresh executive dashboard metrics without user reload
                 queryClient.invalidateQueries({ queryKey: ['dashboard'] });
-                queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+                queryClient.invalidateQueries({
+                  queryKey: ['dashboard-metrics'],
+                });
                 break;
 
               case 'DATA_MUTATION': {

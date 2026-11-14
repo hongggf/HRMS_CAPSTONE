@@ -18,7 +18,11 @@ import {
 } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { ImprovementPlan, ImprovementPlanItem, AddPipItemInput } from '../../../types/performance';
+import {
+  ImprovementPlan,
+  ImprovementPlanItem,
+  AddPipItemInput,
+} from '../../../types/performance';
 import { normalizeApiError } from '../../../api/client';
 
 const { Title, Text, Paragraph } = Typography;
@@ -46,9 +50,13 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
 
   if (!pip) return null;
 
-  const totalProgress = pip.items && pip.items.length > 0
-    ? Math.round(pip.items.reduce((acc, curr) => acc + curr.progress, 0) / pip.items.length)
-    : 0;
+  const totalProgress =
+    pip.items && pip.items.length > 0
+      ? Math.round(
+          pip.items.reduce((acc, curr) => acc + curr.progress, 0) /
+            pip.items.length,
+        )
+      : 0;
 
   const handleAddItemSubmit = async () => {
     try {
@@ -141,7 +149,9 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
       title={
         <Space>
           <span>Performance Improvement Plan Details</span>
-          <Tag color={pip.status === 'ACTIVE' ? 'orange' : 'green'}>{pip.status}</Tag>
+          <Tag color={pip.status === 'ACTIVE' ? 'orange' : 'green'}>
+            {pip.status}
+          </Tag>
         </Space>
       }
       width={800}
@@ -149,12 +159,19 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
       onClose={onClose}
       destroyOnClose
     >
-      <Descriptions bordered size="small" column={2} style={{ marginBottom: 16 }}>
+      <Descriptions
+        bordered
+        size="small"
+        column={2}
+        style={{ marginBottom: 16 }}
+      >
         <Descriptions.Item label="Employee">
-          {pip.employee?.firstName} {pip.employee?.lastName} ({pip.employee?.employeeId})
+          {pip.employee?.firstName} {pip.employee?.lastName} (
+          {pip.employee?.employeeId})
         </Descriptions.Item>
         <Descriptions.Item label="Department / Title">
-          {pip.employee?.department?.name || 'N/A'} - {pip.employee?.position?.title || 'N/A'}
+          {pip.employee?.department?.name || 'N/A'} -{' '}
+          {pip.employee?.position?.title || 'N/A'}
         </Descriptions.Item>
         <Descriptions.Item label="Start Date">
           {dayjs(pip.startDate).format('YYYY-MM-DD')}
@@ -179,8 +196,17 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
         </Space>
       </Card>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <Title level={5} style={{ margin: 0 }}>Action Items & Remediation Steps</Title>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: 12,
+        }}
+      >
+        <Title level={5} style={{ margin: 0 }}>
+          Action Items & Remediation Steps
+        </Title>
         {canUpdate && (
           <Button
             type="primary"
@@ -217,7 +243,12 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
           <Form.Item
             name="action"
             label="Specific Actionable Task"
-            rules={[{ required: true, message: 'Please describe the task or training action' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Please describe the task or training action',
+              },
+            ]}
           >
             <Input placeholder="e.g. Complete Unit Testing Bootcamp and refactor Module X" />
           </Form.Item>
@@ -225,7 +256,12 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
           <Form.Item
             name="target"
             label="Target Verification Metric"
-            rules={[{ required: true, message: 'Please state the measurable success target' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Please state the measurable success target',
+              },
+            ]}
           >
             <Input placeholder="e.g. 90% test coverage with 0 regression defects" />
           </Form.Item>
@@ -242,7 +278,12 @@ export const PipDetailDrawer: React.FC<PipDetailDrawerProps> = ({
           <Form.Item
             name="dueDate"
             label="Target Due Date"
-            rules={[{ required: true, message: 'Please select target completion date' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Please select target completion date',
+              },
+            ]}
           >
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>

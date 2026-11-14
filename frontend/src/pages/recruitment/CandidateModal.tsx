@@ -64,7 +64,8 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({
     >
       <div style={{ marginTop: 8, marginBottom: 16 }}>
         <Text type="secondary">
-          Enter candidate information into the talent database. Sensitive contact details are protected under RBAC policy.
+          Enter candidate information into the talent database. Sensitive
+          contact details are protected under RBAC policy.
         </Text>
       </div>
 
@@ -78,7 +79,9 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({
       )}
 
       <Form form={form} layout="vertical">
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
           <Form.Item
             name="firstName"
             label="First Name"
@@ -123,7 +126,12 @@ export const CandidateModal: React.FC<CandidateModalProps> = ({
         <Form.Item
           name="resumeUrl"
           label="Resume Link (URL, Optional)"
-          rules={[{ type: 'url', message: 'Please enter a valid URL (e.g. https://...)' }]}
+          rules={[
+            {
+              type: 'url',
+              message: 'Please enter a valid URL (e.g. https://...)',
+            },
+          ]}
         >
           <Input placeholder="https://storage.example.com/resumes/jane_doe.pdf" />
         </Form.Item>

@@ -328,12 +328,10 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
   });
 
   it('triggers calculation with confirmation and refreshes state', async () => {
-    const calcSpy = vi
-      .spyOn(payrollApi, 'calculatePayroll')
-      .mockResolvedValue({
-        success: true,
-        message: 'Payroll calculated successfully',
-      });
+    const calcSpy = vi.spyOn(payrollApi, 'calculatePayroll').mockResolvedValue({
+      success: true,
+      message: 'Payroll calculated successfully',
+    });
 
     renderComponent();
 
@@ -344,7 +342,9 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
 
     // Popconfirm opens
     expect(
-      await screen.findByText(/Run official calculation for all active employees/i),
+      await screen.findByText(
+        /Run official calculation for all active employees/i,
+      ),
     ).toBeInTheDocument();
 
     const confirmBtn = screen.getByRole('button', { name: /yes, calculate/i });
@@ -388,12 +388,10 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
   });
 
   it('submits prepared payroll period for executive review', async () => {
-    const submitSpy = vi
-      .spyOn(payrollApi, 'submitPayroll')
-      .mockResolvedValue({
-        ...mockPeriods[0],
-        status: 'PENDING_APPROVAL',
-      });
+    const submitSpy = vi.spyOn(payrollApi, 'submitPayroll').mockResolvedValue({
+      ...mockPeriods[0],
+      status: 'PENDING_APPROVAL',
+    });
 
     renderComponent();
 
@@ -483,12 +481,10 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
       mockPeriods[3], // August 2026 (PENDING_APPROVAL)
     ]);
 
-    const rejectSpy = vi
-      .spyOn(payrollApi, 'rejectPayroll')
-      .mockResolvedValue({
-        ...mockPeriods[3],
-        status: 'REJECTED',
-      });
+    const rejectSpy = vi.spyOn(payrollApi, 'rejectPayroll').mockResolvedValue({
+      ...mockPeriods[3],
+      status: 'REJECTED',
+    });
 
     renderComponent();
 
@@ -503,7 +499,9 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
 
     const textarea = screen.getByPlaceholderText(/state reason for rejection/i);
     fireEvent.change(textarea, {
-      target: { value: 'Timesheet overtime hours discrepancy in IT department' },
+      target: {
+        value: 'Timesheet overtime hours discrepancy in IT department',
+      },
     });
 
     const confirmRejectBtn = screen.getByRole('button', {
@@ -525,12 +523,10 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
       mockPeriods[4], // July 2026 (APPROVED)
     ]);
 
-    const lockSpy = vi
-      .spyOn(payrollApi, 'lockPayroll')
-      .mockResolvedValue({
-        ...mockPeriods[4],
-        status: 'LOCKED',
-      });
+    const lockSpy = vi.spyOn(payrollApi, 'lockPayroll').mockResolvedValue({
+      ...mockPeriods[4],
+      status: 'LOCKED',
+    });
 
     renderComponent();
 
@@ -565,11 +561,13 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
 
     renderComponent();
 
-    expect(await screen.findByText('September 2026 Payroll')).toBeInTheDocument();
-    expect(screen.getAllByText('Locked (Final)').length).toBeGreaterThanOrEqual(1);
     expect(
-      screen.getByText('Immutable Financial Record'),
+      await screen.findByText('September 2026 Payroll'),
     ).toBeInTheDocument();
+    expect(screen.getAllByText('Locked (Final)').length).toBeGreaterThanOrEqual(
+      1,
+    );
+    expect(screen.getByText('Immutable Financial Record')).toBeInTheDocument();
 
     // In a locked period, calculate, submit, approve, and lock buttons must NOT be present
     expect(
@@ -605,7 +603,9 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
     ).toBeInTheDocument();
 
     // Verify employee and earnings breakdown
-    expect(screen.getAllByText('Senior Engineer').length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getAllByText('Senior Engineer').length,
+    ).toBeGreaterThanOrEqual(1);
     expect(screen.getByText('Housing Allowance')).toBeInTheDocument();
     expect(screen.getByText('Overtime Pay')).toBeInTheDocument();
     expect(screen.getByText('Tax Deduction')).toBeInTheDocument();
@@ -699,5 +699,36 @@ describe('Phase 7: Secure Payroll Management Tests', () => {
         }),
       );
     });
+  });
+
+  it('masks employee name and position as Confidential for non-HEAD_OF_HR roles', async () => {
+    // Switch to HR_PAYROLL officer (non-HEAD_OF_HR)
+    useAuthStore.getState().login(
+      { id: 2, email: 'officer@hr.local', roles: ['HR_PAYROLL'] },
+      'access-token-456',
+      'refresh-token-789',
+    );
+
+    renderComponent();
+
+    // In payroll register, employee name and position must be masked as Confidential
+    const confidentialTags = await screen.findAllByText(/Confidential/i);
+    expect(confidentialTags.length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText('Alice Walker')).not.toBeInTheDocument();
+    expect(screen.queryByText('Senior Software Engineer')).not.toBeInTheDocument();
+  });
+
+  it('displays real employee name and position for HEAD_OF_HR role', async () => {
+    // Logged in as HEAD_OF_HR
+    useAuthStore.getState().login(
+      { id: 1, email: 'head@hr.local', roles: ['HEAD_OF_HR'] },
+      'access-token-123',
+      'refresh-token-456',
+    );
+
+    renderComponent();
+
+    expect(await screen.findByText('Alice Walker')).toBeInTheDocument();
+    expect(screen.getByText('Senior Engineer')).toBeInTheDocument();
   });
 });

@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  Form,
-  Select,
-  Alert,
-  Typography,
-  message,
-} from 'antd';
+import { Modal, Form, Select, Alert, Typography, message } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import { employeeApi } from '../../api/employee';
 import { departmentApi, positionApi } from '../../api/organization';
@@ -85,7 +78,9 @@ export const UpdatePositionModal: React.FC<UpdatePositionModalProps> = ({
       onSuccess();
     } catch (err: unknown) {
       const normalized = normalizeApiError(err);
-      setErrorMessage(normalized.message || 'Failed to update employee position');
+      setErrorMessage(
+        normalized.message || 'Failed to update employee position',
+      );
     } finally {
       setLoading(false);
     }
@@ -103,7 +98,8 @@ export const UpdatePositionModal: React.FC<UpdatePositionModalProps> = ({
     >
       <div style={{ marginBottom: 16 }}>
         <Text type="secondary">
-          Transfer or assign new organizational position for: <Text strong>{employeeName}</Text>
+          Transfer or assign new organizational position for:{' '}
+          <Text strong>{employeeName}</Text>
         </Text>
       </div>
 

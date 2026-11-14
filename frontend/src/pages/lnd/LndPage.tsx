@@ -60,21 +60,31 @@ const { Title, Text } = Typography;
 export const LndPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
-  const roles = user?.roles ?? [];
+  const roles = (user?.roles ?? []).map((r: any) =>
+    typeof r === 'string' ? r : r.name || r.role?.name,
+  );
   const isHeadOfHr = roles.includes('HEAD_OF_HR');
   const canManageLnd = isHeadOfHr || roles.includes('HR_LND');
 
   // State
   const [activeTab, setActiveTab] = useState('courses');
-  const [selectedTrainingId, setSelectedTrainingId] = useState<number | undefined>(undefined);
-  const [selectedSessionId, setSelectedSessionId] = useState<number | undefined>(undefined);
-  const [filterDepartmentId, setFilterDepartmentId] = useState<number | undefined>(undefined);
+  const [selectedTrainingId, setSelectedTrainingId] = useState<
+    number | undefined
+  >(undefined);
+  const [selectedSessionId, setSelectedSessionId] = useState<
+    number | undefined
+  >(undefined);
+  const [filterDepartmentId, setFilterDepartmentId] = useState<
+    number | undefined
+  >(undefined);
 
   // Modals
   const [createTrainingModalOpen, setCreateTrainingModalOpen] = useState(false);
   const [createCategoryModalOpen, setCreateCategoryModalOpen] = useState(false);
   const [assignModalOpen, setAssignModalOpen] = useState(false);
-  const [trainingToAssign, setTrainingToAssign] = useState<Training | null>(null);
+  const [trainingToAssign, setTrainingToAssign] = useState<Training | null>(
+    null,
+  );
   const [createPlanModalOpen, setCreatePlanModalOpen] = useState(false);
   const [createSessionModalOpen, setCreateSessionModalOpen] = useState(false);
   const [evaluationModalOpen, setEvaluationModalOpen] = useState(false);
@@ -93,9 +103,16 @@ export const LndPage: React.FC = () => {
     queryFn: lndApi.getCategories,
   });
 
-  const { data: trainings = [], isLoading: trainingsLoading, refetch: refetchTrainings } = useQuery({
+  const {
+    data: trainings = [],
+    isLoading: trainingsLoading,
+    refetch: refetchTrainings,
+  } = useQuery({
     queryKey: ['lnd-trainings', filterDepartmentId],
-    queryFn: () => lndApi.getTrainings(filterDepartmentId ? { departmentId: filterDepartmentId } : undefined),
+    queryFn: () =>
+      lndApi.getTrainings(
+        filterDepartmentId ? { departmentId: filterDepartmentId } : undefined,
+      ),
   });
 
   // Default selected course
@@ -112,7 +129,10 @@ export const LndPage: React.FC = () => {
 
   const { data: sessions = [] } = useQuery({
     queryKey: ['lnd-sessions', selectedTrainingId],
-    queryFn: () => (selectedTrainingId ? lndApi.getSessions(selectedTrainingId) : Promise.resolve([])),
+    queryFn: () =>
+      selectedTrainingId
+        ? lndApi.getSessions(selectedTrainingId)
+        : Promise.resolve([]),
     enabled: !!selectedTrainingId,
   });
 
@@ -126,13 +146,19 @@ export const LndPage: React.FC = () => {
 
   const { data: attendances = [], isLoading: attendancesLoading } = useQuery({
     queryKey: ['lnd-attendances', selectedSessionId],
-    queryFn: () => (selectedSessionId ? lndApi.getSessionAttendance(selectedSessionId) : Promise.resolve([])),
+    queryFn: () =>
+      selectedSessionId
+        ? lndApi.getSessionAttendance(selectedSessionId)
+        : Promise.resolve([]),
     enabled: !!selectedSessionId,
   });
 
   const { data: evaluations = [], isLoading: evalsLoading } = useQuery({
     queryKey: ['lnd-evaluations', selectedTrainingId],
-    queryFn: () => (selectedTrainingId ? lndApi.getEvaluations(selectedTrainingId) : Promise.resolve([])),
+    queryFn: () =>
+      selectedTrainingId
+        ? lndApi.getEvaluations(selectedTrainingId)
+        : Promise.resolve([]),
     enabled: !!selectedTrainingId,
   });
 
@@ -157,7 +183,6 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const createTrainingMutation = useMutation({
     mutationFn: lndApi.createTraining,
     onSuccess: (newCourse) => {
@@ -169,10 +194,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const assignEmployeesMutation = useMutation({
-    mutationFn: ({ trainingId, employeeIds }: { trainingId: number; employeeIds: number[] }) =>
-      lndApi.assignEmployees(trainingId, { employeeIds }),
+    mutationFn: ({
+      trainingId,
+      employeeIds,
+    }: {
+      trainingId: number;
+      employeeIds: number[];
+    }) => lndApi.assignEmployees(trainingId, { employeeIds }),
     onSuccess: () => {
       message.success('Employees assigned to training successfully');
       queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
@@ -181,7 +210,6 @@ export const LndPage: React.FC = () => {
     },
     onError: (err) => message.error(normalizeApiError(err).message),
   });
-
 
   const createPlanMutation = useMutation({
     mutationFn: lndApi.createPlan,
@@ -193,10 +221,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const createSessionMutation = useMutation({
-    mutationFn: ({ trainingId, payload }: { trainingId: number; payload: any }) =>
-      lndApi.createSession(trainingId, payload),
+    mutationFn: ({
+      trainingId,
+      payload,
+    }: {
+      trainingId: number;
+      payload: any;
+    }) => lndApi.createSession(trainingId, payload),
     onSuccess: (newSession) => {
       message.success('Training session scheduled successfully');
       queryClient.invalidateQueries({ queryKey: ['lnd-sessions'] });
@@ -206,10 +238,16 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const markAttendanceMutation = useMutation({
-    mutationFn: ({ sessionId, employeeId, status }: { sessionId: number; employeeId: number; status: 'ATTENDED' | 'ABSENT' | 'REGISTERED' }) =>
-      lndApi.markAttendance(sessionId, { employeeId, status }),
+    mutationFn: ({
+      sessionId,
+      employeeId,
+      status,
+    }: {
+      sessionId: number;
+      employeeId: number;
+      status: 'ATTENDED' | 'ABSENT' | 'REGISTERED';
+    }) => lndApi.markAttendance(sessionId, { employeeId, status }),
     onSuccess: () => {
       message.success('Attendance recorded');
       queryClient.invalidateQueries({ queryKey: ['lnd-attendances'] });
@@ -217,10 +255,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const evaluateTrainingMutation = useMutation({
-    mutationFn: ({ trainingId, payload }: { trainingId: number; payload: any }) =>
-      lndApi.evaluateTraining(trainingId, payload),
+    mutationFn: ({
+      trainingId,
+      payload,
+    }: {
+      trainingId: number;
+      payload: any;
+    }) => lndApi.evaluateTraining(trainingId, payload),
     onSuccess: () => {
       message.success('Evaluation submitted successfully');
       queryClient.invalidateQueries({ queryKey: ['lnd-evaluations'] });
@@ -229,10 +271,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const updateSkillMutation = useMutation({
-    mutationFn: ({ employeeId, payload }: { employeeId: number; payload: any }) =>
-      lndApi.updateSkill(employeeId, payload),
+    mutationFn: ({
+      employeeId,
+      payload,
+    }: {
+      employeeId: number;
+      payload: any;
+    }) => lndApi.updateSkill(employeeId, payload),
     onSuccess: () => {
       message.success('Employee skill matrix updated');
       queryClient.invalidateQueries({ queryKey: ['lnd-skills'] });
@@ -241,10 +287,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const updateCourseStatusMutation = useMutation({
-    mutationFn: ({ trainingId, status }: { trainingId: number; status: TrainingStatus }) =>
-      lndApi.updateTrainingStatus(trainingId, status),
+    mutationFn: ({
+      trainingId,
+      status,
+    }: {
+      trainingId: number;
+      status: TrainingStatus;
+    }) => lndApi.updateTrainingStatus(trainingId, status),
     onSuccess: () => {
       message.success('Course status updated');
       queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
@@ -253,10 +303,14 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
   const updatePlanStatusMutation = useMutation({
-    mutationFn: ({ planId, status }: { planId: number; status: TrainingPlanStatus }) =>
-      lndApi.updatePlanStatus(planId, status),
+    mutationFn: ({
+      planId,
+      status,
+    }: {
+      planId: number;
+      status: TrainingPlanStatus;
+    }) => lndApi.updatePlanStatus(planId, status),
     onSuccess: () => {
       message.success('Training plan status updated');
       queryClient.invalidateQueries({ queryKey: ['lnd-plans'] });
@@ -264,9 +318,9 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
-
-
-  const currentEmployee = employees.find((e) => e.userId === user?.id || e.email === user?.email);
+  const currentEmployee = employees.find(
+    (e) => e.userId === user?.id || e.email === user?.email,
+  );
 
   const joinCourseMutation = useMutation({
     mutationFn: (trainingId: number) => lndApi.joinTraining(trainingId),
@@ -286,8 +340,11 @@ export const LndPage: React.FC = () => {
         attendances
           .filter((a) => a.status !== 'ATTENDED')
           .map((a) =>
-            lndApi.markAttendance(selectedSessionId, { employeeId: a.employeeId, status: 'ATTENDED' })
-          )
+            lndApi.markAttendance(selectedSessionId, {
+              employeeId: a.employeeId,
+              status: 'ATTENDED',
+            }),
+          ),
       );
       message.success('All roster attendees marked as attended');
       queryClient.invalidateQueries({ queryKey: ['lnd-attendances'] });
@@ -345,9 +402,17 @@ export const LndPage: React.FC = () => {
   const renderAttendanceStatusTag = (st: string) => {
     switch (st) {
       case 'ATTENDED':
-        return <Tag color="success" icon={<CheckCircleOutlined />}>Attended</Tag>;
+        return (
+          <Tag color="success" icon={<CheckCircleOutlined />}>
+            Attended
+          </Tag>
+        );
       case 'ABSENT':
-        return <Tag color="error" icon={<CloseCircleOutlined />}>Absent</Tag>;
+        return (
+          <Tag color="error" icon={<CloseCircleOutlined />}>
+            Absent
+          </Tag>
+        );
       case 'REGISTERED':
         return <Tag color="processing">Registered</Tag>;
       default:
@@ -362,13 +427,21 @@ export const LndPage: React.FC = () => {
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div>
           <Title level={3} style={{ margin: 0 }}>
             Learning & Development (L&D)
           </Title>
           <Text type="secondary">
-            Course catalog, annual training plans, session attendance, evaluations, and skill matrices
+            Course catalog, annual training plans, session attendance,
+            evaluations, and skill matrices
           </Text>
         </div>
         <Space>
@@ -445,8 +518,24 @@ export const LndPage: React.FC = () => {
               label: 'Course Catalog & Categories',
               children: (
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 16,
+                      flexWrap: 'wrap',
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        flexWrap: 'wrap',
+                      }}
+                    >
                       <Text strong>Department:</Text>
                       <Select
                         allowClear
@@ -456,18 +545,30 @@ export const LndPage: React.FC = () => {
                         onChange={(val) => setFilterDepartmentId(val)}
                         options={[
                           { value: undefined as any, label: 'All Departments' },
-                          ...departments.map((d) => ({ value: d.id, label: `${d.name} (${d.code})` })),
+                          ...departments.map((d) => ({
+                            value: d.id,
+                            label: `${d.name} (${d.code})`,
+                          })),
                         ]}
                       />
                       {currentEmployee?.department && (
                         <Button
                           size="small"
-                          type={filterDepartmentId === currentEmployee.departmentId ? 'primary' : 'default'}
+                          type={
+                            filterDepartmentId === currentEmployee.departmentId
+                              ? 'primary'
+                              : 'default'
+                          }
                           onClick={() => {
-                            if (filterDepartmentId === currentEmployee.departmentId) {
+                            if (
+                              filterDepartmentId ===
+                              currentEmployee.departmentId
+                            ) {
                               setFilterDepartmentId(undefined);
                             } else {
-                              setFilterDepartmentId(currentEmployee.departmentId);
+                              setFilterDepartmentId(
+                                currentEmployee.departmentId,
+                              );
                             }
                           }}
                         >
@@ -477,9 +578,15 @@ export const LndPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <Text strong style={{ marginRight: 8 }}>Categories:</Text>
+                      <Text strong style={{ marginRight: 8 }}>
+                        Categories:
+                      </Text>
                       {categories.map((c) => (
-                        <Tag key={c.id} color="geekblue" style={{ marginBottom: 4 }}>
+                        <Tag
+                          key={c.id}
+                          color="geekblue"
+                          style={{ marginBottom: 4 }}
+                        >
                           {c.name} ({c._count?.trainings || 0})
                         </Tag>
                       ))}
@@ -509,7 +616,8 @@ export const LndPage: React.FC = () => {
                       {
                         title: 'Category',
                         key: 'category',
-                        render: (_: any, record: Training) => record.category?.name || 'General',
+                        render: (_: any, record: Training) =>
+                          record.category?.name || 'General',
                       },
                       {
                         title: 'Target Department',
@@ -517,7 +625,8 @@ export const LndPage: React.FC = () => {
                         render: (_: any, record: Training) => {
                           const isTargetForUser =
                             currentEmployee?.departmentId &&
-                            record.departmentId === currentEmployee.departmentId;
+                            record.departmentId ===
+                              currentEmployee.departmentId;
                           return (
                             <Space direction="vertical" size={2}>
                               {record.department ? (
@@ -526,7 +635,10 @@ export const LndPage: React.FC = () => {
                                 <Tag color="default">All Departments</Tag>
                               )}
                               {isTargetForUser && (
-                                <Tag color="gold" style={{ fontSize: 10, lineHeight: '16px' }}>
+                                <Tag
+                                  color="gold"
+                                  style={{ fontSize: 10, lineHeight: '16px' }}
+                                >
                                   Your Dept
                                 </Tag>
                               )}
@@ -538,20 +650,25 @@ export const LndPage: React.FC = () => {
                         title: 'Format',
                         dataIndex: 'type',
                         key: 'type',
-                        render: (type: string) => <Tag color="blue">{type}</Tag>,
+                        render: (type: string) => (
+                          <Tag color="blue">{type}</Tag>
+                        ),
                       },
                       {
                         title: 'Capacity',
                         dataIndex: 'capacity',
                         key: 'capacity',
-                        render: (cap: number | null | undefined) => (cap ? `${cap} seats` : 'Flexible'),
+                        render: (cap: number | null | undefined) =>
+                          cap ? `${cap} seats` : 'Flexible',
                       },
                       {
                         title: 'Cost',
                         dataIndex: 'cost',
                         key: 'cost',
                         render: (cost: number | null | undefined) =>
-                          cost ? `$${cost.toLocaleString()}` : 'Free / Internal',
+                          cost
+                            ? `$${cost.toLocaleString()}`
+                            : 'Free / Internal',
                       },
                       {
                         title: 'Enrollments',
@@ -569,7 +686,11 @@ export const LndPage: React.FC = () => {
                         key: 'status',
                         render: (status: TrainingStatus, record: Training) => {
                           if (!canManageLnd) {
-                            return <Tag color={getCourseStatusColor(status)}>{status}</Tag>;
+                            return (
+                              <Tag color={getCourseStatusColor(status)}>
+                                {status}
+                              </Tag>
+                            );
                           }
                           return (
                             <Select
@@ -598,7 +719,9 @@ export const LndPage: React.FC = () => {
                         render: (_: any, record: Training) => {
                           const isEnrolled =
                             !!currentEmployee &&
-                            !!record.assignments?.some((a) => a.employeeId === currentEmployee.id);
+                            !!record.assignments?.some(
+                              (a) => a.employeeId === currentEmployee.id,
+                            );
                           return (
                             <Space size="small">
                               {canManageLnd && (
@@ -613,9 +736,12 @@ export const LndPage: React.FC = () => {
                                   Enroll Employees
                                 </Button>
                               )}
-                              {currentEmployee && (
-                                isEnrolled ? (
-                                  <Tag color="success" icon={<CheckCircleOutlined />}>
+                              {currentEmployee &&
+                                (isEnrolled ? (
+                                  <Tag
+                                    color="success"
+                                    icon={<CheckCircleOutlined />}
+                                  >
                                     Enrolled
                                   </Tag>
                                 ) : (
@@ -628,12 +754,13 @@ export const LndPage: React.FC = () => {
                                       joinCourseMutation.variables === record.id
                                     }
                                     disabled={record.status === 'CANCELLED'}
-                                    onClick={() => joinCourseMutation.mutate(record.id)}
+                                    onClick={() =>
+                                      joinCourseMutation.mutate(record.id)
+                                    }
                                   >
                                     Join Course
                                   </Button>
-                                )
-                              )}
+                                ))}
                             </Space>
                           );
                         },
@@ -651,9 +778,16 @@ export const LndPage: React.FC = () => {
               label: 'Training Plans & Objectives',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Text type="secondary">
-                      Strategic workforce capabilities and organizational learning plans
+                      Strategic workforce capabilities and organizational
+                      learning plans
                     </Text>
                     {canManageLnd && (
                       <Button
@@ -676,7 +810,10 @@ export const LndPage: React.FC = () => {
                         key: 'training',
                         render: (_: any, record: TrainingPlan) => (
                           <div>
-                            <Text strong>{record.training?.title || `Training #${record.trainingId}`}</Text>
+                            <Text strong>
+                              {record.training?.title ||
+                                `Training #${record.trainingId}`}
+                            </Text>
                             {record.training?.category && (
                               <div style={{ fontSize: 12, color: '#8c8c8c' }}>
                                 {record.training.category.name}
@@ -690,7 +827,9 @@ export const LndPage: React.FC = () => {
                         key: 'department',
                         render: (_: any, record: TrainingPlan) =>
                           record.training?.department ? (
-                            <Tag color="cyan">{record.training.department.name}</Tag>
+                            <Tag color="cyan">
+                              {record.training.department.name}
+                            </Tag>
                           ) : (
                             <Tag color="default">All Departments</Tag>
                           ),
@@ -699,9 +838,15 @@ export const LndPage: React.FC = () => {
                         title: 'Course Status',
                         key: 'courseStatus',
                         render: (_: any, record: TrainingPlan) => {
-                          const courseStatus = (record.training?.status as TrainingStatus) || 'DRAFT';
+                          const courseStatus =
+                            (record.training?.status as TrainingStatus) ||
+                            'DRAFT';
                           if (!canManageLnd || !record.trainingId) {
-                            return <Tag color={getCourseStatusColor(courseStatus)}>{courseStatus}</Tag>;
+                            return (
+                              <Tag color={getCourseStatusColor(courseStatus)}>
+                                {courseStatus}
+                              </Tag>
+                            );
                           }
                           return (
                             <Select
@@ -728,9 +873,14 @@ export const LndPage: React.FC = () => {
                         title: 'Plan Status',
                         dataIndex: 'status',
                         key: 'status',
-                        render: (st: TrainingPlanStatus, record: TrainingPlan) => {
+                        render: (
+                          st: TrainingPlanStatus,
+                          record: TrainingPlan,
+                        ) => {
                           if (!canManageLnd) {
-                            return <Tag color={getPlanStatusColor(st)}>{st}</Tag>;
+                            return (
+                              <Tag color={getPlanStatusColor(st)}>{st}</Tag>
+                            );
                           }
                           return (
                             <Select
@@ -774,13 +924,18 @@ export const LndPage: React.FC = () => {
                         title: 'Priority',
                         dataIndex: 'priority',
                         key: 'priority',
-                        render: (p: string) => <Tag color={p === 'CRITICAL' ? 'red' : 'orange'}>{p || 'MEDIUM'}</Tag>,
+                        render: (p: string) => (
+                          <Tag color={p === 'CRITICAL' ? 'red' : 'orange'}>
+                            {p || 'MEDIUM'}
+                          </Tag>
+                        ),
                       },
                       {
                         title: 'Target Date',
                         dataIndex: 'plannedDate',
                         key: 'plannedDate',
-                        render: (d: string) => (d ? dayjs(d).format('YYYY-MM-DD') : '-'),
+                        render: (d: string) =>
+                          d ? dayjs(d).format('YYYY-MM-DD') : '-',
                       },
                     ]}
                     pagination={{ pageSize: 8 }}
@@ -795,7 +950,16 @@ export const LndPage: React.FC = () => {
               label: 'Session Attendance Roster',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: 12,
+                    }}
+                  >
                     <Space wrap>
                       <Text strong>Course:</Text>
                       <Select
@@ -806,15 +970,24 @@ export const LndPage: React.FC = () => {
                           setSelectedSessionId(undefined);
                         }}
                         placeholder="Select Course"
-                        options={trainings.map((t) => ({ value: t.id, label: t.title }))}
+                        options={trainings.map((t) => ({
+                          value: t.id,
+                          label: t.title,
+                        }))}
                       />
 
-                      <Text strong style={{ marginLeft: 8 }}>Session:</Text>
+                      <Text strong style={{ marginLeft: 8 }}>
+                        Session:
+                      </Text>
                       <Select
                         style={{ width: 300 }}
                         value={selectedSessionId}
                         onChange={setSelectedSessionId}
-                        placeholder={sessions.length === 0 ? 'No sessions scheduled' : 'Select Session'}
+                        placeholder={
+                          sessions.length === 0
+                            ? 'No sessions scheduled'
+                            : 'Select Session'
+                        }
                         disabled={sessions.length === 0}
                         options={sessions.map((s) => ({
                           value: s.id,
@@ -859,33 +1032,99 @@ export const LndPage: React.FC = () => {
 
                   {/* Attendance Roster Summary */}
                   {selectedSessionId && (
-                    <div style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <Tag color="default">Total Enrolled: {attendances.length}</Tag>
-                      <Tag color="success">Present: {attendances.filter((a) => a.status === 'ATTENDED').length}</Tag>
-                      <Tag color="error">Absent: {attendances.filter((a) => a.status === 'ABSENT').length}</Tag>
-                      <Tag color="processing">Registered: {attendances.filter((a) => a.status === 'REGISTERED').length}</Tag>
+                    <div
+                      style={{
+                        marginBottom: 16,
+                        display: 'flex',
+                        gap: 12,
+                        alignItems: 'center',
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Tag color="default">
+                        Total Enrolled: {attendances.length}
+                      </Tag>
+                      <Tag color="success">
+                        Present:{' '}
+                        {
+                          attendances.filter((a) => a.status === 'ATTENDED')
+                            .length
+                        }
+                      </Tag>
+                      <Tag color="error">
+                        Absent:{' '}
+                        {
+                          attendances.filter((a) => a.status === 'ABSENT')
+                            .length
+                        }
+                      </Tag>
+                      <Tag color="processing">
+                        Registered:{' '}
+                        {
+                          attendances.filter((a) => a.status === 'REGISTERED')
+                            .length
+                        }
+                      </Tag>
                     </div>
                   )}
 
                   {!selectedSessionId ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0', background: '#fafafa', borderRadius: 8 }}>
-                      <ScheduleOutlined style={{ fontSize: 36, color: '#bfbfbf', marginBottom: 12 }} />
-                      <div><Text strong>No Session Selected</Text></div>
-                      <Text type="secondary">Select a training course and scheduled session above to view or mark attendance.</Text>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '40px 0',
+                        background: '#fafafa',
+                        borderRadius: 8,
+                      }}
+                    >
+                      <ScheduleOutlined
+                        style={{
+                          fontSize: 36,
+                          color: '#bfbfbf',
+                          marginBottom: 12,
+                        }}
+                      />
+                      <div>
+                        <Text strong>No Session Selected</Text>
+                      </div>
+                      <Text type="secondary">
+                        Select a training course and scheduled session above to
+                        view or mark attendance.
+                      </Text>
                       {canManageLnd && selectedTrainingId && (
                         <div style={{ marginTop: 12 }}>
-                          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateSessionModalOpen(true)}>
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={() => setCreateSessionModalOpen(true)}
+                          >
                             Schedule New Session
                           </Button>
                         </div>
                       )}
                     </div>
                   ) : attendances.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '40px 0', background: '#fafafa', borderRadius: 8 }}>
-                      <UsergroupAddOutlined style={{ fontSize: 36, color: '#bfbfbf', marginBottom: 12 }} />
-                      <div><Text strong>No Attendees in this Session Roster</Text></div>
+                    <div
+                      style={{
+                        textAlign: 'center',
+                        padding: '40px 0',
+                        background: '#fafafa',
+                        borderRadius: 8,
+                      }}
+                    >
+                      <UsergroupAddOutlined
+                        style={{
+                          fontSize: 36,
+                          color: '#bfbfbf',
+                          marginBottom: 12,
+                        }}
+                      />
+                      <div>
+                        <Text strong>No Attendees in this Session Roster</Text>
+                      </div>
                       <Text type="secondary">
-                        Employees enrolled in this course will appear automatically, or you can add attendees directly.
+                        Employees enrolled in this course will appear
+                        automatically, or you can add attendees directly.
                       </Text>
                       {canManageLnd && (
                         <div style={{ marginTop: 12 }}>
@@ -900,7 +1139,9 @@ export const LndPage: React.FC = () => {
                             <Button
                               icon={<PlusOutlined />}
                               onClick={() => {
-                                const currentTraining = trainings.find((t) => t.id === selectedTrainingId);
+                                const currentTraining = trainings.find(
+                                  (t) => t.id === selectedTrainingId,
+                                );
                                 if (currentTraining) {
                                   setTrainingToAssign(currentTraining);
                                   setAssignModalOpen(true);
@@ -925,11 +1166,13 @@ export const LndPage: React.FC = () => {
                           render: (_: any, record: TrainingAttendance) => (
                             <div>
                               <Text strong>
-                                {record.employee?.firstName} {record.employee?.lastName}
+                                {record.employee?.firstName}{' '}
+                                {record.employee?.lastName}
                               </Text>
                               <br />
                               <Text type="secondary" style={{ fontSize: 12 }}>
-                                {record.employee?.employeeId} | {record.employee?.department?.name || 'N/A'}
+                                {record.employee?.employeeId} |{' '}
+                                {record.employee?.department?.name || 'N/A'}
                               </Text>
                             </div>
                           ),
@@ -944,18 +1187,24 @@ export const LndPage: React.FC = () => {
                           title: 'Attended Timestamp',
                           dataIndex: 'attendedAt',
                           key: 'attendedAt',
-                          render: (ts: string | null) => (ts ? dayjs(ts).format('YYYY-MM-DD HH:mm') : '-'),
+                          render: (ts: string | null) =>
+                            ts ? dayjs(ts).format('YYYY-MM-DD HH:mm') : '-',
                         },
                         {
                           title: 'Record Attendance',
                           key: 'actions',
                           render: (_: any, record: TrainingAttendance) => {
-                            if (!canManageLnd || !selectedSessionId) return null;
+                            if (!canManageLnd || !selectedSessionId)
+                              return null;
                             return (
                               <Space size="small">
                                 <Button
                                   size="small"
-                                  type={record.status === 'ATTENDED' ? 'primary' : 'default'}
+                                  type={
+                                    record.status === 'ATTENDED'
+                                      ? 'primary'
+                                      : 'default'
+                                  }
                                   ghost={record.status === 'ATTENDED'}
                                   icon={<CheckCircleOutlined />}
                                   onClick={() =>
@@ -1014,7 +1263,13 @@ export const LndPage: React.FC = () => {
               label: 'Course Evaluations & Feedback',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Space>
                       <Text strong>Filter by Course:</Text>
                       <Select
@@ -1050,7 +1305,9 @@ export const LndPage: React.FC = () => {
                         key: 'evaluator',
                         render: (_: any, record: TrainingEvaluation) => (
                           <Text strong>
-                            {record.evaluator?.firstName} {record.evaluator?.lastName} ({record.evaluator?.employeeId})
+                            {record.evaluator?.firstName}{' '}
+                            {record.evaluator?.lastName} (
+                            {record.evaluator?.employeeId})
                           </Text>
                         ),
                       },
@@ -1058,7 +1315,9 @@ export const LndPage: React.FC = () => {
                         title: 'Rating (1 - 5)',
                         dataIndex: 'rating',
                         key: 'rating',
-                        render: (rating: number) => <Rate disabled value={rating} />,
+                        render: (rating: number) => (
+                          <Rate disabled value={rating} />
+                        ),
                       },
                       {
                         title: 'Trainer / Content Feedback',
@@ -1091,9 +1350,16 @@ export const LndPage: React.FC = () => {
               label: 'Employee Skills Matrix',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Text type="secondary">
-                      Company skill profiles, competency levels, and continuous development logs
+                      Company skill profiles, competency levels, and continuous
+                      development logs
                     </Text>
                     {canManageLnd && (
                       <Button
@@ -1117,11 +1383,13 @@ export const LndPage: React.FC = () => {
                         render: (_: any, record: EmployeeSkill) => (
                           <div>
                             <Text strong>
-                              {record.employee?.firstName} {record.employee?.lastName}
+                              {record.employee?.firstName}{' '}
+                              {record.employee?.lastName}
                             </Text>
                             <br />
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                              {record.employee?.employeeId} | {record.employee?.department?.name || 'N/A'}
+                              {record.employee?.employeeId} |{' '}
+                              {record.employee?.department?.name || 'N/A'}
                             </Text>
                           </div>
                         ),
@@ -1208,7 +1476,10 @@ export const LndPage: React.FC = () => {
         visible={createSessionModalOpen}
         onCancel={() => setCreateSessionModalOpen(false)}
         onSubmit={async (trainingId, values) => {
-          await createSessionMutation.mutateAsync({ trainingId, payload: values });
+          await createSessionMutation.mutateAsync({
+            trainingId,
+            payload: values,
+          });
         }}
         trainings={trainings}
         selectedTrainingId={selectedTrainingId}
@@ -1219,7 +1490,10 @@ export const LndPage: React.FC = () => {
         visible={evaluationModalOpen}
         onCancel={() => setEvaluationModalOpen(false)}
         onSubmit={async (trainingId, values) => {
-          await evaluateTrainingMutation.mutateAsync({ trainingId, payload: values });
+          await evaluateTrainingMutation.mutateAsync({
+            trainingId,
+            payload: values,
+          });
         }}
         trainings={trainings}
         employees={employees}
@@ -1231,7 +1505,10 @@ export const LndPage: React.FC = () => {
         visible={updateSkillModalOpen}
         onCancel={() => setUpdateSkillModalOpen(false)}
         onSubmit={async (employeeId, values) => {
-          await updateSkillMutation.mutateAsync({ employeeId, payload: values });
+          await updateSkillMutation.mutateAsync({
+            employeeId,
+            payload: values,
+          });
         }}
         employees={employees}
         loading={updateSkillMutation.isPending}

@@ -64,10 +64,54 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
     }
   }, [open]);
 
-  // Fetch applications with status APPROVED
+  // Fetch applications with status APPROVED or HIRED (where employee profile is not yet created)
   const { data: appsData, isLoading: appsLoading } = useQuery({
     queryKey: ['approved-applications-select'],
-    queryFn: () => recruitmentApi.listApplications({ status: 'APPROVED' }),
+    queryFn: async () => {
+      let approvedApps: any[] = [];
+      try {
+        const approvedRes = await recruitmentApi.listApplications({
+          status: 'APPROVED',
+        });
+        if (approvedRes && Array.isArray(approvedRes.applications)) {
+          approvedApps = approvedRes.applications;
+        }
+      } catch {
+        // Safe fallback
+      }
+
+      let hiredApps: any[] = [];
+      try {
+        const hiredRes = await recruitmentApi.listApplications({ status: 'HIRED' });
+        if (hiredRes && Array.isArray(hiredRes.applications)) {
+          hiredApps = hiredRes.applications;
+        }
+      } catch {
+        // Safe fallback
+      }
+
+      const combined = [...approvedApps, ...hiredApps];
+
+      // Exclude candidates who are already registered employees
+      try {
+        const existingEmployees = await employeeApi.list();
+        if (Array.isArray(existingEmployees)) {
+          const existingEmails = new Set(
+            existingEmployees.map((e) => e.email?.toLowerCase().trim()),
+          );
+          const available = combined.filter(
+            (a) =>
+              a.candidate?.email &&
+              !existingEmails.has(a.candidate.email.toLowerCase().trim()),
+          );
+          return { applications: available };
+        }
+      } catch {
+        // Fallback to combined
+      }
+
+      return { applications: combined };
+    },
     enabled: open,
   });
 
@@ -139,7 +183,9 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
       onSuccess();
     } catch (err: unknown) {
       const normalized = normalizeApiError(err);
-      setErrorMessage(normalized.message || 'Failed to create employee profile');
+      setErrorMessage(
+        normalized.message || 'Failed to create employee profile',
+      );
     } finally {
       setLoading(false);
     }
@@ -158,7 +204,8 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
     >
       <div style={{ marginBottom: 16 }}>
         <Text type="secondary">
-          Initiate employee profile from a Head of HR approved candidate application.
+          Initiate employee profile from a Head of HR approved candidate
+          application.
         </Text>
       </div>
 
@@ -190,7 +237,12 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
             <Form.Item
               name="applicationId"
               label="Approved Candidate Application"
-              rules={[{ required: true, message: 'Please select an approved application' }]}
+              rules={[
+                {
+                  required: true,
+                  message: 'Please select an approved application',
+                },
+              ]}
             >
               <Select
                 placeholder="Select approved candidate"
@@ -213,8 +265,14 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                 </Space>
               }
               rules={[
-                { required: true, message: 'Please enter or generate a unique employee ID' },
-                { pattern: /^[A-Za-z0-9_-]+$/, message: 'Alphanumeric and hyphen/underscore only' },
+                {
+                  required: true,
+                  message: 'Please enter or generate a unique employee ID',
+                },
+                {
+                  pattern: /^[A-Za-z0-9_-]+$/,
+                  message: 'Alphanumeric and hyphen/underscore only',
+                },
               ]}
               extra="Auto-generated with unique number. You can customize or regenerate."
             >
@@ -298,7 +356,9 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
           </Col>
         </Row>
 
-        <Divider style={{ margin: '8px 0 16px' }}>Placement & Compensation</Divider>
+        <Divider style={{ margin: '8px 0 16px' }}>
+          Placement & Compensation
+        </Divider>
 
         <Row gutter={16}>
           <Col xs={24} md={12}>
@@ -338,7 +398,9 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
               name="employmentType"
               label="Employment Type"
               initialValue="FULL_TIME"
-              rules={[{ required: true, message: 'Please select employment type' }]}
+              rules={[
+                { required: true, message: 'Please select employment type' },
+              ]}
             >
               <Select
                 options={[
@@ -361,8 +423,12 @@ export const CreateEmployeeModal: React.FC<CreateEmployeeModalProps> = ({
                 style={{ width: '100%' }}
                 placeholder="e.g. 75000"
                 min={0}
-                formatter={(val) => `$ ${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                parser={(val) => (val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 0)}
+                formatter={(val) =>
+                  `$ ${val}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                }
+                parser={(val) =>
+                  val ? Number(val.replace(/\$\s?|(,*)/g, '')) : 0
+                }
               />
             </Form.Item>
           </Col>

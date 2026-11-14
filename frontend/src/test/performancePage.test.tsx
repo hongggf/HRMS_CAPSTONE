@@ -57,7 +57,12 @@ const mockEmployees: Employee[] = [
     createdAt: '2024-01-01',
     updatedAt: '2024-01-01',
     department: { id: 1, name: 'Engineering', code: 'ENG' } as any,
-    position: { id: 1, title: 'Software Engineer', code: 'SWE', departmentId: 1 } as any,
+    position: {
+      id: 1,
+      title: 'Software Engineer',
+      code: 'SWE',
+      departmentId: 1,
+    } as any,
   },
   {
     id: 102,
@@ -74,14 +79,37 @@ const mockEmployees: Employee[] = [
     createdAt: '2023-01-01',
     updatedAt: '2023-01-01',
     department: { id: 1, name: 'Engineering', code: 'ENG' } as any,
-    position: { id: 2, title: 'Engineering Lead', code: 'ENG_LEAD', departmentId: 1 } as any,
+    position: {
+      id: 2,
+      title: 'Engineering Lead',
+      code: 'ENG_LEAD',
+      departmentId: 1,
+    } as any,
   },
 ];
 
 const mockPositions: Position[] = [
-  { id: 1, title: 'Software Engineer', code: 'SWE', departmentId: 1, isActive: true } as any,
-  { id: 2, title: 'Engineering Lead', code: 'ENG_LEAD', departmentId: 1, isActive: true } as any,
-  { id: 3, title: 'Senior Software Engineer', code: 'SR_SWE', departmentId: 1, isActive: true } as any,
+  {
+    id: 1,
+    title: 'Software Engineer',
+    code: 'SWE',
+    departmentId: 1,
+    isActive: true,
+  } as any,
+  {
+    id: 2,
+    title: 'Engineering Lead',
+    code: 'ENG_LEAD',
+    departmentId: 1,
+    isActive: true,
+  } as any,
+  {
+    id: 3,
+    title: 'Senior Software Engineer',
+    code: 'SR_SWE',
+    departmentId: 1,
+    isActive: true,
+  } as any,
 ];
 
 const mockGoals: Goal[] = [
@@ -141,8 +169,20 @@ const mockReviews: PerformanceReview[] = [
     employee: mockEmployees[0],
     reviewer: mockEmployees[1],
     ratings: [
-      { id: 1, reviewId: 301, goalId: 201, rating: 4.5, comment: 'Crushed performance targets' },
-      { id: 2, reviewId: 301, goalId: 202, rating: 3.75, comment: 'Great onboarding support' },
+      {
+        id: 1,
+        reviewId: 301,
+        goalId: 201,
+        rating: 4.5,
+        comment: 'Crushed performance targets',
+      },
+      {
+        id: 2,
+        reviewId: 301,
+        goalId: 202,
+        rating: 3.75,
+        comment: 'Great onboarding support',
+      },
     ],
   },
   {
@@ -169,7 +209,8 @@ const mockPromotions: PromotionRequest[] = [
     proposedPositionId: 3,
     currentSalary: 4500,
     proposedSalary: 6200,
-    reason: 'Exceeded all Q1/Q2 technical targets with high architectural quality',
+    reason:
+      'Exceeded all Q1/Q2 technical targets with high architectural quality',
     performanceReviewId: 301,
     effectiveDate: '2026-07-01T00:00:00.000Z',
     status: 'SUBMITTED',
@@ -226,7 +267,9 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     vi.spyOn(performanceApi, 'getCycles').mockResolvedValue([...mockCycles]);
     vi.spyOn(performanceApi, 'getGoals').mockResolvedValue([...mockGoals]);
     vi.spyOn(performanceApi, 'getReviews').mockResolvedValue([...mockReviews]);
-    vi.spyOn(performanceApi, 'getPromotions').mockResolvedValue([...mockPromotions]);
+    vi.spyOn(performanceApi, 'getPromotions').mockResolvedValue([
+      ...mockPromotions,
+    ]);
     vi.spyOn(performanceApi, 'getPips').mockResolvedValue([...mockPips]);
     vi.spyOn(employeeApi, 'list').mockResolvedValue([...mockEmployees]);
     vi.spyOn(positionApi, 'list').mockResolvedValue({
@@ -245,16 +288,20 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
-    expect(await screen.findByText('Performance Management & Governance')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Performance Management & Governance'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Total Cycles')).toBeInTheDocument();
     expect(screen.getByText('Promotion Requests')).toBeInTheDocument();
     expect(screen.getByText('Active PIPs')).toBeInTheDocument();
 
     // Goal table renders
-    expect(await screen.findByText('Core Platform Refactor')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Core Platform Refactor'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Mentorship & Documentation')).toBeInTheDocument();
   });
 
@@ -272,20 +319,22 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const newCycleBtn = await screen.findByText('New Appraisal Cycle');
     fireEvent.click(newCycleBtn);
 
-    expect(await screen.findByText('Create Evaluation Cycle')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Create Evaluation Cycle'),
+    ).toBeInTheDocument();
   });
 
   it('switches to Reviews tab and lists reviews with scores and status tags', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const reviewsTab = await screen.findByText('Employee Reviews & Scoring');
@@ -301,7 +350,7 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const reviewsTab = await screen.findByText('Employee Reviews & Scoring');
@@ -310,8 +359,12 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     const scoreButtons = await screen.findAllByText('Score / Evaluate');
     fireEvent.click(scoreButtons[0]);
 
-    expect(await screen.findByText('Review Evaluation & Scoring')).toBeInTheDocument();
-    expect(screen.getByText('Goal-by-Goal Scoring (Scale: 0.0 to 5.0)')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Review Evaluation & Scoring'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Goal-by-Goal Scoring (Scale: 0.0 to 5.0)'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Calculated Weighted Score:')).toBeInTheDocument();
   });
 
@@ -319,7 +372,7 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const reviewsTab = await screen.findByText('Employee Reviews & Scoring');
@@ -337,15 +390,17 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
       { ...mockReviews[0], status: 'HEAD_OF_HR_REVIEW' },
     ]);
 
-    const finalizeSpy = vi.spyOn(performanceApi, 'finalizeReview').mockResolvedValue({
-      ...mockReviews[0],
-      status: 'FINALIZED',
-    });
+    const finalizeSpy = vi
+      .spyOn(performanceApi, 'finalizeReview')
+      .mockResolvedValue({
+        ...mockReviews[0],
+        status: 'FINALIZED',
+      });
 
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const reviewsTab = await screen.findByText('Employee Reviews & Scoring');
@@ -355,7 +410,9 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     fireEvent.click(finalizeBtn);
 
     expect(
-      await screen.findByText(/This will lock ratings and officially finalize the evaluation/i)
+      await screen.findByText(
+        /This will lock ratings and officially finalize the evaluation/i,
+      ),
     ).toBeInTheDocument();
     const confirmBtn = screen.getByRole('button', { name: /yes, finalize/i });
     fireEvent.click(confirmBtn);
@@ -366,28 +423,34 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
   });
 
   it('switches to Promotions tab, verifies request listing and approval by HEAD_OF_HR', async () => {
-    const approveSpy = vi.spyOn(performanceApi, 'approvePromotion').mockResolvedValue({
-      ...mockPromotions[0],
-      status: 'APPROVED',
-    });
+    const approveSpy = vi
+      .spyOn(performanceApi, 'approvePromotion')
+      .mockResolvedValue({
+        ...mockPromotions[0],
+        status: 'APPROVED',
+      });
 
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const promoTab = await screen.findByText('Promotion & Salary Increases');
     fireEvent.click(promoTab);
 
-    expect(await screen.findByText('Senior Software Engineer')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Senior Software Engineer'),
+    ).toBeInTheDocument();
     expect(screen.getByText('$6,200')).toBeInTheDocument();
 
     const approveBtn = await screen.findByText('Approve');
     fireEvent.click(approveBtn);
 
     expect(
-      await screen.findByText(/This will update position and salary history in database/i)
+      await screen.findByText(
+        /This will update position and salary history in database/i,
+      ),
     ).toBeInTheDocument();
     const confirmBtn = screen.getByRole('button', { name: /yes, approve/i });
     fireEvent.click(confirmBtn);
@@ -406,13 +469,15 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const promoTab = await screen.findByText('Promotion & Salary Increases');
     fireEvent.click(promoTab);
 
-    expect(await screen.findByText('Senior Software Engineer')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Senior Software Engineer'),
+    ).toBeInTheDocument();
     // Non-HEAD_OF_HR should NOT see Approve/Reject buttons
     expect(screen.queryByText('Approve')).not.toBeInTheDocument();
     expect(screen.queryByText('Reject')).not.toBeInTheDocument();
@@ -422,13 +487,19 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
-    const pipTab = await screen.findByText('Performance Improvement Plans (PIP)');
+    const pipTab = await screen.findByText(
+      'Performance Improvement Plans (PIP)',
+    );
     fireEvent.click(pipTab);
 
-    expect(await screen.findByText('Implement 95% automated test coverage on checkout module')).toBeInTheDocument();
+    expect(
+      await screen.findByText(
+        'Implement 95% automated test coverage on checkout module',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText('View & Update Milestones')).toBeInTheDocument();
   });
 
@@ -436,18 +507,26 @@ describe('Phase 8: Comprehensive Performance & Reviews Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <PerformancePage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
-    const pipTab = await screen.findByText('Performance Improvement Plans (PIP)');
+    const pipTab = await screen.findByText(
+      'Performance Improvement Plans (PIP)',
+    );
     fireEvent.click(pipTab);
 
     const viewBtn = await screen.findByText('View & Update Milestones');
     fireEvent.click(viewBtn);
 
-    expect(await screen.findByText('Performance Improvement Plan Details')).toBeInTheDocument();
-    expect(screen.getByText('Action Items & Remediation Steps')).toBeInTheDocument();
-    expect(screen.getByText('Write unit tests for checkout edge cases')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Performance Improvement Plan Details'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Action Items & Remediation Steps'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Write unit tests for checkout edge cases'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Add Action Item')).toBeInTheDocument();
   });
 });

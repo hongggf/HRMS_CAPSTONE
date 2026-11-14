@@ -121,9 +121,14 @@ describe('Navigation Configuration and Role Filtering', () => {
     expect(lndItem?.label).toBe('Learning & Dev');
     expect(lndItem?.isDev).toBe(false);
 
-    const upcomingItem = findNavItem(NAVIGATION_CONFIG, '/audit-logs');
-    expect(upcomingItem).toBeDefined();
-    expect(upcomingItem?.label).toBe('Audit & Compliance');
-    expect(upcomingItem?.isDev).toBe(true);
+    const auditItem = findNavItem(NAVIGATION_CONFIG, '/audit-logs');
+    expect(auditItem).toBeDefined();
+    expect(auditItem?.label).toBe('Audit & Compliance');
+    expect(auditItem?.isDev).toBe(false);
+
+    const userItem = findNavItem(NAVIGATION_CONFIG, '/users');
+    expect(userItem).toBeDefined();
+    expect(userItem?.label).toBe('User Administration');
+    expect(userItem?.isDev).toBe(false);
   });
 });

@@ -41,7 +41,9 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
   hasPayrollCreate,
   isLoading,
 }) => {
-  const [inspectedPeriod, setInspectedPeriod] = useState<PayrollPeriod | null>(null);
+  const [inspectedPeriod, setInspectedPeriod] = useState<PayrollPeriod | null>(
+    null,
+  );
 
   const columns = [
     {
@@ -51,7 +53,9 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
       render: (val: string, record: PayrollPeriod) => (
         <Space>
           <Text strong>{val}</Text>
-          {record.id === activePeriodId && <Tag color="blue">Active Selected</Tag>}
+          {record.id === activePeriodId && (
+            <Tag color="blue">Active Selected</Tag>
+          )}
         </Space>
       ),
     },
@@ -78,7 +82,9 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
       align: 'center' as const,
       width: 140,
       render: (val?: number) => (
-        <Tag color="cyan">{val !== undefined ? `${val} records` : '0 records'}</Tag>
+        <Tag color="cyan">
+          {val !== undefined ? `${val} records` : '0 records'}
+        </Tag>
       ),
     },
     {
@@ -90,7 +96,8 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
         return (
           <div>
             <Text style={{ fontSize: 13 }}>
-              {latestApproval.approvedBy?.email || `User #${latestApproval.approvedById}`}
+              {latestApproval.approvedBy?.email ||
+                `User #${latestApproval.approvedById}`}
             </Text>
             <Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
               {formatDateOnly(latestApproval.date)}
@@ -137,13 +144,23 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
       <Card
         variant="outlined"
         title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Space>
               <CalendarOutlined style={{ color: '#1677ff' }} />
               <span>Payroll Periods Lifecycle Governance</span>
             </Space>
             {hasPayrollCreate && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={onOpenCreateModal}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={onOpenCreateModal}
+              >
                 New Payroll Period
               </Button>
             )}
@@ -202,10 +219,16 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
               Approval & Review Audit Trail
             </Title>
 
-            {inspectedPeriod.approvals && inspectedPeriod.approvals.length > 0 ? (
+            {inspectedPeriod.approvals &&
+            inspectedPeriod.approvals.length > 0 ? (
               <Timeline
                 items={inspectedPeriod.approvals.map((app) => ({
-                  color: app.status === 'APPROVED' ? 'green' : app.status === 'REJECTED' ? 'red' : 'blue',
+                  color:
+                    app.status === 'APPROVED'
+                      ? 'green'
+                      : app.status === 'REJECTED'
+                        ? 'red'
+                        : 'blue',
                   dot:
                     app.status === 'APPROVED' ? (
                       <CheckCircleOutlined />
@@ -214,8 +237,16 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
                     ) : undefined,
                   children: (
                     <div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Tag color={app.status === 'APPROVED' ? 'green' : 'error'}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Tag
+                          color={app.status === 'APPROVED' ? 'green' : 'error'}
+                        >
                           {app.status}
                         </Tag>
                         <Text type="secondary" style={{ fontSize: 12 }}>
@@ -223,10 +254,19 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
                         </Text>
                       </div>
                       <Paragraph style={{ margin: '8px 0 4px', fontSize: 13 }}>
-                        <strong>Reviewer:</strong> {app.approvedBy?.email || `User ID #${app.approvedById}`}
+                        <strong>Reviewer:</strong>{' '}
+                        {app.approvedBy?.email ||
+                          `User ID #${app.approvedById}`}
                       </Paragraph>
                       {app.comments && (
-                        <Text type="secondary" style={{ display: 'block', fontStyle: 'italic', fontSize: 12 }}>
+                        <Text
+                          type="secondary"
+                          style={{
+                            display: 'block',
+                            fontStyle: 'italic',
+                            fontSize: 12,
+                          }}
+                        >
                           &ldquo;{app.comments}&rdquo;
                         </Text>
                       )}
@@ -236,7 +276,8 @@ export const PayrollPeriodManager: React.FC<PayrollPeriodManagerProps> = ({
               />
             ) : (
               <Paragraph type="secondary">
-                No formal approval actions have been recorded yet for this payroll period.
+                No formal approval actions have been recorded yet for this
+                payroll period.
               </Paragraph>
             )}
           </div>

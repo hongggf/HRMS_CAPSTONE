@@ -8,16 +8,22 @@ export const createUserSchema = z.object({
     email: z.string().email(),
     password: z.string().regex(passwordRegex, passwordErrorMessage),
     roleId: z.number().int().positive().optional(),
+    roleIds: z.array(z.number().int().positive()).optional(),
   }),
 });
 
 export const assignRoleSchema = z.object({
-  body: z.object({
-    roleId: z.number().int().positive(),
-  }),
+  body: z
+    .object({
+      roleId: z.number().int().positive().optional(),
+      roleIds: z.array(z.number().int().positive()).optional(),
+    })
+    .refine((data) => data.roleId !== undefined || (data.roleIds !== undefined && data.roleIds.length > 0), {
+      message: 'roleId or roleIds is required',
+    }),
   params: z.object({
     id: z.string().regex(/^\d+$/, 'ID must be an integer').transform(Number),
-  })
+  }),
 });
 
 export const listUsersSchema = z.object({

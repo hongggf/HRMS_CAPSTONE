@@ -31,7 +31,10 @@ interface RequisitionDetailDrawerProps {
   onStatusChangeSuccess?: () => void;
 }
 
-const REQUISITION_STATUS_TAG: Record<RequisitionStatus, { label: string; color: string }> = {
+const REQUISITION_STATUS_TAG: Record<
+  RequisitionStatus,
+  { label: string; color: string }
+> = {
   DRAFT: { label: 'Draft', color: 'default' },
   SUBMITTED: { label: 'Submitted', color: 'processing' },
   PENDING_APPROVAL: { label: 'Pending Approval', color: 'warning' },
@@ -40,12 +43,9 @@ const REQUISITION_STATUS_TAG: Record<RequisitionStatus, { label: string; color: 
   CLOSED: { label: 'Closed', color: 'purple' },
 };
 
-export const RequisitionDetailDrawer: React.FC<RequisitionDetailDrawerProps> = ({
-  open,
-  onClose,
-  requisition,
-  onStatusChangeSuccess,
-}) => {
+export const RequisitionDetailDrawer: React.FC<
+  RequisitionDetailDrawerProps
+> = ({ open, onClose, requisition, onStatusChangeSuccess }) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const isHeadOfHr = user?.roles?.includes('HEAD_OF_HR');
@@ -63,11 +63,10 @@ export const RequisitionDetailDrawer: React.FC<RequisitionDetailDrawerProps> = (
   if (!requisition) return null;
 
   const wf = requisition.workforceRequest;
-  const statusConfig =
-    REQUISITION_STATUS_TAG[requisition.status] || {
-      label: requisition.status,
-      color: 'default',
-    };
+  const statusConfig = REQUISITION_STATUS_TAG[requisition.status] || {
+    label: requisition.status,
+    color: 'default',
+  };
 
   const errorDetails = statusMutation.error
     ? normalizeApiError(statusMutation.error)
@@ -156,7 +155,10 @@ export const RequisitionDetailDrawer: React.FC<RequisitionDetailDrawerProps> = (
               okText="Close"
               cancelText="Cancel"
             >
-              <Button icon={<StopOutlined />} loading={statusMutation.isPending}>
+              <Button
+                icon={<StopOutlined />}
+                loading={statusMutation.isPending}
+              >
                 Close
               </Button>
             </Popconfirm>
@@ -173,8 +175,15 @@ export const RequisitionDetailDrawer: React.FC<RequisitionDetailDrawerProps> = (
         />
       )}
 
-      <Descriptions title="Requisition Overview" bordered column={1} size="small">
-        <Descriptions.Item label="Requisition ID">#{requisition.id}</Descriptions.Item>
+      <Descriptions
+        title="Requisition Overview"
+        bordered
+        column={1}
+        size="small"
+      >
+        <Descriptions.Item label="Requisition ID">
+          #{requisition.id}
+        </Descriptions.Item>
         <Descriptions.Item label="Status">
           <Tag color={statusConfig.color}>{statusConfig.label}</Tag>
         </Descriptions.Item>
@@ -219,7 +228,13 @@ export const RequisitionDetailDrawer: React.FC<RequisitionDetailDrawerProps> = (
               {requisition.jobPosting.title}
             </Descriptions.Item>
             <Descriptions.Item label="Posting Status">
-              <Tag color={requisition.jobPosting.status === 'PUBLISHED' ? 'green' : 'orange'}>
+              <Tag
+                color={
+                  requisition.jobPosting.status === 'PUBLISHED'
+                    ? 'green'
+                    : 'orange'
+                }
+              >
                 {requisition.jobPosting.status}
               </Tag>
             </Descriptions.Item>

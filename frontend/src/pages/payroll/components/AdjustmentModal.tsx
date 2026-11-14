@@ -55,11 +55,7 @@ export const AdjustmentModal: React.FC<AdjustmentModalProps> = ({
         />
       )}
 
-      <Form
-        form={form}
-        layout="vertical"
-        initialValues={{ type: 'ADDITION' }}
-      >
+      <Form form={form} layout="vertical" initialValues={{ type: 'ADDITION' }}>
         <Form.Item
           name="type"
           label="Adjustment Type"
@@ -67,8 +63,14 @@ export const AdjustmentModal: React.FC<AdjustmentModalProps> = ({
         >
           <Select
             options={[
-              { label: 'Addition (+) [Bonus, retroactive allowance]', value: 'ADDITION' },
-              { label: 'Deduction (-) [Unpaid leave adjustment, penalty]', value: 'DEDUCTION' },
+              {
+                label: 'Addition (+) [Bonus, retroactive allowance]',
+                value: 'ADDITION',
+              },
+              {
+                label: 'Deduction (-) [Unpaid leave adjustment, penalty]',
+                value: 'DEDUCTION',
+              },
             ]}
           />
         </Form.Item>
@@ -78,7 +80,11 @@ export const AdjustmentModal: React.FC<AdjustmentModalProps> = ({
           label="Adjustment Amount (USD)"
           rules={[
             { required: true, message: 'Please enter adjustment amount' },
-            { type: 'number', min: 0.01, message: 'Amount must be greater than zero' },
+            {
+              type: 'number',
+              min: 0.01,
+              message: 'Amount must be greater than zero',
+            },
           ]}
         >
           <InputNumber
@@ -92,7 +98,12 @@ export const AdjustmentModal: React.FC<AdjustmentModalProps> = ({
         <Form.Item
           name="reason"
           label="Business Justification / Reason"
-          rules={[{ required: true, message: 'Please provide mandatory audit reason' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please provide mandatory audit reason',
+            },
+          ]}
         >
           <Input.TextArea
             rows={3}

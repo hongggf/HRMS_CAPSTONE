@@ -108,7 +108,8 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
     >
       <div style={{ marginTop: 8, marginBottom: 16 }}>
         <Text type="secondary">
-          Coordinate an interview session with a candidate. If the application is in SHORTLISTED status, it will auto-transition to INTERVIEW.
+          Coordinate an interview session with a candidate. If the application
+          is in SHORTLISTED status, it will auto-transition to INTERVIEW.
         </Text>
       </div>
 
@@ -122,15 +123,17 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
         />
       )}
 
-      {availableApplications.length === 0 && !isLoadingApps && !preselectedApplication && (
-        <Alert
-          type="warning"
-          showIcon
-          message="No Eligible Candidates for Interview"
-          description="Only applications in SHORTLISTED or INTERVIEW status can be scheduled for an interview."
-          style={{ marginBottom: 16 }}
-        />
-      )}
+      {availableApplications.length === 0 &&
+        !isLoadingApps &&
+        !preselectedApplication && (
+          <Alert
+            type="warning"
+            showIcon
+            message="No Eligible Candidates for Interview"
+            description="Only applications in SHORTLISTED or INTERVIEW status can be scheduled for an interview."
+            style={{ marginBottom: 16 }}
+          />
+        )}
 
       <Form form={form} layout="vertical">
         <Form.Item
@@ -141,7 +144,9 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
           <Select
             placeholder="Select candidate application..."
             loading={isLoadingApps}
-            disabled={!!preselectedApplication || availableApplications.length === 0}
+            disabled={
+              !!preselectedApplication || availableApplications.length === 0
+            }
             showSearch
             optionFilterProp="label"
             options={availableApplications.map((app) => ({
@@ -166,11 +171,15 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
           />
         </Form.Item>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
           <Form.Item
             name="type"
             label="Interview Type"
-            rules={[{ required: true, message: 'Please select interview type' }]}
+            rules={[
+              { required: true, message: 'Please select interview type' },
+            ]}
           >
             <Select
               options={[
@@ -191,7 +200,9 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
                 validator(_, value) {
                   if (!value) return Promise.resolve();
                   if (value.isBefore(dayjs())) {
-                    return Promise.reject(new Error('Interview must be scheduled in the future'));
+                    return Promise.reject(
+                      new Error('Interview must be scheduled in the future'),
+                    );
                   }
                   return Promise.resolve();
                 },
@@ -212,7 +223,9 @@ export const InterviewScheduleModal: React.FC<InterviewScheduleModalProps> = ({
         <Form.Item
           name="location"
           label="Location or Meeting URL"
-          rules={[{ required: true, message: 'Meeting location or URL is required' }]}
+          rules={[
+            { required: true, message: 'Meeting location or URL is required' },
+          ]}
         >
           <Input placeholder="e.g. Google Meet: https://meet.google.com/xyz or Room 402" />
         </Form.Item>

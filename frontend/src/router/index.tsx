@@ -13,7 +13,8 @@ import { AttendancePage } from '../pages/attendance/AttendancePage';
 import { PayrollPage } from '../pages/payroll/PayrollPage';
 import { PerformancePage } from '../pages/performance/PerformancePage';
 import { LndPage } from '../pages/lnd/LndPage';
-import { UnderDevelopmentPage } from '../pages/common/UnderDevelopmentPage';
+import { UsersPage } from '../pages/users/UsersPage';
+import { AuditLogsPage } from '../pages/audit/AuditLogsPage';
 import { NotFound404 } from '../pages/error/NotFound404';
 
 export const router = createBrowserRouter([
@@ -136,10 +137,18 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'users',
+        element: (
+          <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
+            <UsersPage />
+          </RoleGuard>
+        ),
+      },
+      {
         path: 'audit-logs',
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
-            <UnderDevelopmentPage />
+            <AuditLogsPage />
           </RoleGuard>
         ),
       },

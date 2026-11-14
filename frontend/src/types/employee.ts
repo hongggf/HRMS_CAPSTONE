@@ -1,22 +1,13 @@
 import { Department, Position } from './organization';
 
 export type EmployeeStatus =
-  | 'PENDING_ONBOARDING'
-  | 'ACTIVE'
-  | 'INACTIVE'
-  | 'TERMINATED';
+  'PENDING_ONBOARDING' | 'ACTIVE' | 'INACTIVE' | 'TERMINATED';
 
 export type OnboardingStatus =
-  | 'PENDING_ONBOARDING'
-  | 'DOCUMENT_COLLECTION'
-  | 'PROFILE_COMPLETED'
-  | 'ACTIVE';
+  'PENDING_ONBOARDING' | 'DOCUMENT_COLLECTION' | 'PROFILE_COMPLETED' | 'ACTIVE';
 
 export type EmploymentType =
-  | 'FULL_TIME'
-  | 'PART_TIME'
-  | 'CONTRACT'
-  | 'INTERNSHIP';
+  'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
 
 export interface EmployeeDocument {
   id: number;
@@ -115,6 +106,7 @@ export interface EmployeeFilterQuery {
   departmentId?: number;
   status?: EmployeeStatus;
   onboardingStatus?: OnboardingStatus;
+  employmentType?: EmploymentType;
   search?: string;
 }
 
@@ -129,4 +121,11 @@ export const DOCUMENT_TYPE_LABELS: Record<string, string> = {
 };
 
 export const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB matching backend Multer limit
-export const ALLOWED_FILE_EXTENSIONS = ['.pdf', '.png', '.jpg', '.jpeg', '.doc', '.docx'];
+export const ALLOWED_FILE_EXTENSIONS = [
+  '.pdf',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.doc',
+  '.docx',
+];

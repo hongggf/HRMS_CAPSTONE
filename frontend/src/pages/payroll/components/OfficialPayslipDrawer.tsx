@@ -17,6 +17,7 @@ import {
   PrinterOutlined,
   CheckCircleOutlined,
   InfoCircleOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { Payroll, PayrollPeriodStatus } from '../../../types/payroll';
 import { formatCurrency } from '../../../utils/formatters';
@@ -54,6 +55,7 @@ interface OfficialPayslipDrawerProps {
   payroll: Payroll | null;
   isLoading: boolean;
   error: unknown;
+  isHeadOfHr?: boolean;
 }
 
 export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
@@ -62,6 +64,7 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
   payroll,
   isLoading,
   error,
+  isHeadOfHr = true,
 }) => {
   const handlePrint = () => {
     window.print();
@@ -113,7 +116,9 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
       {isLoading ? (
         <div style={{ textAlign: 'center', padding: '60px 0' }}>
           <Spin size="large" />
-          <Paragraph style={{ marginTop: 16 }}>Loading authoritative payslip data...</Paragraph>
+          <Paragraph style={{ marginTop: 16 }}>
+            Loading authoritative payslip data...
+          </Paragraph>
         </div>
       ) : error ? (
         <Alert
@@ -139,7 +144,10 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
             }}
           >
             <div>
-              <Title level={4} style={{ margin: 0, color: '#1677ff', letterSpacing: 0.5 }}>
+              <Title
+                level={4}
+                style={{ margin: 0, color: '#1677ff', letterSpacing: 0.5 }}
+              >
                 HRMS ENTERPRISE PAYSLIP
               </Title>
               <Text type="secondary" strong>
@@ -154,7 +162,10 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
             </div>
             <div style={{ textAlign: 'right' }}>
               <div>{getStatusTag(period?.status || payroll.status)}</div>
-              <Text type="secondary" style={{ fontSize: 11, display: 'block', marginTop: 4 }}>
+              <Text
+                type="secondary"
+                style={{ fontSize: 11, display: 'block', marginTop: 4 }}
+              >
                 Reference ID: PAY-{payroll.id}
               </Text>
             </div>
@@ -185,9 +196,15 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
               </Col>
               <Col span={12}>
                 <Text type="secondary">Full Name: </Text>
-                <Text strong>
-                  {payroll.employee?.firstName} {payroll.employee?.lastName}
-                </Text>
+                {isHeadOfHr ? (
+                  <Text strong>
+                    {payroll.employee?.firstName} {payroll.employee?.lastName}
+                  </Text>
+                ) : (
+                  <Tag icon={<LockOutlined />} color="default">
+                    Confidential
+                  </Tag>
+                )}
               </Col>
               <Col span={12}>
                 <Text type="secondary">Department: </Text>
@@ -195,16 +212,36 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
               </Col>
               <Col span={12}>
                 <Text type="secondary">Position / Role: </Text>
-                <Text>{payroll.employee?.position?.title || '—'}</Text>
+                {isHeadOfHr ? (
+                  <Text>{payroll.employee?.position?.title || '—'}</Text>
+                ) : (
+                  <Tag icon={<LockOutlined />} color="default">
+                    Confidential
+                  </Tag>
+                )}
               </Col>
               <Col span={12}>
                 <Text type="secondary">Corporate Email: </Text>
-                <Text>{payroll.employee?.email || '—'}</Text>
+                <Text>
+                  {isHeadOfHr
+                    ? payroll.employee?.email || '—'
+                    : '••••••@••••.com'}
+                </Text>
               </Col>
               <Col span={12}>
                 <Text type="secondary">Payment Status: </Text>
-                <Tag color={period?.status === 'LOCKED' || period?.status === 'PAID' ? 'green' : 'blue'}>
-                  {period?.status === 'PAID' ? 'Paid' : isReleased ? 'Approved for Payout' : 'Pending Authorization'}
+                <Tag
+                  color={
+                    period?.status === 'LOCKED' || period?.status === 'PAID'
+                      ? 'green'
+                      : 'blue'
+                  }
+                >
+                  {period?.status === 'PAID'
+                    ? 'Paid'
+                    : isReleased
+                      ? 'Approved for Payout'
+                      : 'Pending Authorization'}
                 </Tag>
               </Col>
             </Row>
@@ -230,7 +267,9 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
                 title: 'Description',
                 dataIndex: 'description',
                 key: 'desc',
-                render: (val: string) => <Text type="secondary">{val || '—'}</Text>,
+                render: (val: string) => (
+                  <Text type="secondary">{val || '—'}</Text>
+                ),
               },
               {
                 title: 'Amount (USD)',
@@ -287,7 +326,9 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
                     title: 'Description',
                     dataIndex: 'description',
                     key: 'desc',
-                    render: (val: string) => <Text type="secondary">{val || '—'}</Text>,
+                    render: (val: string) => (
+                      <Text type="secondary">{val || '—'}</Text>
+                    ),
                   },
                   {
                     title: 'Amount (USD)',
@@ -320,8 +361,14 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
               </div>
             </>
           ) : (
-            <Card size="small" variant="outlined" style={{ marginBottom: 16, background: '#fafafa' }}>
-              <Text type="secondary">No deductions recorded for this pay period.</Text>
+            <Card
+              size="small"
+              variant="outlined"
+              style={{ marginBottom: 16, background: '#fafafa' }}
+            >
+              <Text type="secondary">
+                No deductions recorded for this pay period.
+              </Text>
             </Card>
           )}
 
@@ -342,7 +389,9 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
                     dataIndex: 'type',
                     key: 'type',
                     render: (val: string) => (
-                      <Tag color={val === 'ADDITION' ? 'green' : 'volcano'}>{val}</Tag>
+                      <Tag color={val === 'ADDITION' ? 'green' : 'volcano'}>
+                        {val}
+                      </Tag>
                     ),
                   },
                   {
@@ -362,7 +411,9 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
                     key: 'amount',
                     align: 'right' as const,
                     render: (val: number, rec: any) => (
-                      <Text type={rec.type === 'ADDITION' ? 'success' : 'danger'}>
+                      <Text
+                        type={rec.type === 'ADDITION' ? 'success' : 'danger'}
+                      >
                         {rec.type === 'ADDITION' ? '+' : '-'}
                         {formatCurrency(val)}
                       </Text>
@@ -394,7 +445,8 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
               <Space size="small">
                 <CheckCircleOutlined style={{ color: '#52c41a' }} />
                 <Text style={{ fontSize: 12, color: '#595959' }}>
-                  Gross ${grossPay.toFixed(2)} - Deductions ${Number(payroll.totalDeductions || 0).toFixed(2)}
+                  Gross ${grossPay.toFixed(2)} - Deductions $
+                  {Number(payroll.totalDeductions || 0).toFixed(2)}
                 </Text>
               </Space>
             </div>
@@ -415,7 +467,8 @@ export const OfficialPayslipDrawer: React.FC<OfficialPayslipDrawerProps> = ({
           {/* Footer Legal & Security Notice */}
           <div style={{ marginTop: 20, textAlign: 'center' }}>
             <Text type="secondary" style={{ fontSize: 11 }}>
-              Confidential payroll record generated by HRMS Enterprise. Unauthorized reproduction or sharing is prohibited.
+              Confidential payroll record generated by HRMS Enterprise.
+              Unauthorized reproduction or sharing is prohibited.
             </Text>
           </div>
         </div>

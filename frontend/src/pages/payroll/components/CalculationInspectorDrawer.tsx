@@ -14,6 +14,7 @@ import {
 import {
   CalculatorOutlined,
   ClockCircleOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { Payroll } from '../../../types/payroll';
 import { formatCurrency } from '../../../utils/formatters';
@@ -24,13 +25,12 @@ interface CalculationInspectorDrawerProps {
   open: boolean;
   onClose: () => void;
   payroll: Payroll | null;
+  isHeadOfHr?: boolean;
 }
 
-export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProps> = ({
-  open,
-  onClose,
-  payroll,
-}) => {
+export const CalculationInspectorDrawer: React.FC<
+  CalculationInspectorDrawerProps
+> = ({ open, onClose, payroll, isHeadOfHr = false }) => {
   if (!payroll) return null;
 
   const basic = payroll.basicSalary || 0;
@@ -60,12 +60,27 @@ export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProp
       onClose={onClose}
     >
       <div style={{ marginBottom: 16 }}>
-        <Title level={5} style={{ margin: 0 }}>
-          {payroll.employee?.firstName} {payroll.employee?.lastName} (
-          {payroll.employee?.employeeId})
+        <Title level={5} style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {isHeadOfHr ? (
+            `${payroll.employee?.firstName} ${payroll.employee?.lastName}`
+          ) : (
+            <Tag icon={<LockOutlined />} color="default">
+              Confidential Personnel
+            </Tag>
+          )}{' '}
+          <Text type="secondary" style={{ fontSize: 13, fontWeight: 'normal' }}>
+            ({payroll.employee?.employeeId})
+          </Text>
         </Title>
-        <Text type="secondary">
-          {payroll.employee?.department?.name} • {payroll.employee?.position?.title}
+        <Text type="secondary" style={{ display: 'block', marginTop: 4 }}>
+          {payroll.employee?.department?.name} •{' '}
+          {isHeadOfHr ? (
+            payroll.employee?.position?.title || '—'
+          ) : (
+            <Tag color="default" style={{ fontSize: 11, borderRadius: 8 }}>
+              <LockOutlined style={{ fontSize: 10, marginRight: 2 }} /> Confidential
+            </Tag>
+          )}
         </Text>
       </div>
 
@@ -131,7 +146,8 @@ export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProp
           </div>
         ) : (
           <Text type="secondary">
-            No approved overtime hours recorded for this employee in the timesheet cycle.
+            No approved overtime hours recorded for this employee in the
+            timesheet cycle.
           </Text>
         )}
       </Card>
@@ -161,10 +177,10 @@ export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProp
                       r.componentType === 'ALLOWANCE'
                         ? 'green'
                         : r.componentType === 'DEDUCTION'
-                        ? 'red'
-                        : r.componentType === 'BONUS'
-                        ? 'gold'
-                        : 'default'
+                          ? 'red'
+                          : r.componentType === 'BONUS'
+                            ? 'gold'
+                            : 'default'
                     }
                   >
                     {r.componentType}
@@ -176,7 +192,9 @@ export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProp
               title: 'Description',
               dataIndex: 'description',
               key: 'description',
-              render: (val: string) => <Text type="secondary">{val || '—'}</Text>,
+              render: (val: string) => (
+                <Text type="secondary">{val || '—'}</Text>
+              ),
             },
             {
               title: 'Computed Amount',
@@ -185,9 +203,7 @@ export const CalculationInspectorDrawer: React.FC<CalculationInspectorDrawerProp
               align: 'right' as const,
               render: (val: number, r: any) => (
                 <Text
-                  type={
-                    r.componentType === 'DEDUCTION' ? 'danger' : 'success'
-                  }
+                  type={r.componentType === 'DEDUCTION' ? 'danger' : 'success'}
                 >
                   {r.componentType === 'DEDUCTION' ? '-' : '+'}
                   {formatCurrency(val)}

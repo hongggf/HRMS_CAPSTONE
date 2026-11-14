@@ -80,7 +80,12 @@ export const CreatePipModal: React.FC<CreatePipModalProps> = ({
         <Form.Item
           name="dateRange"
           label="PIP Timeline (Start Date - Target Completion)"
-          rules={[{ required: true, message: 'Please select PIP start and target end dates' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please select PIP start and target end dates',
+            },
+          ]}
         >
           <DatePicker.RangePicker style={{ width: '100%' }} />
         </Form.Item>
@@ -88,7 +93,9 @@ export const CreatePipModal: React.FC<CreatePipModalProps> = ({
         <Form.Item
           name="objective"
           label="Core Target Objective"
-          rules={[{ required: true, message: 'Please enter primary PIP objective' }]}
+          rules={[
+            { required: true, message: 'Please enter primary PIP objective' },
+          ]}
         >
           <Input placeholder="e.g. Achieve 100% on-time milestone delivery and eliminate critical defect escapes" />
         </Form.Item>
@@ -96,7 +103,12 @@ export const CreatePipModal: React.FC<CreatePipModalProps> = ({
         <Form.Item
           name="reason"
           label="Performance Shortfall Justification"
-          rules={[{ required: true, message: 'Please document performance gaps triggering this plan' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please document performance gaps triggering this plan',
+            },
+          ]}
         >
           <Input.TextArea
             rows={3}

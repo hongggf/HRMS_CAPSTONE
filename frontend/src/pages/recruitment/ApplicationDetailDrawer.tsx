@@ -44,12 +44,9 @@ interface ApplicationDetailDrawerProps {
   onSuccess?: () => void;
 }
 
-export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = ({
-  open,
-  onClose,
-  application,
-  onSuccess,
-}) => {
+export const ApplicationDetailDrawer: React.FC<
+  ApplicationDetailDrawerProps
+> = ({ open, onClose, application, onSuccess }) => {
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const userRoles = Array.isArray(user?.roles) ? user.roles : [];
@@ -82,20 +79,17 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
 
   if (!application) return null;
 
-  const currentConfig =
-    APPLICATION_STATUS_CONFIG[application.status] || {
-      label: application.status,
-      color: 'default',
-    };
+  const currentConfig = APPLICATION_STATUS_CONFIG[application.status] || {
+    label: application.status,
+    color: 'default',
+  };
 
   const isPendingApproval =
     application.status === 'PENDING_HEAD_OF_HR_APPROVAL';
   const isTerminal = ['APPROVED', 'REJECTED', 'WITHDRAWN', 'HIRED'].includes(
     application.status,
   );
-  const canSchedule = ['SHORTLISTED', 'INTERVIEW'].includes(
-    application.status,
-  );
+  const canSchedule = ['SHORTLISTED', 'INTERVIEW'].includes(application.status);
 
   const activeMutation = approveMutation.isPending
     ? approveMutation
@@ -340,7 +334,9 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
                 <Space direction="vertical" size={4} style={{ width: '100%' }}>
                   <div>
                     <Text type="secondary">Interviewer: </Text>
-                    <Text>{iv.interviewer?.email || `User #${iv.interviewerId}`}</Text>
+                    <Text>
+                      {iv.interviewer?.email || `User #${iv.interviewerId}`}
+                    </Text>
                   </div>
                   <div>
                     <Text type="secondary">Scheduled: </Text>
@@ -382,9 +378,7 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
                             {iv.evaluation.score} / 100
                           </Tag>
                         </Space>
-                        <Tag color="purple">
-                          {iv.evaluation.recommendation}
-                        </Tag>
+                        <Tag color="purple">{iv.evaluation.recommendation}</Tag>
                       </Space>
                       <div>
                         <Text type="secondary">Strengths: </Text>
@@ -411,7 +405,9 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
             ))}
           </Space>
         ) : (
-          <Text type="secondary">No interviews scheduled yet for this application.</Text>
+          <Text type="secondary">
+            No interviews scheduled yet for this application.
+          </Text>
         )}
 
         <Divider />
@@ -421,11 +417,10 @@ export const ApplicationDetailDrawer: React.FC<ApplicationDetailDrawerProps> = (
           <Timeline
             style={{ marginTop: 12 }}
             items={application.statusHistory.map((h) => {
-              const conf =
-                APPLICATION_STATUS_CONFIG[h.status] || {
-                  label: h.status,
-                  color: 'blue',
-                };
+              const conf = APPLICATION_STATUS_CONFIG[h.status] || {
+                label: h.status,
+                color: 'blue',
+              };
               return {
                 color: conf.color,
                 children: (

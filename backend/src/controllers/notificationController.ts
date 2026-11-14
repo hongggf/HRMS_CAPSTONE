@@ -22,7 +22,7 @@ export const getUnreadCount = async (req: Request, res: Response) => {
     const count = await prisma.notification.count({
       where: { recipientId: userId, isRead: false }
     });
-    res.json({ count });
+    res.json({ count, unreadCount: count });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

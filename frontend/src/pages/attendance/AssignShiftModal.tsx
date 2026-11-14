@@ -53,7 +53,8 @@ export const AssignShiftModal: React.FC<AssignShiftModalProps> = ({
       onClose();
     } catch (err: any) {
       if (err.errorFields) return;
-      const msg = err.response?.data?.error || err.message || 'Failed to assign shift';
+      const msg =
+        err.response?.data?.error || err.message || 'Failed to assign shift';
       setBackendError(msg);
       message.error(msg);
     } finally {

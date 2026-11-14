@@ -355,7 +355,9 @@ describe('Executive Tasks & Approvals Center (Head of HR)', () => {
   it('does not render New Task Request button', () => {
     renderComponent();
 
-    const newReqBtn = screen.queryByRole('button', { name: /new task request/i });
+    const newReqBtn = screen.queryByRole('button', {
+      name: /new task request/i,
+    });
     expect(newReqBtn).not.toBeInTheDocument();
   });
 });

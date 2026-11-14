@@ -98,7 +98,9 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
           <>
             <Title level={5}>Leave Request Details</Title>
             <Descriptions bordered column={1} size="small">
-              <Descriptions.Item label="Request ID">#{leave.id}</Descriptions.Item>
+              <Descriptions.Item label="Request ID">
+                #{leave.id}
+              </Descriptions.Item>
               <Descriptions.Item label="Employee">
                 {leave.employee
                   ? `${leave.employee.employeeId} - ${leave.employee.firstName} ${leave.employee.lastName}`
@@ -108,7 +110,8 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
                 {leave.leaveType?.name || `ID: ${leave.leaveTypeId}`}
               </Descriptions.Item>
               <Descriptions.Item label="Period">
-                {formatDateOnly(leave.startDate)} to {formatDateOnly(leave.endDate)}
+                {formatDateOnly(leave.startDate)} to{' '}
+                {formatDateOnly(leave.endDate)}
               </Descriptions.Item>
               <Descriptions.Item label="Status">
                 <Tag
@@ -129,7 +132,8 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
                 <Text>{leave.reason || '—'}</Text>
               </Descriptions.Item>
               <Descriptions.Item label="Approver">
-                {leave.approver?.email || (leave.approvedBy ? `User #${leave.approvedBy}` : 'Pending')}
+                {leave.approver?.email ||
+                  (leave.approvedBy ? `User #${leave.approvedBy}` : 'Pending')}
               </Descriptions.Item>
               <Descriptions.Item label="Submitted At">
                 {formatTimestamp(leave.createdAt)}
@@ -176,7 +180,8 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
                 <Text>{ot.reason || '—'}</Text>
               </Descriptions.Item>
               <Descriptions.Item label="Approver">
-                {ot.approver?.email || (ot.approvedBy ? `User #${ot.approvedBy}` : 'Pending')}
+                {ot.approver?.email ||
+                  (ot.approvedBy ? `User #${ot.approvedBy}` : 'Pending')}
               </Descriptions.Item>
               <Descriptions.Item label="Submitted At">
                 {formatTimestamp(ot.createdAt)}
@@ -192,7 +197,9 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
           <>
             <Title level={5}>Timesheet Calculation Details</Title>
             <Descriptions bordered column={1} size="small">
-              <Descriptions.Item label="Timesheet ID">#{ts.id}</Descriptions.Item>
+              <Descriptions.Item label="Timesheet ID">
+                #{ts.id}
+              </Descriptions.Item>
               <Descriptions.Item label="Employee">
                 {ts.employee
                   ? `${ts.employee.employeeId} - ${ts.employee.firstName} ${ts.employee.lastName}`
@@ -205,10 +212,14 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
                 {ts.regularHours} hrs
               </Descriptions.Item>
               <Descriptions.Item label="Overtime Hours">
-                <strong style={{ color: '#fa8c16' }}>{ts.overtimeHours} hrs</strong>
+                <strong style={{ color: '#fa8c16' }}>
+                  {ts.overtimeHours} hrs
+                </strong>
               </Descriptions.Item>
               <Descriptions.Item label="Total Hours">
-                <strong style={{ color: '#52c41a' }}>{ts.totalHours} hrs</strong>
+                <strong style={{ color: '#52c41a' }}>
+                  {ts.totalHours} hrs
+                </strong>
               </Descriptions.Item>
               <Descriptions.Item label="Calculation Truth">
                 Backend Server Verified
@@ -224,7 +235,9 @@ export const AttendanceDetailDrawer: React.FC<AttendanceDetailDrawerProps> = ({
           <>
             <Title level={5}>Shift Schedule Details</Title>
             <Descriptions bordered column={1} size="small">
-              <Descriptions.Item label="Shift ID">#{shift.id}</Descriptions.Item>
+              <Descriptions.Item label="Shift ID">
+                #{shift.id}
+              </Descriptions.Item>
               <Descriptions.Item label="Shift Name">
                 <strong>{shift.name}</strong>
               </Descriptions.Item>

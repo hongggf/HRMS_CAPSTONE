@@ -1,5 +1,14 @@
 import React, { useEffect } from 'react';
-import { Modal, Form, Select, Input, Alert, Typography, Tag, Space } from 'antd';
+import {
+  Modal,
+  Form,
+  Select,
+  Input,
+  Alert,
+  Typography,
+  Tag,
+  Space,
+} from 'antd';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '../../api/recruitment';
 import {
@@ -77,11 +86,10 @@ export const ApplicationStatusModal: React.FC<ApplicationStatusModalProps> = ({
     }
   };
 
-  const currentConfig =
-    APPLICATION_STATUS_CONFIG[application.status] || {
-      label: application.status,
-      color: 'default',
-    };
+  const currentConfig = APPLICATION_STATUS_CONFIG[application.status] || {
+    label: application.status,
+    color: 'default',
+  };
 
   const errorDetails = statusMutation.error
     ? normalizeApiError(statusMutation.error)
@@ -103,7 +111,8 @@ export const ApplicationStatusModal: React.FC<ApplicationStatusModalProps> = ({
           <div>
             <Text type="secondary">Candidate: </Text>
             <Text strong>
-              {application.candidate?.firstName} {application.candidate?.lastName}
+              {application.candidate?.firstName}{' '}
+              {application.candidate?.lastName}
             </Text>
           </div>
           <div>

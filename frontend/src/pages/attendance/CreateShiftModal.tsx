@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Input, InputNumber, Checkbox, Alert, message } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Checkbox,
+  Alert,
+  message,
+} from 'antd';
 import { ScheduleOutlined } from '@ant-design/icons';
 import { attendanceApi } from '../../api/attendance';
 
@@ -64,7 +72,8 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
       onClose();
     } catch (err: any) {
       if (err.errorFields) return;
-      const msg = err.response?.data?.error || err.message || 'Failed to create shift';
+      const msg =
+        err.response?.data?.error || err.message || 'Failed to create shift';
       setBackendError(msg);
       message.error(msg);
     } finally {
@@ -106,7 +115,10 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
           label="Shift Name"
           rules={[{ required: true, message: 'Please enter shift name' }]}
         >
-          <Input placeholder="e.g. Standard Morning Shift" disabled={submitting} />
+          <Input
+            placeholder="e.g. Standard Morning Shift"
+            disabled={submitting}
+          />
         </Form.Item>
 
         <Form.Item
@@ -142,13 +154,20 @@ export const CreateShiftModal: React.FC<CreateShiftModalProps> = ({
           label="Break Duration (Minutes)"
           rules={[{ required: true, message: 'Break duration is required' }]}
         >
-          <InputNumber min={0} max={240} style={{ width: '100%' }} disabled={submitting} />
+          <InputNumber
+            min={0}
+            max={240}
+            style={{ width: '100%' }}
+            disabled={submitting}
+          />
         </Form.Item>
 
         <Form.Item
           name="workingDays"
           label="Working Days"
-          rules={[{ required: true, message: 'Select at least one working day' }]}
+          rules={[
+            { required: true, message: 'Select at least one working day' },
+          ]}
         >
           <Checkbox.Group options={DAYS_OPTIONS} disabled={submitting} />
         </Form.Item>

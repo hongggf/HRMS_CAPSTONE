@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Modal,
-  Form,
-  Select,
-  Input,
-  Radio,
-  Alert,
-  Typography,
-} from 'antd';
+import { Modal, Form, Select, Input, Radio, Alert, Typography } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { recruitmentApi } from '../../api/recruitment';
 import { CreateApplicationInput } from '../../types/recruitment';
@@ -30,12 +22,15 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
-  const [candidateMode, setCandidateMode] = useState<'existing' | 'new'>('existing');
+  const [candidateMode, setCandidateMode] = useState<'existing' | 'new'>(
+    'existing',
+  );
 
   // Fetch published job postings
   const { data: postingData, isLoading: isLoadingPostings } = useQuery({
     queryKey: ['published-job-postings'],
-    queryFn: () => recruitmentApi.listJobPostings({ status: 'PUBLISHED', limit: 100 }),
+    queryFn: () =>
+      recruitmentApi.listJobPostings({ status: 'PUBLISHED', limit: 100 }),
     enabled: open,
   });
 
@@ -113,7 +108,8 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
     >
       <div style={{ marginTop: 8, marginBottom: 16 }}>
         <Text type="secondary">
-          Associate a candidate profile with an active, published job vacancy. Applications start in the APPLIED status.
+          Associate a candidate profile with an active, published job vacancy.
+          Applications start in the APPLIED status.
         </Text>
       </div>
 
@@ -140,7 +136,9 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
         <Form.Item
           name="jobPostingId"
           label="Target Job Posting"
-          rules={[{ required: true, message: 'Please select an active job posting' }]}
+          rules={[
+            { required: true, message: 'Please select an active job posting' },
+          ]}
         >
           <Select
             placeholder="Select published job posting..."
@@ -160,8 +158,12 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
             value={candidateMode}
             onChange={(e) => setCandidateMode(e.target.value)}
           >
-            <Radio.Button value="existing">Existing Candidate Profile</Radio.Button>
-            <Radio.Button value="new">Create & Apply New Candidate</Radio.Button>
+            <Radio.Button value="existing">
+              Existing Candidate Profile
+            </Radio.Button>
+            <Radio.Button value="new">
+              Create & Apply New Candidate
+            </Radio.Button>
           </Radio.Group>
         </Form.Item>
 
@@ -169,7 +171,9 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
           <Form.Item
             name="candidateId"
             label="Candidate Profile"
-            rules={[{ required: true, message: 'Please select a candidate profile' }]}
+            rules={[
+              { required: true, message: 'Please select a candidate profile' },
+            ]}
           >
             <Select
               placeholder="Search candidate by name or email..."
@@ -183,8 +187,20 @@ export const ApplicationModal: React.FC<ApplicationModalProps> = ({
             />
           </Form.Item>
         ) : (
-          <div style={{ background: 'rgba(0,0,0,0.02)', padding: 16, borderRadius: 6 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div
+            style={{
+              background: 'rgba(0,0,0,0.02)',
+              padding: 16,
+              borderRadius: 6,
+            }}
+          >
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '1fr 1fr',
+                gap: 16,
+              }}
+            >
               <Form.Item
                 name="firstName"
                 label="First Name"

@@ -320,7 +320,9 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
   it('renders primary ATS dashboard with operational metrics and applications table', async () => {
     renderComponent();
 
-    expect(screen.getByText('Recruitment & Applicant Tracking (ATS)')).toBeInTheDocument();
+    expect(
+      screen.getByText('Recruitment & Applicant Tracking (ATS)'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Open Vacancies')).toBeInTheDocument();
     expect(screen.getByText('Active Pipeline')).toBeInTheDocument();
     expect(screen.getByText('Scheduled Interviews')).toBeInTheDocument();
@@ -329,7 +331,9 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
       expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
       expect(screen.getByText('Marcus Wright')).toBeInTheDocument();
       expect(screen.getByText('Shortlisted')).toBeInTheDocument();
-      expect(screen.getAllByText('Pending Head of HR Approval').length).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getAllByText('Pending Head of HR Approval').length,
+      ).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -345,8 +349,12 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
     fireEvent.click(kanbanButton);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Shortlisted').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('Pending Head of HR Approval').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Shortlisted').length).toBeGreaterThanOrEqual(
+        1,
+      );
+      expect(
+        screen.getAllByText('Pending Head of HR Approval').length,
+      ).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Sarah Connor')).toBeInTheDocument();
     });
   });
@@ -367,15 +375,19 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
     await waitFor(() => {
       expect(screen.getByText('s***r@cyberdyne.io')).toBeInTheDocument();
       expect(screen.getByText('+1 ****71')).toBeInTheDocument();
-      expect(screen.queryByText('sarah.connor@cyberdyne.io')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('sarah.connor@cyberdyne.io'),
+      ).not.toBeInTheDocument();
     });
   });
 
   it('Head of HR approves a candidate pending approval', async () => {
-    const approveSpy = vi.spyOn(recruitmentApi, 'approveCandidate').mockResolvedValue({
-      ...mockApplications[1],
-      status: 'APPROVED',
-    });
+    const approveSpy = vi
+      .spyOn(recruitmentApi, 'approveCandidate')
+      .mockResolvedValue({
+        ...mockApplications[1],
+        status: 'APPROVED',
+      });
 
     renderComponent();
 
@@ -397,12 +409,18 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
   it('switches to Requisitions tab and displays requisitions list', async () => {
     renderComponent();
 
-    const requisitionsTab = screen.getByRole('tab', { name: /Job Requisitions/i });
+    const requisitionsTab = screen.getByRole('tab', {
+      name: /Job Requisitions/i,
+    });
     fireEvent.click(requisitionsTab);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Senior Backend Engineer').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getByText('Talent Acquisition Partner')).toBeInTheDocument();
+      expect(
+        screen.getAllByText('Senior Backend Engineer').length,
+      ).toBeGreaterThanOrEqual(1);
+      expect(
+        screen.getByText('Talent Acquisition Partner'),
+      ).toBeInTheDocument();
       expect(screen.getByText('#1')).toBeInTheDocument();
     });
   });
@@ -423,16 +441,24 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
   it('switches to Candidate Profiles tab and searches candidates', async () => {
     renderComponent();
 
-    const candidatesTab = screen.getByRole('tab', { name: /Candidate Profiles/i });
+    const candidatesTab = screen.getByRole('tab', {
+      name: /Candidate Profiles/i,
+    });
     fireEvent.click(candidatesTab);
 
     await waitFor(() => {
-      expect(screen.getAllByText('Sarah Connor').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('Marcus Wright').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Sarah Connor').length).toBeGreaterThanOrEqual(
+        1,
+      );
+      expect(
+        screen.getAllByText('Marcus Wright').length,
+      ).toBeGreaterThanOrEqual(1);
     });
 
     // Enter search term
-    const searchInput = screen.getByPlaceholderText(/Search candidate name, email, or phone/i);
+    const searchInput = screen.getByPlaceholderText(
+      /Search candidate name, email, or phone/i,
+    );
     fireEvent.change(searchInput, { target: { value: 'Sarah' } });
 
     await waitFor(() => {
@@ -445,7 +471,9 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
   it('switches to Interviews tab and displays evaluation details', async () => {
     renderComponent();
 
-    const interviewsTab = screen.getByRole('tab', { name: /Interviews & Evaluations/i });
+    const interviewsTab = screen.getByRole('tab', {
+      name: /Interviews & Evaluations/i,
+    });
     fireEvent.click(interviewsTab);
 
     await waitFor(() => {
@@ -462,12 +490,15 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
         data: {
           success: false,
           error: {
-            message: 'Interviewer has a scheduling conflict with another interview at this time',
+            message:
+              'Interviewer has a scheduling conflict with another interview at this time',
           },
         },
       },
     };
-    vi.spyOn(recruitmentApi, 'createInterview').mockRejectedValue(errorResponse);
+    vi.spyOn(recruitmentApi, 'createInterview').mockRejectedValue(
+      errorResponse,
+    );
 
     renderComponent();
 
@@ -476,25 +507,33 @@ describe('Phase 4: Recruitment & Applicant Tracking System (ATS)', () => {
     });
 
     // Click Interview button for Sarah Connor (in SHORTLISTED stage)
-    const interviewButtons = screen.getAllByRole('button', { name: /Interview/i });
+    const interviewButtons = screen.getAllByRole('button', {
+      name: /Interview/i,
+    });
     expect(interviewButtons.length).toBeGreaterThan(0);
     fireEvent.click(interviewButtons[0]);
 
     // Expect modal to be open
     await waitFor(() => {
-      expect(screen.getByText('Schedule Interview Session')).toBeInTheDocument();
+      expect(
+        screen.getByText('Schedule Interview Session'),
+      ).toBeInTheDocument();
     });
 
     // Fill location and submit
     const locationInput = screen.getByPlaceholderText(/Google Meet/i);
-    fireEvent.change(locationInput, { target: { value: 'Zoom Conflict Room' } });
+    fireEvent.change(locationInput, {
+      target: { value: 'Zoom Conflict Room' },
+    });
 
     const submitBtn = screen.getByRole('button', { name: /Schedule Session/i });
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
       expect(
-        screen.getByText(/Interviewer has a scheduling conflict with another interview at this time/i),
+        screen.getByText(
+          /Interviewer has a scheduling conflict with another interview at this time/i,
+        ),
       ).toBeInTheDocument();
     });
   });

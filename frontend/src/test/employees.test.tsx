@@ -183,11 +183,13 @@ describe('Phase 5: Employee Management & Onboarding', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     queryClient.clear();
-    useAuthStore.getState().login(
-      { id: 1, email: 'head@hr.local', roles: ['HEAD_OF_HR'] },
-      'access-token-123',
-      'refresh-token-456',
-    );
+    useAuthStore
+      .getState()
+      .login(
+        { id: 1, email: 'head@hr.local', roles: ['HEAD_OF_HR'] },
+        'access-token-123',
+        'refresh-token-456',
+      );
 
     vi.mocked(employeeApi.list).mockResolvedValue(mockEmployees);
     vi.mocked(employeeApi.getById).mockImplementation(async (id: number) => {
@@ -234,7 +236,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
         expect(screen.getByText('Bob Taylor')).toBeInTheDocument();
       });
 
-      const searchInput = screen.getByPlaceholderText(/search by name, id, email/i);
+      const searchInput = screen.getByPlaceholderText(
+        /search by name, id, email/i,
+      );
       fireEvent.change(searchInput, { target: { value: 'alice' } });
 
       await waitFor(() => {
@@ -259,11 +263,7 @@ describe('Phase 5: Employee Management & Onboarding', () => {
   describe('Employee Detail Drawer', () => {
     it('opens drawer and displays contact info, position history, and documents', async () => {
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={1}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={1} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
@@ -276,7 +276,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       fireEvent.click(docsTab);
 
       await waitFor(() => {
-        expect(screen.getByText('Government ID / Passport')).toBeInTheDocument();
+        expect(
+          screen.getByText('Government ID / Passport'),
+        ).toBeInTheDocument();
         expect(screen.getByText('alice_passport.pdf')).toBeInTheDocument();
       });
 
@@ -285,17 +287,15 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       fireEvent.click(posTab);
 
       await waitFor(() => {
-        expect(screen.getByText('Initial assignment upon hire')).toBeInTheDocument();
+        expect(
+          screen.getByText('Initial assignment upon hire'),
+        ).toBeInTheDocument();
       });
     });
 
     it('field-level protection: displays compensation tab for HEAD_OF_HR', async () => {
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={1}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={1} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
@@ -308,18 +308,16 @@ describe('Phase 5: Employee Management & Onboarding', () => {
     });
 
     it('field-level protection: hides compensation tab for non-executive role', async () => {
-      useAuthStore.getState().login(
-        { id: 4, email: 'attendance@hr.local', roles: ['HR_ATTENDANCE'] },
-        'att-token',
-        'att-refresh',
-      );
+      useAuthStore
+        .getState()
+        .login(
+          { id: 4, email: 'attendance@hr.local', roles: ['HR_ATTENDANCE'] },
+          'att-token',
+          'att-refresh',
+        );
 
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={1}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={1} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
@@ -340,18 +338,16 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       });
 
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={2}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={2} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
         expect(screen.getByText('bob.taylor@hr.local')).toBeInTheDocument();
       });
 
-      const completeBtn = screen.getByRole('button', { name: /mark onboarding complete/i });
+      const completeBtn = screen.getByRole('button', {
+        name: /mark onboarding complete/i,
+      });
       fireEvent.click(completeBtn);
 
       // Confirm in Popconfirm
@@ -365,18 +361,16 @@ describe('Phase 5: Employee Management & Onboarding', () => {
 
     it('disables activate button when employee has no documents', async () => {
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={2}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={2} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
         expect(screen.getByText('bob.taylor@hr.local')).toBeInTheDocument();
       });
 
-      const activateBtn = screen.getByRole('button', { name: /activate employee/i });
+      const activateBtn = screen.getByRole('button', {
+        name: /activate employee/i,
+      });
       expect(activateBtn).toBeDisabled();
     });
 
@@ -408,18 +402,16 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       });
 
       renderComponent(
-        <EmployeeDetailDrawer
-          open={true}
-          employeeId={2}
-          onClose={vi.fn()}
-        />,
+        <EmployeeDetailDrawer open={true} employeeId={2} onClose={vi.fn()} />,
       );
 
       await waitFor(() => {
         expect(screen.getByText('bob.taylor@hr.local')).toBeInTheDocument();
       });
 
-      const activateBtn = screen.getByRole('button', { name: /activate employee/i });
+      const activateBtn = screen.getByRole('button', {
+        name: /activate employee/i,
+      });
       expect(activateBtn).not.toBeDisabled();
       fireEvent.click(activateBtn);
 
@@ -445,18 +437,26 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       );
 
       // Create dummy file > 5MB
-      const largeFile = new File(['a'.repeat(MAX_FILE_SIZE_BYTES + 1024)], 'huge_contract.pdf', {
-        type: 'application/pdf',
-      });
+      const largeFile = new File(
+        ['a'.repeat(MAX_FILE_SIZE_BYTES + 1024)],
+        'huge_contract.pdf',
+        {
+          type: 'application/pdf',
+        },
+      );
 
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       expect(input).toBeInTheDocument();
 
       fireEvent.change(input, { target: { files: [largeFile] } });
 
       await waitFor(() => {
         expect(
-          screen.getAllByText(/file exceeds the maximum allowed size of 5 mb/i)[0],
+          screen.getAllByText(
+            /file exceeds the maximum allowed size of 5 mb/i,
+          )[0],
         ).toBeInTheDocument();
       });
 
@@ -478,11 +478,15 @@ describe('Phase 5: Employee Management & Onboarding', () => {
         type: 'application/x-msdownload',
       });
 
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       fireEvent.change(input, { target: { files: [invalidFile] } });
 
       await waitFor(() => {
-        expect(screen.getAllByText(/invalid file type "\.exe"/i)[0]).toBeInTheDocument();
+        expect(
+          screen.getAllByText(/invalid file type "\.exe"/i)[0],
+        ).toBeInTheDocument();
       });
 
       expect(employeeApi.uploadDocument).not.toHaveBeenCalled();
@@ -517,7 +521,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
         type: 'application/pdf',
       });
 
-      const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+      const input = document.querySelector(
+        'input[type="file"]',
+      ) as HTMLInputElement;
       fireEvent.change(input, { target: { files: [validFile] } });
 
       // Select document type
@@ -525,11 +531,15 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       fireEvent.mouseDown(select);
 
       await waitFor(() => {
-        expect(screen.getByText('Government ID / Passport')).toBeInTheDocument();
+        expect(
+          screen.getByText('Government ID / Passport'),
+        ).toBeInTheDocument();
       });
       fireEvent.click(screen.getByText('Government ID / Passport'));
 
-      const uploadBtn = screen.getByRole('button', { name: /upload document/i });
+      const uploadBtn = screen.getByRole('button', {
+        name: /upload document/i,
+      });
       fireEvent.click(uploadBtn);
 
       await waitFor(() => {
@@ -564,7 +574,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
         />,
       );
 
-      const submitBtn = screen.getByRole('button', { name: /update position/i });
+      const submitBtn = screen.getByRole('button', {
+        name: /update position/i,
+      });
       fireEvent.click(submitBtn);
 
       await waitFor(() => {
@@ -639,7 +651,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       );
 
       // Select approved candidate
-      const appSelect = screen.getByLabelText(/approved candidate application/i);
+      const appSelect = screen.getByLabelText(
+        /approved candidate application/i,
+      );
       fireEvent.mouseDown(appSelect);
 
       await waitFor(() => {
@@ -651,7 +665,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
       const empIdInput = screen.getByLabelText(/employee id/i);
       fireEvent.change(empIdInput, { target: { value: 'EMP-003' } });
 
-      const createBtn = screen.getByRole('button', { name: /create employee profile/i });
+      const createBtn = screen.getByRole('button', {
+        name: /create employee profile/i,
+      });
       fireEvent.click(createBtn);
 
       await waitFor(() => {
@@ -681,7 +697,9 @@ describe('Phase 5: Employee Management & Onboarding', () => {
         />,
       );
 
-      const empIdInput = screen.getByLabelText(/employee id/i) as HTMLInputElement;
+      const empIdInput = screen.getByLabelText(
+        /employee id/i,
+      ) as HTMLInputElement;
 
       await waitFor(() => {
         expect(empIdInput.value).toBe('EMP-1005');

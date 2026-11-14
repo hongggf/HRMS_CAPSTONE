@@ -23,7 +23,9 @@ export const RejectPeriodModal: React.FC<RejectPeriodModalProps> = ({
 
   const handleOk = () => {
     if (!comments.trim()) {
-      message.warning('Please enter an executive reason for rejecting this payroll period.');
+      message.warning(
+        'Please enter an executive reason for rejecting this payroll period.',
+      );
       return;
     }
     if (period) {
@@ -46,8 +48,9 @@ export const RejectPeriodModal: React.FC<RejectPeriodModalProps> = ({
       destroyOnHidden
     >
       <Paragraph type="secondary">
-        Please state the justification for rejecting payroll period &ldquo;{period?.name}&rdquo;.
-        The payroll officer will be notified to correct discrepancies or recalculate figures.
+        Please state the justification for rejecting payroll period &ldquo;
+        {period?.name}&rdquo;. The payroll officer will be notified to correct
+        discrepancies or recalculate figures.
       </Paragraph>
       <Input.TextArea
         rows={4}

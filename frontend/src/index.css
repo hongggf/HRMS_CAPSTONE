@@ -24,3 +24,12 @@ body {
   width: 100%;
   min-height: 100%;
 }
+
+/* Ensure clean table headers and responsive horizontal scroll */
+.ant-table-thead > tr > th {
+  white-space: nowrap !important;
+}
+
+.ant-table-cell {
+  word-break: normal;
+}

@@ -1,6 +1,17 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, DatePicker, Select, message } from 'antd';
-import { CreatePromotionInput, PerformanceReview } from '../../../types/performance';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Select,
+  message,
+} from 'antd';
+import {
+  CreatePromotionInput,
+  PerformanceReview,
+} from '../../../types/performance';
 import { Employee } from '../../../types/employee';
 import { Position } from '../../../types/organization';
 import { normalizeApiError } from '../../../api/client';
@@ -79,7 +90,12 @@ export const RequestPromotionModal: React.FC<RequestPromotionModalProps> = ({
         <Form.Item
           name="proposedPositionId"
           label="Proposed Position / Promotion Target"
-          rules={[{ required: true, message: 'Please select the target promotion position' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please select the target promotion position',
+            },
+          ]}
         >
           <Select
             placeholder="Select Proposed Position"
@@ -97,7 +113,13 @@ export const RequestPromotionModal: React.FC<RequestPromotionModalProps> = ({
         <Form.Item
           name="proposedSalary"
           label="New Adjusted Monthly Base Salary ($)"
-          rules={[{ type: 'number', min: 1, message: 'Salary must be greater than zero' }]}
+          rules={[
+            {
+              type: 'number',
+              min: 1,
+              message: 'Salary must be greater than zero',
+            },
+          ]}
         >
           <InputNumber
             style={{ width: '100%' }}
@@ -111,10 +133,14 @@ export const RequestPromotionModal: React.FC<RequestPromotionModalProps> = ({
           name="performanceReviewId"
           label="Supporting Performance Review"
         >
-          <Select placeholder="Link to Performance Review (Optional)" allowClear>
+          <Select
+            placeholder="Link to Performance Review (Optional)"
+            allowClear
+          >
             {reviews.map((r) => (
               <Select.Option key={r.id} value={r.id}>
-                Review #{r.id} - {r.employee?.firstName} {r.employee?.lastName} (Score: {r.overallScore ?? 'N/A'}, Status: {r.status})
+                Review #{r.id} - {r.employee?.firstName} {r.employee?.lastName}{' '}
+                (Score: {r.overallScore ?? 'N/A'}, Status: {r.status})
               </Select.Option>
             ))}
           </Select>
@@ -123,7 +149,9 @@ export const RequestPromotionModal: React.FC<RequestPromotionModalProps> = ({
         <Form.Item
           name="effectiveDate"
           label="Promotion Effective Date"
-          rules={[{ required: true, message: 'Please select effective start date' }]}
+          rules={[
+            { required: true, message: 'Please select effective start date' },
+          ]}
         >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>
@@ -131,7 +159,13 @@ export const RequestPromotionModal: React.FC<RequestPromotionModalProps> = ({
         <Form.Item
           name="reason"
           label="Executive Justification & Accomplishments"
-          rules={[{ required: true, message: 'Please document reasons for promotion and salary increase' }]}
+          rules={[
+            {
+              required: true,
+              message:
+                'Please document reasons for promotion and salary increase',
+            },
+          ]}
         >
           <Input.TextArea
             rows={3}

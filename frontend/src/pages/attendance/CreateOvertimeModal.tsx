@@ -28,7 +28,9 @@ export const CreateOvertimeModal: React.FC<CreateOvertimeModalProps> = ({
       setBackendError(null);
       const now = new Date();
       form.setFieldsValue({
-        employeeId: defaultEmployeeId || (employees.length > 0 ? employees[0].id : undefined),
+        employeeId:
+          defaultEmployeeId ||
+          (employees.length > 0 ? employees[0].id : undefined),
         date: now.toISOString().split('T')[0] + 'T00:00:00.000Z',
         hours: 2,
       });
@@ -54,7 +56,10 @@ export const CreateOvertimeModal: React.FC<CreateOvertimeModalProps> = ({
       onClose();
     } catch (err: any) {
       if (err.errorFields) return;
-      const msg = err.response?.data?.error || err.message || 'Failed to submit overtime request';
+      const msg =
+        err.response?.data?.error ||
+        err.message ||
+        'Failed to submit overtime request';
       setBackendError(msg);
       message.error(msg);
     } finally {
@@ -133,13 +138,21 @@ export const CreateOvertimeModal: React.FC<CreateOvertimeModalProps> = ({
             },
           ]}
         >
-          <InputNumber step={0.5} min={0.5} max={24} style={{ width: '100%' }} disabled={submitting} />
+          <InputNumber
+            step={0.5}
+            min={0.5}
+            max={24}
+            style={{ width: '100%' }}
+            disabled={submitting}
+          />
         </Form.Item>
 
         <Form.Item
           name="reason"
           label="Business Justification"
-          rules={[{ required: true, message: 'Please specify reason for overtime' }]}
+          rules={[
+            { required: true, message: 'Please specify reason for overtime' },
+          ]}
         >
           <Input.TextArea
             rows={3}

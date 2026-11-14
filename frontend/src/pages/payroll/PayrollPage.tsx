@@ -71,11 +71,17 @@ export const PayrollPage: React.FC = () => {
   const isHeadOfHr = user?.roles?.includes('HEAD_OF_HR') || false;
   const isPayrollOfficer = user?.roles?.includes('HR_PAYROLL') || false;
   const hasPayrollCreate =
-    isHeadOfHr || isPayrollOfficer || user?.permissions?.includes('PAYROLL_CREATE') || false;
+    isHeadOfHr ||
+    isPayrollOfficer ||
+    user?.permissions?.includes('PAYROLL_CREATE') ||
+    false;
   const hasPayrollLock =
     isHeadOfHr || user?.permissions?.includes('PAYROLL_LOCK') || false;
   const hasPayrollRead =
-    isHeadOfHr || isPayrollOfficer || user?.permissions?.includes('PAYROLL_READ') || false;
+    isHeadOfHr ||
+    isPayrollOfficer ||
+    user?.permissions?.includes('PAYROLL_READ') ||
+    false;
 
   // Selected Active Period State
   const [selectedPeriodId, setSelectedPeriodId] = useState<number | null>(null);
@@ -85,7 +91,9 @@ export const PayrollPage: React.FC = () => {
   const [isCreatePeriodModalOpen, setIsCreatePeriodModalOpen] = useState(false);
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [activePayslipId, setActivePayslipId] = useState<number | null>(null);
-  const [inspectingPayroll, setInspectingPayroll] = useState<Payroll | null>(null);
+  const [inspectingPayroll, setInspectingPayroll] = useState<Payroll | null>(
+    null,
+  );
   const [adjustmentTargetPayroll, setAdjustmentTargetPayroll] =
     useState<Payroll | null>(null);
 
@@ -160,7 +168,9 @@ export const PayrollPage: React.FC = () => {
         queryKey: ['payroll-records', currentPeriodId],
       });
     }
-    await queryClient.invalidateQueries({ queryKey: ['payroll-report-metrics'] });
+    await queryClient.invalidateQueries({
+      queryKey: ['payroll-report-metrics'],
+    });
     await queryClient.invalidateQueries({ queryKey: ['my-payslips'] });
   };
 
@@ -168,7 +178,9 @@ export const PayrollPage: React.FC = () => {
   const createPeriodMutation = useMutation({
     mutationFn: payrollApi.createPeriod,
     onSuccess: (newPeriod) => {
-      message.success(`Payroll period "${newPeriod.name}" created successfully`);
+      message.success(
+        `Payroll period "${newPeriod.name}" created successfully`,
+      );
       setIsCreatePeriodModalOpen(false);
       setSelectedPeriodId(newPeriod.id);
       refreshAll();
@@ -296,6 +308,15 @@ export const PayrollPage: React.FC = () => {
 
   // Check for blocking validation errors (e.g. employee with net <= 0)
   const hasBlockingValidationIssue = payrolls.some((p) => p.netSalary <= 0);
+
+  // Uncalculated active employees (onboarded or activated after current calculation run)
+  const uncalculatedActiveEmployees = React.useMemo(() => {
+    if (!activePeriod || activePeriod.status === 'DRAFT') return [];
+    const processedEmpIds = new Set(payrolls.map((p) => p.employeeId));
+    return allEmployees.filter(
+      (e) => e.status === 'ACTIVE' && !processedEmpIds.has(e.id),
+    );
+  }, [activePeriod, payrolls, allEmployees]);
 
   // Lifecycle Action Guard Conditions
   const status = activePeriod?.status;
@@ -691,7 +712,9 @@ export const PayrollPage: React.FC = () => {
               <Statistic
                 title="Total Net Payout"
                 value={formatCurrency(totalNet)}
-                styles={{ content: { color: '#0958d9', fontWeight: 600, fontSize: 20 } }}
+                styles={{
+                  content: { color: '#0958d9', fontWeight: 600, fontSize: 20 },
+                }}
               />
             </Card>
           </Col>
@@ -714,6 +737,51 @@ export const PayrollPage: React.FC = () => {
             ),
             children: (
               <>
+                {/* Out of Sync / Uncalculated Personnel Alert */}
+                {uncalculatedActiveEmployees.length > 0 && (
+                  <Alert
+                    type="warning"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                    message={`${uncalculatedActiveEmployees.length} Active Personnel Pending Recalculation`}
+                    description={
+                      <div
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: 8,
+                          marginTop: 4,
+                        }}
+                      >
+                        <span>
+                          New personnel (
+                          {uncalculatedActiveEmployees
+                            .map((e) => `${e.firstName} ${e.lastName}`)
+                            .join(', ')}
+                          ) were onboarded after this period was calculated. Click
+                          "Recalculate Payroll" to incorporate them.
+                        </span>
+                        {canTriggerCalculation && (
+                          <Button
+                            size="small"
+                            type="primary"
+                            icon={<CalculatorOutlined />}
+                            loading={calculateMutation.isPending}
+                            onClick={() =>
+                              activePeriod &&
+                              calculateMutation.mutate(activePeriod.id)
+                            }
+                          >
+                            Recalculate Payroll Now
+                          </Button>
+                        )}
+                      </div>
+                    }
+                  />
+                )}
+
                 {/* Cambodia Statutory Guidelines & Compliance Alert */}
                 <Card
                   size="small"
@@ -730,7 +798,8 @@ export const PayrollPage: React.FC = () => {
                     />
                     <div>
                       <Text strong style={{ color: '#8a6d3b' }}>
-                        Cambodia Statutory Payroll & Labor Law Compliance Standard
+                        Cambodia Statutory Payroll & Labor Law Compliance
+                        Standard
                       </Text>
                       <Paragraph
                         style={{
@@ -739,7 +808,16 @@ export const PayrollPage: React.FC = () => {
                           color: '#8a6d3b',
                         }}
                       >
-                        Compensation formulas rely on configurable salary components rather than hardcoded statutory assumptions. In accordance with the Ministry of Economy and Finance (MEF) and National Social Security Fund (NSSF) regulations, Tax on Salary (TOS) and employer/employee contributions (Health Care, Occupational Risk, Pension) must follow verified government tables. Employer costs are strictly isolated from employee deductions. Overtime is payable only from approved timesheets at 1.5x base hourly rate.
+                        Compensation formulas rely on configurable salary
+                        components rather than hardcoded statutory assumptions.
+                        In accordance with the Ministry of Economy and Finance
+                        (MEF) and National Social Security Fund (NSSF)
+                        regulations, Tax on Salary (TOS) and employer/employee
+                        contributions (Health Care, Occupational Risk, Pension)
+                        must follow verified government tables. Employer costs
+                        are strictly isolated from employee deductions. Overtime
+                        is payable only from approved timesheets at 1.5x base
+                        hourly rate.
                       </Paragraph>
                     </div>
                   </Space>
@@ -775,23 +853,30 @@ export const PayrollPage: React.FC = () => {
                   {isDraft && totalEmployees === 0 ? (
                     <div style={{ padding: '40px 0', textAlign: 'center' }}>
                       <CalculatorOutlined
-                        style={{ fontSize: 48, color: '#1677ff', marginBottom: 16 }}
+                        style={{
+                          fontSize: 48,
+                          color: '#1677ff',
+                          marginBottom: 16,
+                        }}
                       />
                       <Title level={4}>Payroll Not Yet Calculated</Title>
                       <Paragraph
                         type="secondary"
                         style={{ maxWidth: 480, margin: '0 auto 20px' }}
                       >
-                        This payroll period is currently in Draft. Click &ldquo;Calculate
-                        Payroll&rdquo; above to automatically process compensation, salary
-                        components, and timesheet overtime for all eligible active staff.
+                        This payroll period is currently in Draft. Click
+                        &ldquo;Calculate Payroll&rdquo; above to automatically
+                        process compensation, salary components, and timesheet
+                        overtime for all eligible active staff.
                       </Paragraph>
                       {canTriggerCalculation && (
                         <Button
                           type="primary"
                           icon={<CalculatorOutlined />}
                           loading={calculateMutation.isPending}
-                          onClick={() => calculateMutation.mutate(activePeriod.id)}
+                          onClick={() =>
+                            calculateMutation.mutate(activePeriod.id)
+                          }
                         >
                           Calculate Payroll Now
                         </Button>
@@ -801,9 +886,12 @@ export const PayrollPage: React.FC = () => {
                     <PayrollRegisterTable
                       payrolls={payrolls}
                       departments={departments}
-                      isLoading={isPayrollsLoading || calculateMutation.isPending}
+                      isLoading={
+                        isPayrollsLoading || calculateMutation.isPending
+                      }
                       hasPayrollCreate={hasPayrollCreate}
                       isLocked={isLocked}
+                      isHeadOfHr={isHeadOfHr}
                       onViewPayslip={(id) => setActivePayslipId(id)}
                       onInspectCalculation={(p) => setInspectingPayroll(p)}
                       onOpenAdjustment={(p) => setAdjustmentTargetPayroll(p)}
@@ -850,6 +938,11 @@ export const PayrollPage: React.FC = () => {
                 allEmployees={allEmployees}
                 onRefresh={() => refreshAll()}
                 onSelectEmployee={(id) => setActivePayslipId(id)}
+                onRecalculate={() =>
+                  activePeriod && calculateMutation.mutate(activePeriod.id)
+                }
+                isRecalculating={calculateMutation.isPending}
+                isHeadOfHr={isHeadOfHr}
               />
             ),
           },
@@ -865,6 +958,7 @@ export const PayrollPage: React.FC = () => {
                 activePeriod={activePeriod}
                 payrolls={payrolls}
                 isAuthorized={hasPayrollRead}
+                isHeadOfHr={isHeadOfHr}
               />
             ),
           },
@@ -918,6 +1012,7 @@ export const PayrollPage: React.FC = () => {
         payroll={payslipDetail || null}
         isLoading={isPayslipLoading}
         error={payslipError}
+        isHeadOfHr={isHeadOfHr}
       />
 
       {/* Drawer: Calculation Inspector */}
@@ -925,6 +1020,7 @@ export const PayrollPage: React.FC = () => {
         open={inspectingPayroll !== null}
         onClose={() => setInspectingPayroll(null)}
         payroll={inspectingPayroll}
+        isHeadOfHr={isHeadOfHr}
       />
     </div>
   );

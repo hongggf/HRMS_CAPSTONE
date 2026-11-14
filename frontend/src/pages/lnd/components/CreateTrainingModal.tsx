@@ -1,5 +1,13 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, Select, DatePicker, message } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+  message,
+} from 'antd';
 import { CreateTrainingInput, TrainingCategory } from '../../../types/lnd';
 import { Department } from '../../../types/organization';
 import { normalizeApiError } from '../../../api/client';
@@ -131,21 +139,37 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
         <Form.Item
           name="capacity"
           label="Capacity Limit (Seats)"
-          rules={[{ type: 'number', min: 1, message: 'Capacity must be at least 1' }]}
+          rules={[
+            { type: 'number', min: 1, message: 'Capacity must be at least 1' },
+          ]}
         >
-          <InputNumber min={1} style={{ width: '100%' }} placeholder="e.g. 30" />
+          <InputNumber
+            min={1}
+            style={{ width: '100%' }}
+            placeholder="e.g. 30"
+          />
         </Form.Item>
 
         <Form.Item
           name="cost"
           label="Per-Seat Budget Cost ($)"
-          rules={[{ type: 'number', min: 0, message: 'Cost cannot be negative' }]}
+          rules={[
+            { type: 'number', min: 0, message: 'Cost cannot be negative' },
+          ]}
         >
-          <InputNumber min={0} style={{ width: '100%' }} prefix="$" placeholder="e.g. 150" />
+          <InputNumber
+            min={0}
+            style={{ width: '100%' }}
+            prefix="$"
+            placeholder="e.g. 150"
+          />
         </Form.Item>
 
         <Form.Item name="description" label="Curriculum Summary">
-          <Input.TextArea rows={3} placeholder="Syllabus, prerequisites, and learning objectives" />
+          <Input.TextArea
+            rows={3}
+            placeholder="Syllabus, prerequisites, and learning objectives"
+          />
         </Form.Item>
       </Form>
     </Modal>

@@ -9,10 +9,7 @@ export type PayrollPeriodStatus =
   | 'PAID';
 
 export type PayrollItemComponentType =
-  | 'ALLOWANCE'
-  | 'DEDUCTION'
-  | 'BONUS'
-  | 'OTHER';
+  'ALLOWANCE' | 'DEDUCTION' | 'BONUS' | 'OTHER';
 
 export interface PayrollItem {
   id: number;
@@ -129,6 +126,7 @@ export interface PayrollValidationIssue {
   type: 'ERROR' | 'WARNING';
   category:
     | 'MISSING_COMPENSATION'
+    | 'PENDING_RECALCULATION'
     | 'ZERO_OR_NEGATIVE_NET'
     | 'UNAPPROVED_OVERTIME'
     | 'MISSING_ATTENDANCE'

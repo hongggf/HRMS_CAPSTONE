@@ -7,7 +7,10 @@ import { normalizeApiError } from '../../../api/client';
 interface UpdateSkillModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (employeeId: number, values: UpdateEmployeeSkillInput) => Promise<void>;
+  onSubmit: (
+    employeeId: number,
+    values: UpdateEmployeeSkillInput,
+  ) => Promise<void>;
   employees: Employee[];
   loading?: boolean;
 }
@@ -48,7 +51,11 @@ export const UpdateSkillModal: React.FC<UpdateSkillModalProps> = ({
       confirmLoading={loading}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" initialValues={{ level: 'INTERMEDIATE' }}>
+      <Form
+        form={form}
+        layout="vertical"
+        initialValues={{ level: 'INTERMEDIATE' }}
+      >
         <Form.Item
           name="employeeId"
           label="Employee"
@@ -78,13 +85,23 @@ export const UpdateSkillModal: React.FC<UpdateSkillModalProps> = ({
         <Form.Item
           name="level"
           label="Proficiency Level"
-          rules={[{ required: true, message: 'Please select proficiency level' }]}
+          rules={[
+            { required: true, message: 'Please select proficiency level' },
+          ]}
         >
           <Select>
-            <Select.Option value="BEGINNER">Beginner (Foundational understanding)</Select.Option>
-            <Select.Option value="INTERMEDIATE">Intermediate (Independent practitioner)</Select.Option>
-            <Select.Option value="ADVANCED">Advanced (Deep expertise & mentoring)</Select.Option>
-            <Select.Option value="EXPERT">Expert (Subject matter authority)</Select.Option>
+            <Select.Option value="BEGINNER">
+              Beginner (Foundational understanding)
+            </Select.Option>
+            <Select.Option value="INTERMEDIATE">
+              Intermediate (Independent practitioner)
+            </Select.Option>
+            <Select.Option value="ADVANCED">
+              Advanced (Deep expertise & mentoring)
+            </Select.Option>
+            <Select.Option value="EXPERT">
+              Expert (Subject matter authority)
+            </Select.Option>
           </Select>
         </Form.Item>
       </Form>

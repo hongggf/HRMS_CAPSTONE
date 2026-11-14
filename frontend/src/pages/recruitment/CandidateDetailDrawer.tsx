@@ -15,7 +15,11 @@ import {
   FilePdfOutlined,
   LinkOutlined,
 } from '@ant-design/icons';
-import { Candidate, APPLICATION_STATUS_CONFIG, ApplicationStatus } from '../../types/recruitment';
+import {
+  Candidate,
+  APPLICATION_STATUS_CONFIG,
+  ApplicationStatus,
+} from '../../types/recruitment';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const { Title, Text } = Typography;
@@ -95,7 +99,9 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
             <Text copyable>{candidate.email}</Text>
           ) : (
             <Space>
-              <Text type="secondary">{maskContactInfo(candidate.email, true)}</Text>
+              <Text type="secondary">
+                {maskContactInfo(candidate.email, true)}
+              </Text>
               <Tag color="orange">Protected (RBAC)</Tag>
             </Space>
           )}
@@ -117,7 +123,9 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
             candidate.phone || '-'
           ) : (
             <Space>
-              <Text type="secondary">{maskContactInfo(candidate.phone, false)}</Text>
+              <Text type="secondary">
+                {maskContactInfo(candidate.phone, false)}
+              </Text>
               <Tag color="orange">Protected (RBAC)</Tag>
             </Space>
           )}
@@ -164,7 +172,9 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
               key: 'jobPosting',
               render: (_, app) => (
                 <div>
-                  <Text strong>{app.jobPosting?.title || `Job #${app.jobPostingId}`}</Text>
+                  <Text strong>
+                    {app.jobPosting?.title || `Job #${app.jobPostingId}`}
+                  </Text>
                 </div>
               ),
             },
@@ -206,7 +216,9 @@ export const CandidateDetailDrawer: React.FC<CandidateDetailDrawerProps> = ({
           ]}
         />
       ) : (
-        <Text type="secondary">This candidate has not been submitted for any open job postings yet.</Text>
+        <Text type="secondary">
+          This candidate has not been submitted for any open job postings yet.
+        </Text>
       )}
     </Drawer>
   );

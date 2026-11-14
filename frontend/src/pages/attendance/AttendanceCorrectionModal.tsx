@@ -3,7 +3,11 @@ import { Modal, Form, Select, Input, Alert, message, Typography } from 'antd';
 import { AuditOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { Employee } from '../../types/employee';
 import { AttendanceRecord } from '../../types/attendance';
-import { DOCUMENTED_TIMEZONE, formatDateOnly, formatTimestamp } from '../../utils/dateUtils';
+import {
+  DOCUMENTED_TIMEZONE,
+  formatDateOnly,
+  formatTimestamp,
+} from '../../utils/dateUtils';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const { Text } = Typography;
@@ -16,13 +20,9 @@ interface AttendanceCorrectionModalProps {
   selectedRecord?: AttendanceRecord | null;
 }
 
-export const AttendanceCorrectionModal: React.FC<AttendanceCorrectionModalProps> = ({
-  open,
-  onClose,
-  onSuccess,
-  employees,
-  selectedRecord,
-}) => {
+export const AttendanceCorrectionModal: React.FC<
+  AttendanceCorrectionModalProps
+> = ({ open, onClose, onSuccess, employees, selectedRecord }) => {
   const [form] = Form.useForm();
   const { user } = useAuthStore();
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -113,8 +113,11 @@ export const AttendanceCorrectionModal: React.FC<AttendanceCorrectionModalProps>
         form={form}
         layout="vertical"
         initialValues={{
-          employeeId: selectedRecord?.employeeId || (employees[0]?.id ?? undefined),
-          date: selectedRecord?.date ? selectedRecord.date.split('T')[0] : new Date().toISOString().split('T')[0],
+          employeeId:
+            selectedRecord?.employeeId || (employees[0]?.id ?? undefined),
+          date: selectedRecord?.date
+            ? selectedRecord.date.split('T')[0]
+            : new Date().toISOString().split('T')[0],
           actingHr: user?.email || 'HR Officer',
         }}
       >
@@ -149,7 +152,12 @@ export const AttendanceCorrectionModal: React.FC<AttendanceCorrectionModalProps>
         <Form.Item
           name="proposedCheckIn"
           label="Proposed Check-In Timestamp (ISO UTC)"
-          rules={[{ required: true, message: 'Proposed check-in timestamp is required' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Proposed check-in timestamp is required',
+            },
+          ]}
           extra="Server timestamp will be recorded in documented UTC timezone"
         >
           <Input placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" disabled={submitting} />
@@ -158,7 +166,12 @@ export const AttendanceCorrectionModal: React.FC<AttendanceCorrectionModalProps>
         <Form.Item
           name="proposedCheckOut"
           label="Proposed Check-Out Timestamp (ISO UTC)"
-          rules={[{ required: true, message: 'Proposed check-out timestamp is required' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Proposed check-out timestamp is required',
+            },
+          ]}
           extra="Must be later than proposed check-in timestamp"
         >
           <Input placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" disabled={submitting} />
@@ -168,8 +181,15 @@ export const AttendanceCorrectionModal: React.FC<AttendanceCorrectionModalProps>
           name="reason"
           label="Mandatory Correction Reason & Justification"
           rules={[
-            { required: true, message: 'A justification reason is strictly required' },
-            { min: 10, message: 'Please provide a detailed reason (at least 10 characters)' },
+            {
+              required: true,
+              message: 'A justification reason is strictly required',
+            },
+            {
+              min: 10,
+              message:
+                'Please provide a detailed reason (at least 10 characters)',
+            },
           ]}
         >
           <Input.TextArea

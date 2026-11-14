@@ -163,14 +163,24 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
           'Training programs, employee enrollments, and certification logs',
       },
       {
+        key: '/users',
+        label: 'User Administration',
+        icon: <TeamOutlined />,
+        roles: ['HEAD_OF_HR', 'HR_ADMIN'],
+        isDev: false,
+        phase: 'Phase 9',
+        description:
+          'Directory, account activation, role assignment and lockout governance',
+      },
+      {
         key: '/audit-logs',
         label: 'Audit & Compliance',
         icon: <SafetyCertificateOutlined />,
         roles: ['HEAD_OF_HR', 'HR_ADMIN'],
-        isDev: true,
-        phase: 'Phase 10',
+        isDev: false,
+        phase: 'Phase 9',
         description:
-          'System audit trails, security event history, and change logs',
+          'Immutable system audit trails, security event history, and change logs',
       },
     ],
   },

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, Select, DatePicker, message } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  Select,
+  DatePicker,
+  message,
+} from 'antd';
 import { CreateTrainingPlanInput, Training } from '../../../types/lnd';
 import { normalizeApiError } from '../../../api/client';
 
@@ -30,7 +38,9 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
         targetEmployees: values.targetEmployees,
         priority: values.priority,
         budget: values.budget,
-        plannedDate: values.plannedDate ? values.plannedDate.toISOString() : undefined,
+        plannedDate: values.plannedDate
+          ? values.plannedDate.toISOString()
+          : undefined,
       });
       form.resetFields();
     } catch (err: any) {
@@ -56,7 +66,9 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
         <Form.Item
           name="trainingId"
           label="Training Program"
-          rules={[{ required: true, message: 'Please select training program' }]}
+          rules={[
+            { required: true, message: 'Please select training program' },
+          ]}
         >
           <Select placeholder="Select Course">
             {trainings.map((t) => (
@@ -70,7 +82,12 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
         <Form.Item
           name="identifiedNeed"
           label="Identified Training Need / Skill Gap"
-          rules={[{ required: true, message: 'Please describe the identified training need' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please describe the identified training need',
+            },
+          ]}
         >
           <Input placeholder="e.g. Modernization of microservices and observability gaps" />
         </Form.Item>
@@ -78,7 +95,12 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
         <Form.Item
           name="objective"
           label="Business Objective & Target Outcome"
-          rules={[{ required: true, message: 'Please specify learning and business objective' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please specify learning and business objective',
+            },
+          ]}
         >
           <Input placeholder="e.g. Reduce mean time to recovery (MTTR) by 40%" />
         </Form.Item>
@@ -97,7 +119,12 @@ export const CreatePlanModal: React.FC<CreatePlanModalProps> = ({
         </Form.Item>
 
         <Form.Item name="budget" label="Allocated Budget ($)">
-          <InputNumber min={0} style={{ width: '100%' }} prefix="$" placeholder="e.g. 5000" />
+          <InputNumber
+            min={0}
+            style={{ width: '100%' }}
+            prefix="$"
+            placeholder="e.g. 5000"
+          />
         </Form.Item>
 
         <Form.Item name="plannedDate" label="Target Rollout Date">

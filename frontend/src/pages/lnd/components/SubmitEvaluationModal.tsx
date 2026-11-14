@@ -7,7 +7,10 @@ import { normalizeApiError } from '../../../api/client';
 interface SubmitEvaluationModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (trainingId: number, values: EvaluateTrainingInput) => Promise<void>;
+  onSubmit: (
+    trainingId: number,
+    values: EvaluateTrainingInput,
+  ) => Promise<void>;
   trainings: Training[];
   employees: Employee[];
   selectedTrainingId?: number;
@@ -100,11 +103,17 @@ export const SubmitEvaluationModal: React.FC<SubmitEvaluationModalProps> = ({
         </Form.Item>
 
         <Form.Item name="feedback" label="Trainer / Instructor Feedback">
-          <Input.TextArea rows={2} placeholder="Clarity of instruction, pacing, and practical exercises" />
+          <Input.TextArea
+            rows={2}
+            placeholder="Clarity of instruction, pacing, and practical exercises"
+          />
         </Form.Item>
 
         <Form.Item name="comments" label="General Comments & Value to Role">
-          <Input.TextArea rows={2} placeholder="How will you apply these learnings in your day-to-day role?" />
+          <Input.TextArea
+            rows={2}
+            placeholder="How will you apply these learnings in your day-to-day role?"
+          />
         </Form.Item>
       </Form>
     </Modal>

@@ -64,7 +64,7 @@ export const AssignEmployeesModal: React.FC<AssignEmployeesModalProps> = ({
                     .filter(
                       (e) =>
                         e.departmentId === training.departmentId ||
-                        e.department?.id === training.departmentId
+                        e.department?.id === training.departmentId,
                     )
                     .map((e) => e.id);
                   form.setFieldsValue({ employeeIds: deptEmpIds });
@@ -80,7 +80,9 @@ export const AssignEmployeesModal: React.FC<AssignEmployeesModalProps> = ({
         <Form.Item
           name="employeeIds"
           label="Select Employees to Enroll"
-          rules={[{ required: true, message: 'Please select at least one employee' }]}
+          rules={[
+            { required: true, message: 'Please select at least one employee' },
+          ]}
         >
           <Select
             mode="multiple"

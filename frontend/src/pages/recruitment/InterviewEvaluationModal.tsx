@@ -24,12 +24,9 @@ interface InterviewEvaluationModalProps {
   onSuccess?: () => void;
 }
 
-export const InterviewEvaluationModal: React.FC<InterviewEvaluationModalProps> = ({
-  open,
-  onClose,
-  interview,
-  onSuccess,
-}) => {
+export const InterviewEvaluationModal: React.FC<
+  InterviewEvaluationModalProps
+> = ({ open, onClose, interview, onSuccess }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -128,7 +125,9 @@ export const InterviewEvaluationModal: React.FC<InterviewEvaluationModalProps> =
       )}
 
       <Form form={form} layout="vertical" disabled={!!interview.evaluation}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
           <Form.Item
             name="score"
             label="Evaluation Score (0 - 100)"
@@ -183,7 +182,10 @@ export const InterviewEvaluationModal: React.FC<InterviewEvaluationModalProps> =
           />
         </Form.Item>
 
-        <Form.Item name="comments" label="Additional Interviewer Notes (Optional)">
+        <Form.Item
+          name="comments"
+          label="Additional Interviewer Notes (Optional)"
+        >
           <TextArea
             rows={2}
             placeholder="General feedback, salary expectations discussed, availability..."

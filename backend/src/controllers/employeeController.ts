@@ -55,7 +55,11 @@ export const createEmployee = async (req: Request, res: Response) => {
       include: { candidate: true }
     });
 
-    if (!application || application.status !== ApplicationStatus.APPROVED) {
+    if (
+      !application ||
+      (application.status !== ApplicationStatus.APPROVED &&
+        application.status !== ApplicationStatus.HIRED)
+    ) {
       return res.status(400).json({ error: 'Only a candidate approved by HEAD_OF_HR can become an employee.' });
     }
 
@@ -104,14 +108,37 @@ export const createEmployee = async (req: Request, res: Response) => {
         }
       });
 
-      if (data.baseSalary) {
+      let salaryToUse = data.baseSalary;
+      if (!salaryToUse && data.positionId) {
+        const pos = await tx.position.findUnique({ where: { id: data.positionId } });
+        if (pos?.salaryMin && pos.salaryMin > 0) {
+          salaryToUse = pos.salaryMin;
+        }
+      }
+
+      if (salaryToUse) {
         await tx.employeeSalaryHistory.create({
           data: {
             employeeId: emp.id,
-            baseSalary: data.baseSalary,
+            baseSalary: salaryToUse,
             effectiveDate: new Date(),
-            changeReason: 'Initial Salary',
+            changeReason: data.baseSalary ? 'Initial Salary' : 'Initial Position Minimum Salary',
             changedById: userId
+          }
+        });
+
+        await tx.employeeCompensation.upsert({
+          where: { employeeId: emp.id },
+          create: {
+            employeeId: emp.id,
+            basicSalary: salaryToUse,
+            currency: 'USD',
+            effectiveDate: new Date(),
+            status: 'ACTIVE'
+          },
+          update: {
+            basicSalary: salaryToUse,
+            status: 'ACTIVE'
           }
         });
       }

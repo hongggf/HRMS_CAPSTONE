@@ -18,8 +18,18 @@ import {
 import { Employee } from '../types/employee';
 
 const mockCategories: TrainingCategory[] = [
-  { id: 1, name: 'Cloud & Infrastructure', description: 'Cloud systems and DevOps', _count: { trainings: 2 } },
-  { id: 2, name: 'Security & Compliance', description: 'Information security and audit', _count: { trainings: 1 } },
+  {
+    id: 1,
+    name: 'Cloud & Infrastructure',
+    description: 'Cloud systems and DevOps',
+    _count: { trainings: 2 },
+  },
+  {
+    id: 2,
+    name: 'Security & Compliance',
+    description: 'Information security and audit',
+    _count: { trainings: 1 },
+  },
 ];
 
 const mockEmployees: Employee[] = [
@@ -38,7 +48,12 @@ const mockEmployees: Employee[] = [
     createdAt: '2024-01-01',
     updatedAt: '2024-01-01',
     department: { id: 1, name: 'Engineering', code: 'ENG' } as any,
-    position: { id: 1, title: 'Software Engineer', code: 'SWE', departmentId: 1 } as any,
+    position: {
+      id: 1,
+      title: 'Software Engineer',
+      code: 'SWE',
+      departmentId: 1,
+    } as any,
   },
 ];
 
@@ -138,10 +153,16 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     vi.spyOn(lndApi, 'getTrainings').mockResolvedValue([...mockTrainings]);
     vi.spyOn(lndApi, 'getPlans').mockResolvedValue([...mockPlans]);
     vi.spyOn(lndApi, 'getSessions').mockResolvedValue([...mockSessions]);
-    vi.spyOn(lndApi, 'getSessionAttendance').mockResolvedValue([...mockAttendances]);
+    vi.spyOn(lndApi, 'getSessionAttendance').mockResolvedValue([
+      ...mockAttendances,
+    ]);
     vi.spyOn(lndApi, 'getEvaluations').mockResolvedValue([...mockEvaluations]);
     vi.spyOn(lndApi, 'getAllSkills').mockResolvedValue([...mockSkills]);
     vi.spyOn(employeeApi, 'list').mockResolvedValue([...mockEmployees]);
+    vi.spyOn(departmentApi, 'list').mockResolvedValue({
+      departments: [],
+      total: 0,
+    } as any);
 
     useAuthStore.setState({
       user: { id: 1, email: 'lnd@hr.local', roles: ['HEAD_OF_HR', 'HR_LND'] },
@@ -153,16 +174,20 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
-    expect(await screen.findByText('Learning & Development (L&D)')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Learning & Development (L&D)'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Course Catalog')).toBeInTheDocument();
     expect(screen.getByText('Training Categories')).toBeInTheDocument();
     expect(screen.getByText('Tracked Skills')).toBeInTheDocument();
 
     // Table data
-    expect(await screen.findByText('Kubernetes in Production')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Kubernetes in Production'),
+    ).toBeInTheDocument();
     expect(screen.getByText('Cloud & Infrastructure (2)')).toBeInTheDocument();
   });
 
@@ -172,27 +197,35 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const enrollBtn = await screen.findByText('Enroll Employees');
     fireEvent.click(enrollBtn);
 
-    expect(await screen.findByText('Assign Employees to Kubernetes in Production')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Assign Employees to Kubernetes in Production'),
+    ).toBeInTheDocument();
   });
 
   it('switches to Training Plans tab and displays strategic learning plans', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const plansTab = await screen.findByText('Training Plans & Objectives');
     fireEvent.click(plansTab);
 
-    expect(await screen.findByText('Cloud-native migration skills shortage')).toBeInTheDocument();
-    expect(screen.getByText('Transition all microservices to automated Kubernetes clusters')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Cloud-native migration skills shortage'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Transition all microservices to automated Kubernetes clusters',
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByText('CRITICAL')).toBeInTheDocument();
   });
 
@@ -206,7 +239,7 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const attendanceTab = await screen.findByText('Session Attendance Roster');
@@ -230,25 +263,29 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const evalTab = await screen.findByText('Course Evaluations & Feedback');
     fireEvent.click(evalTab);
 
-    expect(await screen.findByText('Clear demonstrations of cluster failure modes')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Clear demonstrations of cluster failure modes'),
+    ).toBeInTheDocument();
 
     const submitEvalBtn = await screen.findByText('Submit Course Evaluation');
     fireEvent.click(submitEvalBtn);
 
-    expect(await screen.findByText('Overall Course Quality & Content (1 - 5 Stars)')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Overall Course Quality & Content (1 - 5 Stars)'),
+    ).toBeInTheDocument();
   });
 
   it('switches to Skills Matrix tab and displays employee competencies', async () => {
     render(
       <QueryClientProvider client={queryClient}>
         <LndPage />
-      </QueryClientProvider>
+      </QueryClientProvider>,
     );
 
     const skillsTab = await screen.findByText('Employee Skills Matrix');
@@ -260,6 +297,8 @@ describe('Phase 8: Learning & Development Module Tests', () => {
     const addSkillBtn = await screen.findByText('Add / Update Skill');
     fireEvent.click(addSkillBtn);
 
-    expect(await screen.findByText('Add / Update Employee Skill Profile')).toBeInTheDocument();
+    expect(
+      await screen.findByText('Add / Update Employee Skill Profile'),
+    ).toBeInTheDocument();
   });
 });

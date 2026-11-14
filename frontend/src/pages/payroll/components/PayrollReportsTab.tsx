@@ -24,7 +24,11 @@ import { useQuery } from '@tanstack/react-query';
 import { payrollApi } from '../../../api/payroll';
 import { departmentApi } from '../../../api/organization';
 import { Payroll, PayrollPeriod } from '../../../types/payroll';
-import { formatCurrency, formatNumber, downloadCsv } from '../../../utils/formatters';
+import {
+  formatCurrency,
+  formatNumber,
+  downloadCsv,
+} from '../../../utils/formatters';
 import { normalizeApiError } from '../../../api/client';
 
 const { Text, Paragraph } = Typography;
@@ -33,14 +37,18 @@ interface PayrollReportsTabProps {
   activePeriod: PayrollPeriod | null;
   payrolls: Payroll[];
   isAuthorized: boolean;
+  isHeadOfHr?: boolean;
 }
 
 export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
   activePeriod,
   payrolls,
   isAuthorized,
+  isHeadOfHr = true,
 }) => {
-  const [selectedDeptId, setSelectedDeptId] = useState<number | undefined>(undefined);
+  const [selectedDeptId, setSelectedDeptId] = useState<number | undefined>(
+    undefined,
+  );
 
   // Query departments for filter
   const { data: deptData } = useQuery({
@@ -59,7 +67,8 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
     refetch: refetchReport,
   } = useQuery({
     queryKey: ['payroll-report-metrics', selectedDeptId],
-    queryFn: () => payrollApi.getPayrollReport({ departmentId: selectedDeptId }),
+    queryFn: () =>
+      payrollApi.getPayrollReport({ departmentId: selectedDeptId }),
     enabled: isAuthorized,
     staleTime: 30000,
   });
@@ -124,21 +133,26 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
 
     const rows = payrolls.map((p) => [
       p.employee?.employeeId || '',
-      p.employee?.firstName || '',
-      p.employee?.lastName || '',
-      p.employee?.email || '',
+      isHeadOfHr ? p.employee?.firstName || '' : 'Confidential',
+      isHeadOfHr ? p.employee?.lastName || '' : 'Confidential',
+      isHeadOfHr ? p.employee?.email || '' : '••••••@••••.com',
       p.employee?.department?.name || '',
-      p.employee?.position?.title || '',
+      isHeadOfHr ? p.employee?.position?.title || '' : 'Confidential',
       p.basicSalary.toFixed(2),
       p.totalAllowances.toFixed(2),
       p.totalOvertime.toFixed(2),
-      ((p.basicSalary || 0) + (p.totalAllowances || 0) + (p.totalOvertime || 0)).toFixed(2),
+      (
+        (p.basicSalary || 0) +
+        (p.totalAllowances || 0) +
+        (p.totalOvertime || 0)
+      ).toFixed(2),
       p.totalDeductions.toFixed(2),
       p.netSalary.toFixed(2),
       p.status,
     ]);
 
-    const periodName = activePeriod?.name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Payroll_Export';
+    const periodName =
+      activePeriod?.name.replace(/[^a-zA-Z0-9_-]/g, '_') || 'Payroll_Export';
     downloadCsv(`Payroll_Report_${periodName}`, headers, rows);
   };
 
@@ -202,7 +216,9 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
           <Card variant="outlined">
             <Statistic
               title="Processed Pay Runs"
-              value={formatNumber(reportData?.totalPayrollsProcessed || payrolls.length)}
+              value={formatNumber(
+                reportData?.totalPayrollsProcessed || payrolls.length,
+              )}
               prefix={<FileDoneOutlined style={{ color: '#1677ff' }} />}
             />
           </Card>
@@ -215,7 +231,8 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
               value={formatCurrency(
                 reportData?.totals?.grossSalary ??
                   payrolls.reduce(
-                    (s, p) => s + p.basicSalary + p.totalAllowances + p.totalOvertime,
+                    (s, p) =>
+                      s + p.basicSalary + p.totalAllowances + p.totalOvertime,
                     0,
                   ),
               )}
@@ -251,14 +268,19 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
         </Col>
 
         <Col xs={24} sm={8} lg={5}>
-          <Card variant="outlined" style={{ background: '#e6f4ff', borderColor: '#91caff' }}>
+          <Card
+            variant="outlined"
+            style={{ background: '#e6f4ff', borderColor: '#91caff' }}
+          >
             <Statistic
               title="Total Net Disbursement"
               value={formatCurrency(
                 reportData?.totals?.netSalary ??
                   payrolls.reduce((s, p) => s + p.netSalary, 0),
               )}
-              styles={{ content: { color: '#0958d9', fontWeight: 600, fontSize: 22 } }}
+              styles={{
+                content: { color: '#0958d9', fontWeight: 600, fontSize: 22 },
+              }}
               prefix={<DollarOutlined />}
             />
           </Card>
@@ -345,8 +367,12 @@ export const PayrollReportsTab: React.FC<PayrollReportsTabProps> = ({
         style={{ background: '#fffbe6', borderColor: '#ffe58f' }}
       >
         <Paragraph style={{ margin: 0, fontSize: 13 }}>
-          <strong>Future Backend Requirement:</strong> Automatic bank payment batch files
-          (e.g., ABA PayWay / Bakong / ACLEDA payroll transfer templates) and payment reconciliation APIs are not yet implemented in the backend server. Once payment gateway integration endpoints are deployed, automated clearing and disbursement confirmation will be integrated here without modifying existing calculation rules.
+          <strong>Future Backend Requirement:</strong> Automatic bank payment
+          batch files (e.g., ABA PayWay / Bakong / ACLEDA payroll transfer
+          templates) and payment reconciliation APIs are not yet implemented in
+          the backend server. Once payment gateway integration endpoints are
+          deployed, automated clearing and disbursement confirmation will be
+          integrated here without modifying existing calculation rules.
         </Paragraph>
       </Card>
     </div>

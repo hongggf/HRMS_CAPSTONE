@@ -94,7 +94,8 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
         return;
       }
 
-      const fileObj = (fileList[0].originFileObj || fileList[0]) as unknown as File;
+      const fileObj = (fileList[0].originFileObj ||
+        fileList[0]) as unknown as File;
       setUploading(true);
       setUploadPercent(0);
       setErrorMessage(null);
@@ -117,7 +118,9 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
       }, 700);
     } catch (err: unknown) {
       const normalized = normalizeApiError(err);
-      setErrorMessage(normalized.message || 'Failed to upload document. Please retry.');
+      setErrorMessage(
+        normalized.message || 'Failed to upload document. Please retry.',
+      );
     } finally {
       setUploading(false);
     }
@@ -159,7 +162,8 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
     >
       <div style={{ marginBottom: 16 }}>
         <Text type="secondary">
-          Uploading official record for employee: <Text strong>{employeeName}</Text>
+          Uploading official record for employee:{' '}
+          <Text strong>{employeeName}</Text>
         </Text>
       </div>
 
@@ -193,10 +197,12 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
           <Select
             placeholder="Select verified document type"
             disabled={uploading}
-            options={Object.entries(DOCUMENT_TYPE_LABELS).map(([value, label]) => ({
-              value,
-              label,
-            }))}
+            options={Object.entries(DOCUMENT_TYPE_LABELS).map(
+              ([value, label]) => ({
+                value,
+                label,
+              }),
+            )}
           />
         </Form.Item>
 
@@ -221,7 +227,8 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
               Click or drag document to this area to attach
             </p>
             <p className="ant-upload-hint">
-              Allowed formats: PDF, PNG, JPG, JPEG, DOC, DOCX. Maximum file size: 5 MB.
+              Allowed formats: PDF, PNG, JPG, JPEG, DOC, DOCX. Maximum file
+              size: 5 MB.
             </p>
           </Upload.Dragger>
         </Form.Item>
@@ -232,9 +239,15 @@ export const DocumentUploadModal: React.FC<DocumentUploadModalProps> = ({
           <Space direction="vertical" style={{ width: '100%' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Text style={{ fontSize: 13 }}>Uploading file securely...</Text>
-              <Text strong style={{ fontSize: 13 }}>{uploadPercent}%</Text>
+              <Text strong style={{ fontSize: 13 }}>
+                {uploadPercent}%
+              </Text>
             </div>
-            <Progress percent={uploadPercent} status="active" showInfo={false} />
+            <Progress
+              percent={uploadPercent}
+              status="active"
+              showInfo={false}
+            />
           </Space>
         </div>
       )}

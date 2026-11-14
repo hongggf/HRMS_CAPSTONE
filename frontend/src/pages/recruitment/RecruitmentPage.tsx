@@ -79,18 +79,26 @@ export const RecruitmentPage: React.FC = () => {
   // --- Applications state ---
   const [appViewMode, setAppViewMode] = useState<'table' | 'kanban'>('table');
   const [appSearch, setAppSearch] = useState<string>('');
-  const [appPostingFilter, setAppPostingFilter] = useState<number | undefined>();
-  const [appStatusFilter, setAppStatusFilter] = useState<ApplicationStatus | undefined>();
+  const [appPostingFilter, setAppPostingFilter] = useState<
+    number | undefined
+  >();
+  const [appStatusFilter, setAppStatusFilter] = useState<
+    ApplicationStatus | undefined
+  >();
   const [appPage, setAppPage] = useState<number>(1);
   const [appPageSize, setAppPageSize] = useState<number>(10);
 
   // --- Requisitions state ---
-  const [reqStatusFilter, setReqStatusFilter] = useState<RequisitionStatus | undefined>();
+  const [reqStatusFilter, setReqStatusFilter] = useState<
+    RequisitionStatus | undefined
+  >();
   const [reqPage, setReqPage] = useState<number>(1);
   const [reqPageSize, setReqPageSize] = useState<number>(10);
 
   // --- Job Postings state ---
-  const [postingStatusFilter, setPostingStatusFilter] = useState<JobPostingStatus | undefined>();
+  const [postingStatusFilter, setPostingStatusFilter] = useState<
+    JobPostingStatus | undefined
+  >();
   const [postingPage, setPostingPage] = useState<number>(1);
   const [postingPageSize, setPostingPageSize] = useState<number>(10);
 
@@ -100,37 +108,60 @@ export const RecruitmentPage: React.FC = () => {
   const [candidatePageSize, setCandidatePageSize] = useState<number>(10);
 
   // --- Interviews state ---
-  const [interviewStatusFilter, setInterviewStatusFilter] = useState<InterviewStatus | undefined>();
+  const [interviewStatusFilter, setInterviewStatusFilter] = useState<
+    InterviewStatus | undefined
+  >();
   const [interviewPage, setInterviewPage] = useState<number>(1);
   const [interviewPageSize, setInterviewPageSize] = useState<number>(10);
 
   // --- Modal & Drawer Visibility ---
   const [requisitionModalOpen, setRequisitionModalOpen] = useState(false);
   const [requisitionDrawerOpen, setRequisitionDrawerOpen] = useState(false);
-  const [selectedRequisition, setSelectedRequisition] = useState<JobRequisition | null>(null);
+  const [selectedRequisition, setSelectedRequisition] =
+    useState<JobRequisition | null>(null);
 
   const [jobPostingModalOpen, setJobPostingModalOpen] = useState(false);
   const [postingToEdit, setPostingToEdit] = useState<JobPosting | null>(null);
   const [jobPostingDrawerOpen, setJobPostingDrawerOpen] = useState(false);
-  const [selectedPosting, setSelectedPosting] = useState<JobPosting | null>(null);
+  const [selectedPosting, setSelectedPosting] = useState<JobPosting | null>(
+    null,
+  );
 
   const [candidateModalOpen, setCandidateModalOpen] = useState(false);
   const [candidateDrawerOpen, setCandidateDrawerOpen] = useState(false);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
+    null,
+  );
 
   const [applicationModalOpen, setApplicationModalOpen] = useState(false);
-  const [preselectedPostingId, setPreselectedPostingId] = useState<number | null>(null);
-  const [applicationStatusModalOpen, setApplicationStatusModalOpen] = useState(false);
+  const [preselectedPostingId, setPreselectedPostingId] = useState<
+    number | null
+  >(null);
+  const [applicationStatusModalOpen, setApplicationStatusModalOpen] =
+    useState(false);
   const [applicationDrawerOpen, setApplicationDrawerOpen] = useState(false);
-  const [selectedApplication, setSelectedApplication] = useState<Application | null>(null);
+  const [selectedApplication, setSelectedApplication] =
+    useState<Application | null>(null);
 
   const [scheduleModalOpen, setScheduleModalOpen] = useState(false);
   const [evalModalOpen, setEvalModalOpen] = useState(false);
-  const [selectedInterviewForEval, setSelectedInterviewForEval] = useState<Interview | null>(null);
+  const [selectedInterviewForEval, setSelectedInterviewForEval] =
+    useState<Interview | null>(null);
 
   // ================= QUERIES =================
-  const { data: appsData, isLoading: isLoadingApps, refetch: refetchApps } = useQuery({
-    queryKey: ['recruitment-applications', appPage, appPageSize, appPostingFilter, appStatusFilter, appSearch],
+  const {
+    data: appsData,
+    isLoading: isLoadingApps,
+    refetch: refetchApps,
+  } = useQuery({
+    queryKey: [
+      'recruitment-applications',
+      appPage,
+      appPageSize,
+      appPostingFilter,
+      appStatusFilter,
+      appSearch,
+    ],
     queryFn: () =>
       recruitmentApi.listApplications({
         page: appPage,
@@ -141,8 +172,17 @@ export const RecruitmentPage: React.FC = () => {
       }),
   });
 
-  const { data: reqsData, isLoading: isLoadingReqs, refetch: refetchReqs } = useQuery({
-    queryKey: ['recruitment-requisitions', reqPage, reqPageSize, reqStatusFilter],
+  const {
+    data: reqsData,
+    isLoading: isLoadingReqs,
+    refetch: refetchReqs,
+  } = useQuery({
+    queryKey: [
+      'recruitment-requisitions',
+      reqPage,
+      reqPageSize,
+      reqStatusFilter,
+    ],
     queryFn: () =>
       recruitmentApi.listRequisitions({
         page: reqPage,
@@ -151,8 +191,17 @@ export const RecruitmentPage: React.FC = () => {
       }),
   });
 
-  const { data: postingsData, isLoading: isLoadingPostings, refetch: refetchPostings } = useQuery({
-    queryKey: ['recruitment-postings', postingPage, postingPageSize, postingStatusFilter],
+  const {
+    data: postingsData,
+    isLoading: isLoadingPostings,
+    refetch: refetchPostings,
+  } = useQuery({
+    queryKey: [
+      'recruitment-postings',
+      postingPage,
+      postingPageSize,
+      postingStatusFilter,
+    ],
     queryFn: () =>
       recruitmentApi.listJobPostings({
         page: postingPage,
@@ -161,8 +210,17 @@ export const RecruitmentPage: React.FC = () => {
       }),
   });
 
-  const { data: candidatesData, isLoading: isLoadingCandidates, refetch: refetchCandidates } = useQuery({
-    queryKey: ['recruitment-candidates', candidatePage, candidatePageSize, candidateSearch],
+  const {
+    data: candidatesData,
+    isLoading: isLoadingCandidates,
+    refetch: refetchCandidates,
+  } = useQuery({
+    queryKey: [
+      'recruitment-candidates',
+      candidatePage,
+      candidatePageSize,
+      candidateSearch,
+    ],
     queryFn: () =>
       recruitmentApi.listCandidates({
         page: candidatePage,
@@ -171,8 +229,17 @@ export const RecruitmentPage: React.FC = () => {
       }),
   });
 
-  const { data: interviewsData, isLoading: isLoadingInterviews, refetch: refetchInterviews } = useQuery({
-    queryKey: ['recruitment-interviews', interviewPage, interviewPageSize, interviewStatusFilter],
+  const {
+    data: interviewsData,
+    isLoading: isLoadingInterviews,
+    refetch: refetchInterviews,
+  } = useQuery({
+    queryKey: [
+      'recruitment-interviews',
+      interviewPage,
+      interviewPageSize,
+      interviewStatusFilter,
+    ],
     queryFn: () =>
       recruitmentApi.listInterviews({
         page: interviewPage,
@@ -189,7 +256,8 @@ export const RecruitmentPage: React.FC = () => {
       (a) => !['REJECTED', 'WITHDRAWN', 'HIRED'].includes(a.status),
     ).length || 0;
   const scheduledInterviewsCount =
-    interviewsData?.interviews.filter((i) => i.status === 'SCHEDULED').length || 0;
+    interviewsData?.interviews.filter((i) => i.status === 'SCHEDULED').length ||
+    0;
   const pendingApprovalsCount =
     appsData?.applications.filter(
       (a) => a.status === 'PENDING_HEAD_OF_HR_APPROVAL',
@@ -238,7 +306,8 @@ export const RecruitmentPage: React.FC = () => {
             Recruitment & Applicant Tracking (ATS)
           </Title>
           <Text type="secondary">
-            Manage job requisitions, vacancies, candidate screening pipelines, interview sessions, and executive hiring approvals.
+            Manage job requisitions, vacancies, candidate screening pipelines,
+            interview sessions, and executive hiring approvals.
           </Text>
         </div>
         <Space>
@@ -263,7 +332,8 @@ export const RecruitmentPage: React.FC = () => {
                 else if (activeTab === 'postings') {
                   setPostingToEdit(null);
                   setJobPostingModalOpen(true);
-                } else if (activeTab === 'candidates') setCandidateModalOpen(true);
+                } else if (activeTab === 'candidates')
+                  setCandidateModalOpen(true);
                 else if (activeTab === 'interviews') setScheduleModalOpen(true);
                 else {
                   setPreselectedPostingId(null);
@@ -288,7 +358,10 @@ export const RecruitmentPage: React.FC = () => {
       {/* KPI Overview Summary */}
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} style={{ background: '#f0f5ff', borderRadius: 8 }}>
+          <Card
+            bordered={false}
+            style={{ background: '#f0f5ff', borderRadius: 8 }}
+          >
             <Statistic
               title={<Text type="secondary">Open Vacancies</Text>}
               value={openVacanciesCount}
@@ -298,7 +371,10 @@ export const RecruitmentPage: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} style={{ background: '#f6ffed', borderRadius: 8 }}>
+          <Card
+            bordered={false}
+            style={{ background: '#f6ffed', borderRadius: 8 }}
+          >
             <Statistic
               title={<Text type="secondary">Active Pipeline</Text>}
               value={activeApplicationsCount}
@@ -308,7 +384,10 @@ export const RecruitmentPage: React.FC = () => {
           </Card>
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <Card bordered={false} style={{ background: '#f9f0ff', borderRadius: 8 }}>
+          <Card
+            bordered={false}
+            style={{ background: '#f9f0ff', borderRadius: 8 }}
+          >
             <Statistic
               title={<Text type="secondary">Scheduled Interviews</Text>}
               value={scheduledInterviewsCount}
@@ -323,7 +402,8 @@ export const RecruitmentPage: React.FC = () => {
             style={{
               background: pendingApprovalsCount > 0 ? '#fffbe6' : '#fafafa',
               borderRadius: 8,
-              border: pendingApprovalsCount > 0 ? '1px solid #ffe58f' : undefined,
+              border:
+                pendingApprovalsCount > 0 ? '1px solid #ffe58f' : undefined,
             }}
           >
             <Statistic
@@ -461,10 +541,14 @@ export const RecruitmentPage: React.FC = () => {
                         render: (_, app) => (
                           <div>
                             <Text strong style={{ fontSize: 14 }}>
-                              {app.candidate?.firstName} {app.candidate?.lastName}
+                              {app.candidate?.firstName}{' '}
+                              {app.candidate?.lastName}
                             </Text>
                             <div>
-                              <Tag color="cyan" style={{ fontSize: 11, marginTop: 2 }}>
+                              <Tag
+                                color="cyan"
+                                style={{ fontSize: 11, marginTop: 2 }}
+                              >
                                 {app.candidate?.source || 'Direct'}
                               </Tag>
                             </div>
@@ -478,7 +562,8 @@ export const RecruitmentPage: React.FC = () => {
                           <div>
                             <Text strong>{app.jobPosting?.title}</Text>
                             <div style={{ fontSize: 12, color: '#888' }}>
-                              {app.jobPosting?.location} · {app.jobPosting?.employmentType}
+                              {app.jobPosting?.location} ·{' '}
+                              {app.jobPosting?.employmentType}
                             </div>
                           </div>
                         ),
@@ -496,9 +581,17 @@ export const RecruitmentPage: React.FC = () => {
                               ) : (
                                 <Tooltip title="Protected candidate email">
                                   <Space size={4}>
-                                    <LockOutlined style={{ color: '#faad14' }} />
-                                    <Text type="secondary" style={{ fontSize: 13 }}>
-                                      {maskContactInfo(app.candidate?.email, true)}
+                                    <LockOutlined
+                                      style={{ color: '#faad14' }}
+                                    />
+                                    <Text
+                                      type="secondary"
+                                      style={{ fontSize: 13 }}
+                                    >
+                                      {maskContactInfo(
+                                        app.candidate?.email,
+                                        true,
+                                      )}
                                     </Text>
                                   </Space>
                                 </Tooltip>
@@ -529,7 +622,9 @@ export const RecruitmentPage: React.FC = () => {
                         key: 'interviews',
                         render: (_, app) => {
                           const count = app.interviews?.length || 0;
-                          const evaluated = app.interviews?.find((i) => i.evaluation);
+                          const evaluated = app.interviews?.find(
+                            (i) => i.evaluation,
+                          );
                           return (
                             <div>
                               <Text style={{ fontSize: 12 }}>
@@ -565,9 +660,10 @@ export const RecruitmentPage: React.FC = () => {
                         render: (_, app) => {
                           const isPendingApproval =
                             app.status === 'PENDING_HEAD_OF_HR_APPROVAL';
-                          const canSchedule = ['SHORTLISTED', 'INTERVIEW'].includes(
-                            app.status,
-                          );
+                          const canSchedule = [
+                            'SHORTLISTED',
+                            'INTERVIEW',
+                          ].includes(app.status);
                           const isTerminal = [
                             'APPROVED',
                             'REJECTED',
@@ -622,14 +718,18 @@ export const RecruitmentPage: React.FC = () => {
                                     style={{ backgroundColor: '#52c41a' }}
                                     icon={<CheckCircleOutlined />}
                                     loading={approveMutation.isPending}
-                                    onClick={() => approveMutation.mutate(app.id)}
+                                    onClick={() =>
+                                      approveMutation.mutate(app.id)
+                                    }
                                   >
                                     Approve
                                   </Button>
                                   <Popconfirm
                                     title="Reject Candidate"
                                     description="Reject this candidate at final approval stage?"
-                                    onConfirm={() => rejectMutation.mutate(app.id)}
+                                    onConfirm={() =>
+                                      rejectMutation.mutate(app.id)
+                                    }
                                     okText="Yes, Reject"
                                     cancelText="Cancel"
                                   >
@@ -664,8 +764,9 @@ export const RecruitmentPage: React.FC = () => {
                     {KANBAN_STAGES.map((stageKey) => {
                       const conf = APPLICATION_STATUS_CONFIG[stageKey];
                       const stageApps =
-                        appsData?.applications.filter((a) => a.status === stageKey) ||
-                        [];
+                        appsData?.applications.filter(
+                          (a) => a.status === stageKey,
+                        ) || [];
 
                       return (
                         <div
@@ -693,7 +794,10 @@ export const RecruitmentPage: React.FC = () => {
                             <Space size={6}>
                               <Tag color={conf.color}>{conf.label}</Tag>
                             </Space>
-                            <Badge count={stageApps.length} overflowCount={99} />
+                            <Badge
+                              count={stageApps.length}
+                              overflowCount={99}
+                            />
                           </div>
 
                           {/* Candidate Cards */}
@@ -744,8 +848,11 @@ export const RecruitmentPage: React.FC = () => {
                                     </Button>,
                                   ]}
                                 >
-                                  <div style={{ fontWeight: 600, fontSize: 14 }}>
-                                    {app.candidate?.firstName} {app.candidate?.lastName}
+                                  <div
+                                    style={{ fontWeight: 600, fontSize: 14 }}
+                                  >
+                                    {app.candidate?.firstName}{' '}
+                                    {app.candidate?.lastName}
                                   </div>
                                   <div
                                     style={{
@@ -764,14 +871,23 @@ export const RecruitmentPage: React.FC = () => {
                                       marginTop: 8,
                                     }}
                                   >
-                                    <Text type="secondary" style={{ fontSize: 11 }}>
-                                      {new Date(app.createdAt).toLocaleDateString()}
+                                    <Text
+                                      type="secondary"
+                                      style={{ fontSize: 11 }}
+                                    >
+                                      {new Date(
+                                        app.createdAt,
+                                      ).toLocaleDateString()}
                                     </Text>
-                                    {app.interviews && app.interviews.length > 0 && (
-                                      <Tag color="geekblue" style={{ fontSize: 10 }}>
-                                        {app.interviews.length} Int.
-                                      </Tag>
-                                    )}
+                                    {app.interviews &&
+                                      app.interviews.length > 0 && (
+                                        <Tag
+                                          color="geekblue"
+                                          style={{ fontSize: 10 }}
+                                        >
+                                          {app.interviews.length} Int.
+                                        </Tag>
+                                      )}
                                   </div>
                                 </Card>
                               ))
@@ -821,7 +937,10 @@ export const RecruitmentPage: React.FC = () => {
                       options={[
                         { label: 'Draft', value: 'DRAFT' },
                         { label: 'Submitted', value: 'SUBMITTED' },
-                        { label: 'Pending Approval', value: 'PENDING_APPROVAL' },
+                        {
+                          label: 'Pending Approval',
+                          value: 'PENDING_APPROVAL',
+                        },
                         { label: 'Approved', value: 'APPROVED' },
                         { label: 'Rejected', value: 'REJECTED' },
                         { label: 'Closed', value: 'CLOSED' },
@@ -866,7 +985,8 @@ export const RecruitmentPage: React.FC = () => {
                       render: (_, req) => (
                         <div>
                           <Text strong>
-                            {req.workforceRequest?.position?.title || 'Position'}
+                            {req.workforceRequest?.position?.title ||
+                              'Position'}
                           </Text>
                           <div style={{ fontSize: 12, color: '#888' }}>
                             Code: {req.workforceRequest?.position?.code || '-'}
@@ -1041,14 +1161,20 @@ export const RecruitmentPage: React.FC = () => {
                       dataIndex: 'closingDate',
                       key: 'closingDate',
                       render: (date) =>
-                        date ? new Date(date).toLocaleDateString() : 'Continuous',
+                        date
+                          ? new Date(date).toLocaleDateString()
+                          : 'Continuous',
                     },
                     {
                       title: 'Applications',
                       key: 'appsCount',
                       render: (_, p) => (
                         <Badge
-                          count={p._count?.applications || p.applications?.length || 0}
+                          count={
+                            p._count?.applications ||
+                            p.applications?.length ||
+                            0
+                          }
                           showZero
                           style={{ backgroundColor: '#108ee9' }}
                         />
@@ -1059,12 +1185,17 @@ export const RecruitmentPage: React.FC = () => {
                       dataIndex: 'status',
                       key: 'status',
                       render: (st: JobPostingStatus) => {
-                        const conf: Record<JobPostingStatus, { label: string; color: string }> = {
+                        const conf: Record<
+                          JobPostingStatus,
+                          { label: string; color: string }
+                        > = {
                           DRAFT: { label: 'Draft', color: 'orange' },
                           PUBLISHED: { label: 'Published', color: 'green' },
                           CLOSED: { label: 'Closed', color: 'red' },
                         };
-                        return <Tag color={conf[st].color}>{conf[st].label}</Tag>;
+                        return (
+                          <Tag color={conf[st].color}>{conf[st].label}</Tag>
+                        );
                       },
                     },
                     {
@@ -1200,7 +1331,9 @@ export const RecruitmentPage: React.FC = () => {
                       title: 'Sourcing Source',
                       dataIndex: 'source',
                       key: 'source',
-                      render: (src) => <Tag color="blue">{src || 'Direct'}</Tag>,
+                      render: (src) => (
+                        <Tag color="blue">{src || 'Direct'}</Tag>
+                      ),
                     },
                     {
                       title: 'Total Applications',

@@ -1,6 +1,9 @@
 import React from 'react';
 import { Modal, Form, Select, message } from 'antd';
-import { CreateReviewInput, PerformanceCycle } from '../../../types/performance';
+import {
+  CreateReviewInput,
+  PerformanceCycle,
+} from '../../../types/performance';
 import { Employee } from '../../../types/employee';
 import { normalizeApiError } from '../../../api/client';
 

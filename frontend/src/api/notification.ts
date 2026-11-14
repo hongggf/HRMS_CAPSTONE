@@ -3,13 +3,18 @@ import { NotificationItem } from '../types/api';
 
 export const notificationApi = {
   getNotifications: async (): Promise<NotificationItem[]> => {
-    const res = await apiClient.get<NotificationItem[]>('/notifications');
-    return Array.isArray(res.data) ? res.data : [];
+    const res = await apiClient.get<
+      NotificationItem[] | { data: NotificationItem[] }
+    >('/notifications');
+    const data = (res.data as any)?.data ?? res.data;
+    return Array.isArray(data) ? data : [];
   },
 
   getUnreadCount: async (): Promise<number> => {
-    const res = await apiClient.get<{ count: number }>('/notifications/unread');
-    return res.data?.count ?? 0;
+    const res = await apiClient.get<{ count: number; unreadCount?: number }>(
+      '/notifications/unread',
+    );
+    return res.data?.unreadCount ?? res.data?.count ?? 0;
   },
 
   markAsRead: async (

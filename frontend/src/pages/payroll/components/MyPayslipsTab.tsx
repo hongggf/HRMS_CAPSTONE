@@ -9,11 +9,7 @@ import {
   Alert,
   Empty,
 } from 'antd';
-import {
-  EyeOutlined,
-  DollarOutlined,
-  ReloadOutlined,
-} from '@ant-design/icons';
+import { EyeOutlined, DollarOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useQuery } from '@tanstack/react-query';
 import { payrollApi } from '../../../api/payroll';
 import { Payroll } from '../../../types/payroll';
@@ -24,7 +20,9 @@ import { OfficialPayslipDrawer } from './OfficialPayslipDrawer';
 const { Text } = Typography;
 
 export const MyPayslipsTab: React.FC = () => {
-  const [selectedPayslipId, setSelectedPayslipId] = useState<number | null>(null);
+  const [selectedPayslipId, setSelectedPayslipId] = useState<number | null>(
+    null,
+  );
 
   const {
     data: myPayslips = [],
@@ -43,7 +41,9 @@ export const MyPayslipsTab: React.FC = () => {
   } = useQuery({
     queryKey: ['payslip-detail', selectedPayslipId],
     queryFn: () =>
-      selectedPayslipId ? payrollApi.getPayslip(selectedPayslipId) : Promise.resolve(null),
+      selectedPayslipId
+        ? payrollApi.getPayslip(selectedPayslipId)
+        : Promise.resolve(null),
     enabled: selectedPayslipId !== null,
   });
 
@@ -56,7 +56,8 @@ export const MyPayslipsTab: React.FC = () => {
         <div>
           <Text strong>{val || 'Payroll Period'}</Text>
           <Text type="secondary" style={{ display: 'block', fontSize: 11 }}>
-            {formatDateOnly(r.payrollPeriod?.startDate)} ~ {formatDateOnly(r.payrollPeriod?.endDate)}
+            {formatDateOnly(r.payrollPeriod?.startDate)} ~{' '}
+            {formatDateOnly(r.payrollPeriod?.endDate)}
           </Text>
         </div>
       ),
@@ -132,12 +133,22 @@ export const MyPayslipsTab: React.FC = () => {
       <Card
         variant="outlined"
         title={
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <Space>
               <DollarOutlined style={{ color: '#1677ff' }} />
               <span>Employee Self-Service: My Released Payslips</span>
             </Space>
-            <Button icon={<ReloadOutlined />} onClick={() => refetch()} loading={isLoading}>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => refetch()}
+              loading={isLoading}
+            >
               Refresh
             </Button>
           </div>

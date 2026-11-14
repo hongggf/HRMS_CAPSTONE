@@ -64,8 +64,12 @@ export const PerformancePage: React.FC = () => {
 
   // State
   const [activeTab, setActiveTab] = useState('cycles');
-  const [selectedCycleId, setSelectedCycleId] = useState<number | undefined>(undefined);
-  const [reviewStatusFilter, setReviewStatusFilter] = useState<string | undefined>(undefined);
+  const [selectedCycleId, setSelectedCycleId] = useState<number | undefined>(
+    undefined,
+  );
+  const [reviewStatusFilter, setReviewStatusFilter] = useState<
+    string | undefined
+  >(undefined);
 
   // Modals / Drawers
   const [createCycleModalOpen, setCreateCycleModalOpen] = useState(false);
@@ -74,10 +78,12 @@ export const PerformancePage: React.FC = () => {
   const [requestPromoModalOpen, setRequestPromoModalOpen] = useState(false);
   const [createPipModalOpen, setCreatePipModalOpen] = useState(false);
 
-  const [activeScoringReview, setActiveScoringReview] = useState<PerformanceReview | null>(null);
+  const [activeScoringReview, setActiveScoringReview] =
+    useState<PerformanceReview | null>(null);
   const [scoringDrawerOpen, setScoringDrawerOpen] = useState(false);
 
-  const [activeDetailPip, setActiveDetailPip] = useState<ImprovementPlan | null>(null);
+  const [activeDetailPip, setActiveDetailPip] =
+    useState<ImprovementPlan | null>(null);
   const [pipDrawerOpen, setPipDrawerOpen] = useState(false);
 
   // Queries
@@ -200,7 +206,9 @@ export const PerformancePage: React.FC = () => {
   const approvePromoMutation = useMutation({
     mutationFn: (id: number) => performanceApi.approvePromotion(id),
     onSuccess: () => {
-      message.success('Promotion approved! Employee position & compensation updated.');
+      message.success(
+        'Promotion approved! Employee position & compensation updated.',
+      );
       queryClient.invalidateQueries({ queryKey: ['promotions'] });
       queryClient.invalidateQueries({ queryKey: ['employees-directory'] });
     },
@@ -232,7 +240,9 @@ export const PerformancePage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pips'] });
       if (activeDetailPip) {
-        performanceApi.getPipById(activeDetailPip.id).then((fresh) => setActiveDetailPip(fresh));
+        performanceApi
+          .getPipById(activeDetailPip.id)
+          .then((fresh) => setActiveDetailPip(fresh));
       }
     },
   });
@@ -243,7 +253,9 @@ export const PerformancePage: React.FC = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['pips'] });
       if (activeDetailPip) {
-        performanceApi.getPipById(activeDetailPip.id).then((fresh) => setActiveDetailPip(fresh));
+        performanceApi
+          .getPipById(activeDetailPip.id)
+          .then((fresh) => setActiveDetailPip(fresh));
       }
     },
   });
@@ -269,7 +281,11 @@ export const PerformancePage: React.FC = () => {
       case 'HEAD_OF_HR_REVIEW':
         return <Tag color="purple">Pending HR Sign-off</Tag>;
       case 'FINALIZED':
-        return <Tag color="success" icon={<LockOutlined />}>Finalized</Tag>;
+        return (
+          <Tag color="success" icon={<LockOutlined />}>
+            Finalized
+          </Tag>
+        );
       case 'REJECTED':
         return <Tag color="error">Rejected</Tag>;
       default:
@@ -284,9 +300,17 @@ export const PerformancePage: React.FC = () => {
       case 'PENDING_APPROVAL':
         return <Tag color="orange">Pending Approval</Tag>;
       case 'APPROVED':
-        return <Tag color="green" icon={<CheckCircleOutlined />}>Approved</Tag>;
+        return (
+          <Tag color="green" icon={<CheckCircleOutlined />}>
+            Approved
+          </Tag>
+        );
       case 'REJECTED':
-        return <Tag color="red" icon={<CloseCircleOutlined />}>Rejected</Tag>;
+        return (
+          <Tag color="red" icon={<CloseCircleOutlined />}>
+            Rejected
+          </Tag>
+        );
       default:
         return <Tag>{status}</Tag>;
     }
@@ -295,18 +319,28 @@ export const PerformancePage: React.FC = () => {
   // Metrics
   const activeCycle = cycles.find((c) => c.id === selectedCycleId);
   const totalReviewsCount = reviews.length;
-  const finalizedReviewsCount = reviews.filter((r) => r.status === 'FINALIZED').length;
+  const finalizedReviewsCount = reviews.filter(
+    (r) => r.status === 'FINALIZED',
+  ).length;
   const activePipsCount = pips.filter((p) => p.status === 'ACTIVE').length;
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <div style={{ marginBottom: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          marginBottom: 24,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div>
           <Title level={3} style={{ margin: 0 }}>
             Performance Management & Governance
           </Title>
           <Text type="secondary">
-            Appraisal cycles, goal weighting, review scoring, promotions, and improvement plans
+            Appraisal cycles, goal weighting, review scoring, promotions, and
+            improvement plans
           </Text>
         </div>
         <Space>
@@ -362,7 +396,9 @@ export const PerformancePage: React.FC = () => {
               title="Active PIPs"
               value={activePipsCount}
               prefix={<AlertOutlined />}
-              styles={{ content: { color: activePipsCount > 0 ? '#cf1322' : '#3f8600' } }}
+              styles={{
+                content: { color: activePipsCount > 0 ? '#cf1322' : '#3f8600' },
+              }}
             />
           </Card>
         </Col>
@@ -379,7 +415,13 @@ export const PerformancePage: React.FC = () => {
               label: 'Evaluation Cycles & Goals',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Space>
                       <Text strong>Active Evaluation Cycle:</Text>
                       <Select
@@ -390,12 +432,19 @@ export const PerformancePage: React.FC = () => {
                       >
                         {cycles.map((c) => (
                           <Select.Option key={c.id} value={c.id}>
-                            {c.name} ({dayjs(c.startDate).format('YYYY-MM-DD')} - {dayjs(c.endDate).format('YYYY-MM-DD')})
+                            {c.name} ({dayjs(c.startDate).format('YYYY-MM-DD')}{' '}
+                            - {dayjs(c.endDate).format('YYYY-MM-DD')})
                           </Select.Option>
                         ))}
                       </Select>
                       {activeCycle && (
-                        <Tag color={activeCycle.status === 'CLOSED' ? 'default' : 'green'}>
+                        <Tag
+                          color={
+                            activeCycle.status === 'CLOSED'
+                              ? 'default'
+                              : 'green'
+                          }
+                        >
                           {activeCycle.status}
                         </Tag>
                       )}
@@ -422,7 +471,9 @@ export const PerformancePage: React.FC = () => {
                         key: 'employee',
                         render: (_: any, record: Goal) => (
                           <Text strong>
-                            {record.employee?.firstName} {record.employee?.lastName} ({record.employee?.employeeId})
+                            {record.employee?.firstName}{' '}
+                            {record.employee?.lastName} (
+                            {record.employee?.employeeId})
                           </Text>
                         ),
                       },
@@ -468,7 +519,13 @@ export const PerformancePage: React.FC = () => {
               label: 'Employee Reviews & Scoring',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Space>
                       <Select
                         placeholder="Filter by Status"
@@ -478,9 +535,15 @@ export const PerformancePage: React.FC = () => {
                         onChange={setReviewStatusFilter}
                       >
                         <Select.Option value="DRAFT">Draft</Select.Option>
-                        <Select.Option value="SUBMITTED">Submitted</Select.Option>
-                        <Select.Option value="HEAD_OF_HR_REVIEW">Pending Sign-off</Select.Option>
-                        <Select.Option value="FINALIZED">Finalized</Select.Option>
+                        <Select.Option value="SUBMITTED">
+                          Submitted
+                        </Select.Option>
+                        <Select.Option value="HEAD_OF_HR_REVIEW">
+                          Pending Sign-off
+                        </Select.Option>
+                        <Select.Option value="FINALIZED">
+                          Finalized
+                        </Select.Option>
                       </Select>
                     </Space>
                     {canManagePerformance && (
@@ -511,11 +574,13 @@ export const PerformancePage: React.FC = () => {
                         render: (_: any, record: PerformanceReview) => (
                           <div>
                             <Text strong>
-                              {record.employee?.firstName} {record.employee?.lastName}
+                              {record.employee?.firstName}{' '}
+                              {record.employee?.lastName}
                             </Text>
                             <br />
                             <Text type="secondary" style={{ fontSize: 12 }}>
-                              {record.employee?.employeeId} | {record.employee?.position?.title || 'N/A'}
+                              {record.employee?.employeeId} |{' '}
+                              {record.employee?.position?.title || 'N/A'}
                             </Text>
                           </div>
                         ),
@@ -526,7 +591,8 @@ export const PerformancePage: React.FC = () => {
                         render: (_: any, record: PerformanceReview) =>
                           record.reviewer ? (
                             <span>
-                              {record.reviewer.firstName} {record.reviewer.lastName}
+                              {record.reviewer.firstName}{' '}
+                              {record.reviewer.lastName}
                             </span>
                           ) : (
                             <Text type="secondary">Unassigned</Text>
@@ -538,7 +604,10 @@ export const PerformancePage: React.FC = () => {
                         key: 'overallScore',
                         render: (score: number | null | undefined) =>
                           score !== null && score !== undefined ? (
-                            <Tag color="cyan" style={{ fontSize: 13, fontWeight: 'bold' }}>
+                            <Tag
+                              color="cyan"
+                              style={{ fontSize: 13, fontWeight: 'bold' }}
+                            >
                               {score.toFixed(2)} / 5.0
                             </Tag>
                           ) : (
@@ -560,7 +629,9 @@ export const PerformancePage: React.FC = () => {
                             <Space size="small">
                               <Button
                                 size="small"
-                                icon={isFinal ? <EyeOutlined /> : <EditOutlined />}
+                                icon={
+                                  isFinal ? <EyeOutlined /> : <EditOutlined />
+                                }
                                 onClick={() => {
                                   setActiveScoringReview(record);
                                   setScoringDrawerOpen(true);
@@ -570,33 +641,44 @@ export const PerformancePage: React.FC = () => {
                               </Button>
 
                               {/* Advance to HR Review if submitted */}
-                              {record.status === 'SUBMITTED' && canManagePerformance && (
-                                <Button
-                                  size="small"
-                                  type="dashed"
-                                  icon={<SendOutlined />}
-                                  onClick={() => approveReviewMutation.mutate(record.id)}
-                                >
-                                  Submit to HR
-                                </Button>
-                              )}
+                              {record.status === 'SUBMITTED' &&
+                                canManagePerformance && (
+                                  <Button
+                                    size="small"
+                                    type="dashed"
+                                    icon={<SendOutlined />}
+                                    onClick={() =>
+                                      approveReviewMutation.mutate(record.id)
+                                    }
+                                  >
+                                    Submit to HR
+                                  </Button>
+                                )}
 
                               {/* Executive Finalization (HEAD_OF_HR only) */}
-                              {record.status === 'HEAD_OF_HR_REVIEW' && isHeadOfHr && (
-                                <Popconfirm
-                                  title="Finalize Review"
-                                  description="This will lock ratings and officially finalize the evaluation. Continue?"
-                                  okText="Yes, Finalize"
-                                  onConfirm={() => {
-                                    console.log('ONCONFIRM FINALIZE CALLED FOR RECORD ID:', record.id);
-                                    finalizeReviewMutation.mutate(record.id);
-                                  }}
-                                >
-                                  <Button size="small" type="primary" icon={<LockOutlined />}>
-                                    Finalize
-                                  </Button>
-                                </Popconfirm>
-                              )}
+                              {record.status === 'HEAD_OF_HR_REVIEW' &&
+                                isHeadOfHr && (
+                                  <Popconfirm
+                                    title="Finalize Review"
+                                    description="This will lock ratings and officially finalize the evaluation. Continue?"
+                                    okText="Yes, Finalize"
+                                    onConfirm={() => {
+                                      console.log(
+                                        'ONCONFIRM FINALIZE CALLED FOR RECORD ID:',
+                                        record.id,
+                                      );
+                                      finalizeReviewMutation.mutate(record.id);
+                                    }}
+                                  >
+                                    <Button
+                                      size="small"
+                                      type="primary"
+                                      icon={<LockOutlined />}
+                                    >
+                                      Finalize
+                                    </Button>
+                                  </Popconfirm>
+                                )}
                             </Space>
                           );
                         },
@@ -614,9 +696,16 @@ export const PerformancePage: React.FC = () => {
               label: 'Promotion & Salary Increases',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Text type="secondary">
-                      Executive promotion workflow with position elevation and salary calibration
+                      Executive promotion workflow with position elevation and
+                      salary calibration
                     </Text>
                     {canManagePerformance && (
                       <Button
@@ -640,7 +729,8 @@ export const PerformancePage: React.FC = () => {
                         render: (_: any, record: PromotionRequest) => (
                           <div>
                             <Text strong>
-                              {record.employee?.firstName} {record.employee?.lastName}
+                              {record.employee?.firstName}{' '}
+                              {record.employee?.lastName}
                             </Text>
                             <br />
                             <Text type="secondary" style={{ fontSize: 12 }}>
@@ -659,7 +749,9 @@ export const PerformancePage: React.FC = () => {
                         title: 'Proposed Position',
                         key: 'proposedPos',
                         render: (_: any, record: PromotionRequest) => (
-                          <Tag color="purple">{record.proposedPosition?.title || 'N/A'}</Tag>
+                          <Tag color="purple">
+                            {record.proposedPosition?.title || 'N/A'}
+                          </Tag>
                         ),
                       },
                       {
@@ -692,7 +784,9 @@ export const PerformancePage: React.FC = () => {
                         key: 'actions',
                         render: (_: any, record: PromotionRequest) => {
                           const canApprove =
-                            isHeadOfHr && (record.status === 'SUBMITTED' || record.status === 'PENDING_APPROVAL');
+                            isHeadOfHr &&
+                            (record.status === 'SUBMITTED' ||
+                              record.status === 'PENDING_APPROVAL');
                           if (!canApprove) return null;
                           return (
                             <Space size="small">
@@ -700,9 +794,15 @@ export const PerformancePage: React.FC = () => {
                                 title="Approve Promotion"
                                 description="This will update position and salary history in database. Proceed?"
                                 okText="Yes, Approve"
-                                onConfirm={() => approvePromoMutation.mutate(record.id)}
+                                onConfirm={() =>
+                                  approvePromoMutation.mutate(record.id)
+                                }
                               >
-                                <Button size="small" type="primary" icon={<CheckCircleOutlined />}>
+                                <Button
+                                  size="small"
+                                  type="primary"
+                                  icon={<CheckCircleOutlined />}
+                                >
                                   Approve
                                 </Button>
                               </Popconfirm>
@@ -710,9 +810,15 @@ export const PerformancePage: React.FC = () => {
                                 title="Reject Promotion"
                                 description="Reject this recommendation?"
                                 okText="Yes, Reject"
-                                onConfirm={() => rejectPromoMutation.mutate(record.id)}
+                                onConfirm={() =>
+                                  rejectPromoMutation.mutate(record.id)
+                                }
                               >
-                                <Button size="small" danger icon={<CloseCircleOutlined />}>
+                                <Button
+                                  size="small"
+                                  danger
+                                  icon={<CloseCircleOutlined />}
+                                >
                                   Reject
                                 </Button>
                               </Popconfirm>
@@ -733,9 +839,16 @@ export const PerformancePage: React.FC = () => {
               label: 'Performance Improvement Plans (PIP)',
               children: (
                 <div>
-                  <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between' }}>
+                  <div
+                    style={{
+                      marginBottom: 16,
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                  >
                     <Text type="secondary">
-                      Structured remediation plans with milestone tracking and progress audits
+                      Structured remediation plans with milestone tracking and
+                      progress audits
                     </Text>
                     {canManagePip && (
                       <Button
@@ -759,7 +872,8 @@ export const PerformancePage: React.FC = () => {
                         render: (_: any, record: ImprovementPlan) => (
                           <div>
                             <Text strong>
-                              {record.employee?.firstName} {record.employee?.lastName}
+                              {record.employee?.firstName}{' '}
+                              {record.employee?.lastName}
                             </Text>
                             <br />
                             <Text type="secondary" style={{ fontSize: 12 }}>
@@ -772,14 +886,19 @@ export const PerformancePage: React.FC = () => {
                         title: 'Target Objective',
                         dataIndex: 'objective',
                         key: 'objective',
-                        render: (obj: string) => <Text ellipsis style={{ maxWidth: 280 }}>{obj}</Text>,
+                        render: (obj: string) => (
+                          <Text ellipsis style={{ maxWidth: 280 }}>
+                            {obj}
+                          </Text>
+                        ),
                       },
                       {
                         title: 'Plan Window',
                         key: 'dates',
                         render: (_: any, record: ImprovementPlan) => (
                           <span>
-                            {dayjs(record.startDate).format('YYYY-MM-DD')} ~ {dayjs(record.endDate).format('YYYY-MM-DD')}
+                            {dayjs(record.startDate).format('YYYY-MM-DD')} ~{' '}
+                            {dayjs(record.endDate).format('YYYY-MM-DD')}
                           </span>
                         ),
                       },
@@ -788,7 +907,9 @@ export const PerformancePage: React.FC = () => {
                         dataIndex: 'status',
                         key: 'status',
                         render: (st: string) => (
-                          <Tag color={st === 'ACTIVE' ? 'orange' : 'green'}>{st}</Tag>
+                          <Tag color={st === 'ACTIVE' ? 'orange' : 'green'}>
+                            {st}
+                          </Tag>
                         ),
                       },
                       {
@@ -871,7 +992,9 @@ export const PerformancePage: React.FC = () => {
         review={activeScoringReview}
         goals={
           activeScoringReview
-            ? goals.filter((g) => g.employeeId === activeScoringReview.employeeId)
+            ? goals.filter(
+                (g) => g.employeeId === activeScoringReview.employeeId,
+              )
             : []
         }
         onSubmitScores={handleScoreReviewSubmit}

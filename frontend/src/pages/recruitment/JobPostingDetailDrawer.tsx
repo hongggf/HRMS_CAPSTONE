@@ -140,7 +140,12 @@ export const JobPostingDetailDrawer: React.FC<JobPostingDetailDrawerProps> = ({
         />
       )}
 
-      <Descriptions title="Posting Specifications" bordered column={1} size="small">
+      <Descriptions
+        title="Posting Specifications"
+        bordered
+        column={1}
+        size="small"
+      >
         <Descriptions.Item label="Posting ID">#{posting.id}</Descriptions.Item>
         <Descriptions.Item label="Linked Requisition">
           Requisition #{posting.requisitionId}
@@ -172,12 +177,16 @@ export const JobPostingDetailDrawer: React.FC<JobPostingDetailDrawerProps> = ({
       <Divider />
 
       <Title level={5}>Job Description</Title>
-      <Paragraph style={{ whiteSpace: 'pre-line' }}>{posting.description}</Paragraph>
+      <Paragraph style={{ whiteSpace: 'pre-line' }}>
+        {posting.description}
+      </Paragraph>
 
       <Divider />
 
       <Title level={5}>Role Requirements & Qualifications</Title>
-      <Paragraph style={{ whiteSpace: 'pre-line' }}>{posting.requirements}</Paragraph>
+      <Paragraph style={{ whiteSpace: 'pre-line' }}>
+        {posting.requirements}
+      </Paragraph>
     </Drawer>
   );
 };

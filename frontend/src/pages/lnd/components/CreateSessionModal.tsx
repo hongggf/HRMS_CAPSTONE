@@ -6,7 +6,10 @@ import { normalizeApiError } from '../../../api/client';
 interface CreateSessionModalProps {
   visible: boolean;
   onCancel: () => void;
-  onSubmit: (trainingId: number, values: CreateTrainingSessionInput) => Promise<void>;
+  onSubmit: (
+    trainingId: number,
+    values: CreateTrainingSessionInput,
+  ) => Promise<void>;
   trainings: Training[];
   selectedTrainingId?: number;
   loading?: boolean;
@@ -80,7 +83,9 @@ export const CreateSessionModal: React.FC<CreateSessionModalProps> = ({
         <Form.Item
           name="date"
           label="Session Date & Time"
-          rules={[{ required: true, message: 'Please select session date and time' }]}
+          rules={[
+            { required: true, message: 'Please select session date and time' },
+          ]}
         >
           <DatePicker showTime style={{ width: '100%' }} />
         </Form.Item>

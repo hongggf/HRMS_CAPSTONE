@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Select, Radio, Input, Alert, message } from 'antd';
-import { ClockCircleOutlined, LoginOutlined, LogoutOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  LoginOutlined,
+  LogoutOutlined,
+} from '@ant-design/icons';
 import { attendanceApi } from '../../api/attendance';
 import { Employee } from '../../types/employee';
 import { DOCUMENTED_TIMEZONE } from '../../utils/dateUtils';
@@ -32,7 +36,9 @@ export const AttendancePunchModal: React.FC<AttendancePunchModalProps> = ({
       const isoString = now.toISOString();
       form.setFieldsValue({
         punchType: 'IN',
-        employeeId: defaultEmployeeId || (employees.length > 0 ? employees[0].id : undefined),
+        employeeId:
+          defaultEmployeeId ||
+          (employees.length > 0 ? employees[0].id : undefined),
         date: isoString.split('T')[0] + 'T00:00:00.000Z',
         time: isoString,
       });
@@ -65,7 +71,8 @@ export const AttendancePunchModal: React.FC<AttendancePunchModalProps> = ({
       onClose();
     } catch (err: any) {
       if (err.errorFields) return; // Form validation error
-      const msg = err.response?.data?.error || err.message || 'Failed to submit punch';
+      const msg =
+        err.response?.data?.error || err.message || 'Failed to submit punch';
       setBackendError(msg);
       message.error(msg);
     } finally {

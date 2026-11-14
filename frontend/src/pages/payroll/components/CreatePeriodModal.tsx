@@ -45,7 +45,12 @@ export const CreatePeriodModal: React.FC<CreatePeriodModalProps> = ({
         <Form.Item
           name="name"
           label="Period Name"
-          rules={[{ required: true, message: 'Please enter a descriptive period name' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please enter a descriptive period name',
+            },
+          ]}
         >
           <Input placeholder="e.g. November 2026 Monthly Payroll" />
         </Form.Item>

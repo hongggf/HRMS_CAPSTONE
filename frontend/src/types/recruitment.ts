@@ -23,10 +23,7 @@ export type ApplicationStatus =
   | 'HIRED';
 
 export type EmploymentType =
-  | 'FULL_TIME'
-  | 'PART_TIME'
-  | 'CONTRACT'
-  | 'INTERNSHIP';
+  'FULL_TIME' | 'PART_TIME' | 'CONTRACT' | 'INTERNSHIP';
 
 export type InterviewType = 'HR' | 'TECHNICAL' | 'BEHAVIORAL' | 'FINAL';
 

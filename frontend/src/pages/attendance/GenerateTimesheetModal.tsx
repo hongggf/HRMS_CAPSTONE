@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Select, Input, Alert, message, Descriptions, Card } from 'antd';
+import {
+  Modal,
+  Form,
+  Select,
+  Input,
+  Alert,
+  message,
+  Descriptions,
+  Card,
+} from 'antd';
 import { CalculatorOutlined } from '@ant-design/icons';
 import { attendanceApi } from '../../api/attendance';
 import { Employee } from '../../types/employee';
@@ -22,15 +31,20 @@ export const GenerateTimesheetModal: React.FC<GenerateTimesheetModalProps> = ({
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [backendError, setBackendError] = useState<string | null>(null);
-  const [generatedTimesheet, setGeneratedTimesheet] = useState<Timesheet | null>(null);
+  const [generatedTimesheet, setGeneratedTimesheet] =
+    useState<Timesheet | null>(null);
 
   useEffect(() => {
     if (open) {
       setBackendError(null);
       setGeneratedTimesheet(null);
       const now = new Date();
-      const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-      const endOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0));
+      const startOfMonth = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+      );
+      const endOfMonth = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 0),
+      );
       form.setFieldsValue({
         employeeId: employees.length > 0 ? employees[0].id : undefined,
         startDate: startOfMonth.toISOString().split('T')[0] + 'T00:00:00.000Z',
@@ -65,7 +79,10 @@ export const GenerateTimesheetModal: React.FC<GenerateTimesheetModalProps> = ({
       onSuccess();
     } catch (err: any) {
       if (err.errorFields) return;
-      const msg = err.response?.data?.error || err.message || 'Failed to generate timesheet';
+      const msg =
+        err.response?.data?.error ||
+        err.message ||
+        'Failed to generate timesheet';
       setBackendError(msg);
       message.error(msg);
     } finally {
@@ -148,7 +165,11 @@ export const GenerateTimesheetModal: React.FC<GenerateTimesheetModalProps> = ({
           </Form.Item>
         </Form>
       ) : (
-        <Card title="Server Calculation Result" variant="outlined" style={{ background: '#fafafa' }}>
+        <Card
+          title="Server Calculation Result"
+          variant="outlined"
+          style={{ background: '#fafafa' }}
+        >
           <Descriptions column={1} bordered size="small">
             <Descriptions.Item label="Period">
               {formatDateOnly(generatedTimesheet.startDate)} to{' '}

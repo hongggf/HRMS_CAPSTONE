@@ -58,7 +58,8 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const userRoles = Array.isArray(user?.roles) ? user.roles : [];
-  const isExecutive = userRoles.includes('HEAD_OF_HR') || userRoles.includes('HR_ADMIN');
+  const isExecutive =
+    userRoles.includes('HEAD_OF_HR') || userRoles.includes('HR_ADMIN');
 
   const [uploadModalOpen, setUploadModalOpen] = useState<boolean>(false);
   const [updatePosModalOpen, setUpdatePosModalOpen] = useState<boolean>(false);
@@ -154,15 +155,18 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
 
   const docCount = employee?.documents?.length || 0;
   const isProfileCompleted = employee?.onboardingStatus === 'PROFILE_COMPLETED';
-  const canActivate = docCount > 0 && isProfileCompleted && employee?.status !== 'ACTIVE';
+  const canActivate =
+    docCount > 0 && isProfileCompleted && employee?.status !== 'ACTIVE';
 
   let activationDisabledReason = '';
   if (employee?.status === 'ACTIVE') {
     activationDisabledReason = 'Employee is already active';
   } else if (docCount === 0) {
-    activationDisabledReason = 'Requires at least 1 uploaded document prior to activation';
+    activationDisabledReason =
+      'Requires at least 1 uploaded document prior to activation';
   } else if (!isProfileCompleted) {
-    activationDisabledReason = 'Onboarding must be marked as Profile Completed first';
+    activationDisabledReason =
+      'Onboarding must be marked as Profile Completed first';
   }
 
   const canCompleteOnboarding =
@@ -180,7 +184,9 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                 {employee.firstName} {employee.lastName}
               </span>
               <Tag color="blue">{employee.employeeId}</Tag>
-              <Tag color={getStatusColor(employee.status)}>{employee.status}</Tag>
+              <Tag color={getStatusColor(employee.status)}>
+                {employee.status}
+              </Tag>
             </Space>
           ) : (
             'Employee Details'
@@ -265,16 +271,26 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                 showIcon
                 message="Onboarding In Progress"
                 description={
-                  <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
+                  <Space
+                    direction="vertical"
+                    style={{ width: '100%', marginTop: 8 }}
+                  >
                     <Text>
-                      Current Phase: <Tag color={getOnboardingColor(employee.onboardingStatus)}>{employee.onboardingStatus}</Tag>
+                      Current Phase:{' '}
+                      <Tag
+                        color={getOnboardingColor(employee.onboardingStatus)}
+                      >
+                        {employee.onboardingStatus}
+                      </Tag>
                     </Text>
                     <Space wrap>
                       {canCompleteOnboarding && (
                         <Popconfirm
                           title="Complete Onboarding"
                           description="Mark this employee's onboarding profile as completed and notify Head of HR?"
-                          onConfirm={() => completeOnboardingMutation.mutate(employee.id)}
+                          onConfirm={() =>
+                            completeOnboardingMutation.mutate(employee.id)
+                          }
                           okText="Complete"
                         >
                           <Button
@@ -288,19 +304,29 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                         </Popconfirm>
                       )}
 
-                      <Tooltip title={!canActivate ? activationDisabledReason : undefined}>
+                      <Tooltip
+                        title={
+                          !canActivate ? activationDisabledReason : undefined
+                        }
+                      >
                         <span>
                           <Popconfirm
                             title="Activate Employee"
                             description="Authorize and officially activate this employee into the organization workforce?"
-                            onConfirm={() => activateMutation.mutate(employee.id)}
+                            onConfirm={() =>
+                              activateMutation.mutate(employee.id)
+                            }
                             disabled={!canActivate}
                             okText="Activate"
                           >
                             <Button
                               size="small"
                               type="primary"
-                              style={{ backgroundColor: canActivate ? '#52c41a' : undefined }}
+                              style={{
+                                backgroundColor: canActivate
+                                  ? '#52c41a'
+                                  : undefined,
+                              }}
                               icon={<ThunderboltOutlined />}
                               disabled={!canActivate}
                               loading={activateMutation.isPending}
@@ -364,7 +390,9 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                         </Tag>
                       </Descriptions.Item>
                       <Descriptions.Item label="Onboarding Status">
-                        <Tag color={getOnboardingColor(employee.onboardingStatus)}>
+                        <Tag
+                          color={getOnboardingColor(employee.onboardingStatus)}
+                        >
                           {employee.onboardingStatus}
                         </Tag>
                       </Descriptions.Item>
@@ -377,13 +405,24 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                   children: (
                     <div>
                       <Steps
-                        current={getOnboardingStepIndex(employee.onboardingStatus)}
+                        current={getOnboardingStepIndex(
+                          employee.onboardingStatus,
+                        )}
                         size="small"
                         style={{ margin: '16px 0 24px' }}
                         items={[
-                          { title: 'Draft Created', description: 'Initial Hire' },
-                          { title: 'Documents', description: 'Identity & Contracts' },
-                          { title: 'Profile Completed', description: 'Review Ready' },
+                          {
+                            title: 'Draft Created',
+                            description: 'Initial Hire',
+                          },
+                          {
+                            title: 'Documents',
+                            description: 'Identity & Contracts',
+                          },
+                          {
+                            title: 'Profile Completed',
+                            description: 'Review Ready',
+                          },
                           { title: 'Active', description: 'Live Workforce' },
                         ]}
                       />
@@ -409,12 +448,14 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                         {
                           title: 'Department',
                           key: 'dept',
-                          render: (_, r) => r.department?.name || `Dept #${r.departmentId}`,
+                          render: (_, r) =>
+                            r.department?.name || `Dept #${r.departmentId}`,
                         },
                         {
                           title: 'Position',
                           key: 'pos',
-                          render: (_, r) => r.position?.title || `Position #${r.positionId}`,
+                          render: (_, r) =>
+                            r.position?.title || `Position #${r.positionId}`,
                         },
                         {
                           title: 'Start Date',
@@ -482,9 +523,7 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                             dataIndex: 'documentType',
                             key: 'type',
                             render: (t) => (
-                              <Text strong>
-                                {DOCUMENT_TYPE_LABELS[t] || t}
-                              </Text>
+                              <Text strong>{DOCUMENT_TYPE_LABELS[t] || t}</Text>
                             ),
                           },
                           {
@@ -504,7 +543,9 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                             dataIndex: 'verificationStatus',
                             key: 'status',
                             render: (s) => (
-                              <Tag color={s === 'VERIFIED' ? 'green' : 'orange'}>
+                              <Tag
+                                color={s === 'VERIFIED' ? 'green' : 'orange'}
+                              >
                                 {s || 'PENDING'}
                               </Tag>
                             ),
@@ -520,7 +561,10 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                         key: 'compensation',
                         label: 'Compensation (Restricted)',
                         children: (
-                          <Space orientation="vertical" style={{ width: '100%' }}>
+                          <Space
+                            orientation="vertical"
+                            style={{ width: '100%' }}
+                          >
                             <Alert
                               type="warning"
                               showIcon
@@ -552,7 +596,8 @@ export const EmployeeDetailDrawer: React.FC<EmployeeDetailDrawerProps> = ({
                                   title: 'Effective Date',
                                   dataIndex: 'effectiveDate',
                                   key: 'effectiveDate',
-                                  render: (d) => new Date(d).toLocaleDateString(),
+                                  render: (d) =>
+                                    new Date(d).toLocaleDateString(),
                                 },
                                 {
                                   title: 'Status',

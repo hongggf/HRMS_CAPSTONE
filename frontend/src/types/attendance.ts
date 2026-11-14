@@ -10,11 +10,7 @@ export type AttendanceStatus =
   | 'WEEKEND';
 
 export type RequestStatus =
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'CANCELLED';
+  'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
 
 export interface Shift {
   id: number;

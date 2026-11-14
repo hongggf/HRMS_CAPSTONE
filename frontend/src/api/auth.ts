@@ -37,6 +37,20 @@ export const authApi = {
     return { message: res.data.message };
   },
 
+  changePassword: async (
+    oldPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> => {
+    const res = await apiClient.post<ApiResponse<null>>(
+      '/auth/change-password',
+      {
+        oldPassword,
+        newPassword,
+      },
+    );
+    return { message: res.data.message || 'Password updated successfully' };
+  },
+
   getMe: async (): Promise<User> => {
     const res =
       await apiClient.get<ApiResponse<{ user: User } | User>>('/auth/me');

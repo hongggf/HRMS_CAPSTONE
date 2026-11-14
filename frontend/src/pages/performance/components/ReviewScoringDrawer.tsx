@@ -91,7 +91,9 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
       totalWeight += g.weight;
     }
 
-    return totalWeight > 0 ? Number((totalWeightedScore / totalWeight).toFixed(2)) : 0;
+    return totalWeight > 0
+      ? Number((totalWeightedScore / totalWeight).toFixed(2))
+      : 0;
   }, [goals, ratingsState]);
 
   const handleRatingChange = (goalId: number, value: number | null) => {
@@ -162,11 +164,17 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
         <Space direction="vertical" style={{ width: '100%' }}>
           <Space direction="horizontal" size="middle">
             <Text strong>Employee:</Text>
-            <Text>{review.employee?.firstName} {review.employee?.lastName} ({review.employee?.employeeId})</Text>
+            <Text>
+              {review.employee?.firstName} {review.employee?.lastName} (
+              {review.employee?.employeeId})
+            </Text>
           </Space>
           <Space direction="horizontal" size="middle">
             <Text strong>Department / Title:</Text>
-            <Text>{review.employee?.department?.name || 'N/A'} - {review.employee?.position?.title || 'N/A'}</Text>
+            <Text>
+              {review.employee?.department?.name || 'N/A'} -{' '}
+              {review.employee?.position?.title || 'N/A'}
+            </Text>
           </Space>
           <Space direction="horizontal" size="middle">
             <Text strong>Evaluation Cycle:</Text>
@@ -174,7 +182,10 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
           </Space>
           <Space orientation="horizontal" size="middle">
             <Text strong>Current Overall Score:</Text>
-            <Tag color={review.overallScore ? 'green' : 'default'} style={{ fontSize: 14 }}>
+            <Tag
+              color={review.overallScore ? 'green' : 'default'}
+              style={{ fontSize: 14 }}
+            >
               {review.overallScore !== null && review.overallScore !== undefined
                 ? review.overallScore.toFixed(2)
                 : 'Not Yet Scored'}
@@ -191,7 +202,8 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
       >
         <Title level={5}>Goal-by-Goal Scoring (Scale: 0.0 to 5.0)</Title>
         <Paragraph type="secondary">
-          Assign scores between 0 and 5 based on key results and goal metrics. Overall score is weighted automatically.
+          Assign scores between 0 and 5 based on key results and goal metrics.
+          Overall score is weighted automatically.
         </Paragraph>
 
         {goals.length === 0 ? (
@@ -209,7 +221,10 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
               title={`${g.title} (Weight: ${g.weight}%)`}
               style={{ marginBottom: 12 }}
             >
-              <Text type="secondary" style={{ display: 'block', marginBottom: 8 }}>
+              <Text
+                type="secondary"
+                style={{ display: 'block', marginBottom: 8 }}
+              >
                 {g.description || 'No description provided'}
                 {g.target && ` | Target: ${g.target}`}
               </Text>
@@ -256,7 +271,10 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
             backgroundColor: '#e6f4ff',
           }}
         >
-          <Space align="center" style={{ width: '100%', justifyContent: 'space-between' }}>
+          <Space
+            align="center"
+            style={{ width: '100%', justifyContent: 'space-between' }}
+          >
             <Space>
               <CalculatorOutlined style={{ fontSize: 18, color: '#1677ff' }} />
               <Text strong>Calculated Weighted Score:</Text>
@@ -270,7 +288,12 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
         <Form.Item
           name="comments"
           label="Overall Appraisal Comments"
-          rules={[{ required: true, message: 'Please provide overall evaluation feedback' }]}
+          rules={[
+            {
+              required: true,
+              message: 'Please provide overall evaluation feedback',
+            },
+          ]}
         >
           <TextArea
             rows={3}
@@ -279,7 +302,10 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
           />
         </Form.Item>
 
-        <Form.Item name="managerFeedback" label="Manager Recommendation / Next Steps">
+        <Form.Item
+          name="managerFeedback"
+          label="Manager Recommendation / Next Steps"
+        >
           <TextArea
             rows={2}
             placeholder="Areas for improvement, promotion recommendation, training suggestions"
@@ -287,7 +313,10 @@ export const ReviewScoringDrawer: React.FC<ReviewScoringDrawerProps> = ({
           />
         </Form.Item>
 
-        <Form.Item name="employeeFeedback" label="Employee Self-Assessment / Comments">
+        <Form.Item
+          name="employeeFeedback"
+          label="Employee Self-Assessment / Comments"
+        >
           <TextArea
             rows={2}
             placeholder="Employee notes or acknowledgments"

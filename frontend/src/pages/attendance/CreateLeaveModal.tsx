@@ -33,7 +33,9 @@ export const CreateLeaveModal: React.FC<CreateLeaveModalProps> = ({
       const today = new Date();
       const tomorrow = new Date(Date.now() + 86400000);
       form.setFieldsValue({
-        employeeId: defaultEmployeeId || (employees.length > 0 ? employees[0].id : undefined),
+        employeeId:
+          defaultEmployeeId ||
+          (employees.length > 0 ? employees[0].id : undefined),
         leaveTypeId: leaveTypes.length > 0 ? leaveTypes[0].id : undefined,
         startDate: today.toISOString().split('T')[0] + 'T00:00:00.000Z',
         endDate: tomorrow.toISOString().split('T')[0] + 'T00:00:00.000Z',
@@ -71,7 +73,10 @@ export const CreateLeaveModal: React.FC<CreateLeaveModalProps> = ({
       onClose();
     } catch (err: any) {
       if (err.errorFields) return;
-      const msg = err.response?.data?.error || err.message || 'Failed to submit leave request';
+      const msg =
+        err.response?.data?.error ||
+        err.message ||
+        'Failed to submit leave request';
       setBackendError(msg);
       message.error(msg);
     } finally {
@@ -155,7 +160,9 @@ export const CreateLeaveModal: React.FC<CreateLeaveModalProps> = ({
               {selectedType.isPaid ? 'Paid Leave' : 'Unpaid Leave'}
             </Tag>
             <Tag color={selectedType.requiresBalance ? 'blue' : 'default'}>
-              {selectedType.requiresBalance ? 'Deducts Balance' : 'No Balance Required'}
+              {selectedType.requiresBalance
+                ? 'Deducts Balance'
+                : 'No Balance Required'}
             </Tag>
             {selectedType.description && (
               <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>
@@ -186,7 +193,9 @@ export const CreateLeaveModal: React.FC<CreateLeaveModalProps> = ({
         <Form.Item
           name="reason"
           label="Reason / Justification"
-          rules={[{ required: true, message: 'Please provide reason for leave' }]}
+          rules={[
+            { required: true, message: 'Please provide reason for leave' },
+          ]}
         >
           <Input.TextArea
             rows={3}

@@ -1,5 +1,13 @@
 import React from 'react';
-import { Modal, Form, Input, InputNumber, DatePicker, Select, message } from 'antd';
+import {
+  Modal,
+  Form,
+  Input,
+  InputNumber,
+  DatePicker,
+  Select,
+  message,
+} from 'antd';
 import dayjs from 'dayjs';
 import { CreateGoalInput, PerformanceCycle } from '../../../types/performance';
 import { Employee } from '../../../types/employee';
@@ -75,7 +83,8 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
           <Select placeholder="Select Cycle">
             {cycles.map((c) => (
               <Select.Option key={c.id} value={c.id}>
-                {c.name} ({dayjs(c.startDate).format('YYYY-MM-DD')} - {dayjs(c.endDate).format('YYYY-MM-DD')})
+                {c.name} ({dayjs(c.startDate).format('YYYY-MM-DD')} -{' '}
+                {dayjs(c.endDate).format('YYYY-MM-DD')})
               </Select.Option>
             ))}
           </Select>
@@ -108,7 +117,10 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
         </Form.Item>
 
         <Form.Item name="description" label="Objective Description">
-          <Input.TextArea rows={2} placeholder="Context, key deliverables, and criteria" />
+          <Input.TextArea
+            rows={2}
+            placeholder="Context, key deliverables, and criteria"
+          />
         </Form.Item>
 
         <Form.Item
@@ -116,10 +128,20 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
           label="Weight Percentage (0% - 100%)"
           rules={[
             { required: true, message: 'Weight is required' },
-            { type: 'number', min: 0, max: 100, message: 'Weight must be between 0 and 100' },
+            {
+              type: 'number',
+              min: 0,
+              max: 100,
+              message: 'Weight must be between 0 and 100',
+            },
           ]}
         >
-          <InputNumber min={0} max={100} style={{ width: '100%' }} addonAfter="%" />
+          <InputNumber
+            min={0}
+            max={100}
+            style={{ width: '100%' }}
+            addonAfter="%"
+          />
         </Form.Item>
 
         <Form.Item name="target" label="Target Goal Metric">
@@ -129,7 +151,9 @@ export const CreateGoalModal: React.FC<CreateGoalModalProps> = ({
         <Form.Item
           name="dueDate"
           label="Target Due Date"
-          rules={[{ required: true, message: 'Please select target completion date' }]}
+          rules={[
+            { required: true, message: 'Please select target completion date' },
+          ]}
         >
           <DatePicker style={{ width: '100%' }} />
         </Form.Item>

@@ -58,6 +58,8 @@ export const calculatePayroll = async (req: Request, res: Response) => {
         where: { status: 'ACTIVE' },
         include: {
           compensation: true,
+          salaryHistory: { orderBy: { effectiveDate: 'desc' } },
+          position: true,
           salaryComponents: { include: { component: true } },
           Timesheet: {
             where: {
@@ -69,9 +71,44 @@ export const calculatePayroll = async (req: Request, res: Response) => {
       });
 
       for (const emp of employees) {
-        if (!emp.compensation) continue; // Skip employees without compensation defined
+        let compensation = emp.compensation;
+
+        // Auto-heal / resolve compensation from salaryHistory or position if not yet set in EmployeeCompensation
+        if (!compensation) {
+          let baseSalary = 0;
+          let currency = 'USD';
+
+          if (emp.salaryHistory && emp.salaryHistory.length > 0) {
+            const activeSal = emp.salaryHistory.find((s: any) => !s.endDate) || emp.salaryHistory[0];
+            if (activeSal && activeSal.baseSalary > 0) {
+              baseSalary = activeSal.baseSalary;
+              currency = activeSal.currency || 'USD';
+            }
+          } else if (emp.position?.salaryMin && emp.position.salaryMin > 0) {
+            baseSalary = emp.position.salaryMin;
+          }
+
+          if (baseSalary > 0) {
+            compensation = await tx.employeeCompensation.upsert({
+              where: { employeeId: emp.id },
+              create: {
+                employeeId: emp.id,
+                basicSalary: baseSalary,
+                currency,
+                effectiveDate: new Date(),
+                status: 'ACTIVE'
+              },
+              update: {
+                basicSalary: baseSalary,
+                status: 'ACTIVE'
+              }
+            });
+          }
+        }
+
+        if (!compensation || !compensation.basicSalary) continue; // Skip employees without compensation defined
         
-        const basic = emp.compensation.basicSalary;
+        const basic = compensation.basicSalary;
         let allowances = 0;
         let deductions = 0;
         let bonuses = 0;

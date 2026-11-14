@@ -11,7 +11,11 @@ import {
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { recruitmentApi } from '../../api/recruitment';
-import { JobPosting, CreateJobPostingInput, UpdateJobPostingInput } from '../../types/recruitment';
+import {
+  JobPosting,
+  CreateJobPostingInput,
+  UpdateJobPostingInput,
+} from '../../types/recruitment';
 import { normalizeApiError } from '../../api/client';
 
 const { TextArea } = Input;
@@ -37,7 +41,8 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
   // In create mode: fetch approved requisitions without a job posting
   const { data: reqData, isLoading: isLoadingReqs } = useQuery({
     queryKey: ['approved-requisitions-for-posting'],
-    queryFn: () => recruitmentApi.listRequisitions({ status: 'APPROVED', limit: 100 }),
+    queryFn: () =>
+      recruitmentApi.listRequisitions({ status: 'APPROVED', limit: 100 }),
     enabled: open && !isEdit,
   });
 
@@ -76,7 +81,9 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           employmentType: postingToEdit.employmentType,
           location: postingToEdit.location,
           openingDate: dayjs(postingToEdit.openingDate),
-          closingDate: postingToEdit.closingDate ? dayjs(postingToEdit.closingDate) : null,
+          closingDate: postingToEdit.closingDate
+            ? dayjs(postingToEdit.closingDate)
+            : null,
           description: postingToEdit.description,
           requirements: postingToEdit.requirements,
           status: postingToEdit.status,
@@ -96,8 +103,12 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
       const values = await form.validateFields();
       const payload = {
         ...values,
-        openingDate: values.openingDate ? values.openingDate.toISOString() : undefined,
-        closingDate: values.closingDate ? values.closingDate.toISOString() : null,
+        openingDate: values.openingDate
+          ? values.openingDate.toISOString()
+          : undefined,
+        closingDate: values.closingDate
+          ? values.closingDate.toISOString()
+          : null,
       };
 
       if (isEdit && postingToEdit) {
@@ -117,7 +128,11 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
 
   return (
     <Modal
-      title={isEdit ? `Edit Job Posting: ${postingToEdit.title}` : 'Create New Job Posting'}
+      title={
+        isEdit
+          ? `Edit Job Posting: ${postingToEdit.title}`
+          : 'Create New Job Posting'
+      }
       open={open}
       onOk={handleSubmit}
       onCancel={onClose}
@@ -158,7 +173,12 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           <Form.Item
             name="requisitionId"
             label="Approved Job Requisition"
-            rules={[{ required: true, message: 'Please select an approved requisition' }]}
+            rules={[
+              {
+                required: true,
+                message: 'Please select an approved requisition',
+              },
+            ]}
           >
             <Select
               placeholder="Select approved job requisition..."
@@ -185,7 +205,9 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           <Input placeholder="e.g. Senior Backend Engineer" />
         </Form.Item>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
           <Form.Item
             name="employmentType"
             label="Employment Type"
@@ -210,7 +232,9 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           </Form.Item>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div
+          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}
+        >
           <Form.Item
             name="openingDate"
             label="Opening Date"
@@ -229,7 +253,9 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
                   const openDate = getFieldValue('openingDate');
                   if (!value || !openDate) return Promise.resolve();
                   if (value.isBefore(openDate, 'day')) {
-                    return Promise.reject(new Error('Closing date cannot precede opening date'));
+                    return Promise.reject(
+                      new Error('Closing date cannot precede opening date'),
+                    );
                   }
                   return Promise.resolve();
                 },
@@ -249,7 +275,10 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
             <Select
               options={[
                 { label: 'Draft', value: 'DRAFT' },
-                { label: 'Published (Active Applications Accepted)', value: 'PUBLISHED' },
+                {
+                  label: 'Published (Active Applications Accepted)',
+                  value: 'PUBLISHED',
+                },
                 { label: 'Closed', value: 'CLOSED' },
               ]}
             />
@@ -261,7 +290,10 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           label="Job Description"
           rules={[{ required: true, message: 'Description is required' }]}
         >
-          <TextArea rows={4} placeholder="Summary of the role, responsibilities, and team structure..." />
+          <TextArea
+            rows={4}
+            placeholder="Summary of the role, responsibilities, and team structure..."
+          />
         </Form.Item>
 
         <Form.Item
@@ -269,7 +301,10 @@ export const JobPostingModal: React.FC<JobPostingModalProps> = ({
           label="Candidate Qualifications & Requirements"
           rules={[{ required: true, message: 'Requirements are required' }]}
         >
-          <TextArea rows={4} placeholder="Required skills, years of experience, certifications..." />
+          <TextArea
+            rows={4}
+            placeholder="Required skills, years of experience, certifications..."
+          />
         </Form.Item>
       </Form>
     </Modal>
