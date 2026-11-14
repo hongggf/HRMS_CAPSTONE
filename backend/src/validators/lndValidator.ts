@@ -5,17 +5,35 @@ export const createTrainingCategorySchema = z.object({
   description: z.string().optional(),
 });
 
-export const createTrainingSchema = z.object({
-  title: z.string().min(1),
+export const updateTrainingCategorySchema = z.object({
+  name: z.string().min(1).optional(),
   description: z.string().optional(),
-  categoryId: z.number().int().positive(),
-  departmentId: z.number().int().positive().nullable().optional(),
-  provider: z.string().optional(),
+});
+
+export const createTrainingSchema = z.object({
+  title: z.string().min(1, 'Course title is required'),
+  description: z.string().optional().nullable(),
+  categoryId: z.coerce.number().int().positive('Please select a valid category'),
+  departmentId: z.coerce.number().int().positive().nullable().optional(),
+  provider: z.string().optional().nullable(),
   type: z.enum(['INTERNAL', 'EXTERNAL', 'ONLINE', 'CLASSROOM']),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  capacity: z.number().int().positive().optional(),
-  cost: z.number().nonnegative().optional(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  capacity: z.coerce.number().int().positive().optional().nullable(),
+  cost: z.coerce.number().nonnegative().optional().nullable(),
+});
+
+export const updateTrainingSchema = z.object({
+  title: z.string().min(1, 'Course title cannot be empty').optional(),
+  description: z.string().optional().nullable(),
+  categoryId: z.coerce.number().int().positive().optional(),
+  departmentId: z.coerce.number().int().positive().nullable().optional(),
+  provider: z.string().optional().nullable(),
+  type: z.enum(['INTERNAL', 'EXTERNAL', 'ONLINE', 'CLASSROOM']).optional(),
+  startDate: z.string().optional().nullable(),
+  endDate: z.string().optional().nullable(),
+  capacity: z.coerce.number().int().positive().optional().nullable(),
+  cost: z.coerce.number().nonnegative().optional().nullable(),
 });
 
 export const createTrainingPlanSchema = z.object({

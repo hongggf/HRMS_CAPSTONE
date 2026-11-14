@@ -153,6 +153,11 @@ export interface CreateTrainingCategoryInput {
   description?: string;
 }
 
+export interface UpdateTrainingCategoryInput {
+  name?: string;
+  description?: string;
+}
+
 export interface CreateTrainingInput {
   title: string;
   description?: string;
@@ -160,6 +165,19 @@ export interface CreateTrainingInput {
   departmentId?: number | null;
   provider?: string;
   type: TrainingType;
+  startDate?: string;
+  endDate?: string;
+  capacity?: number;
+  cost?: number;
+}
+
+export interface UpdateTrainingInput {
+  title?: string;
+  description?: string;
+  categoryId?: number;
+  departmentId?: number | null;
+  provider?: string;
+  type?: TrainingType;
   startDate?: string;
   endDate?: string;
   capacity?: number;

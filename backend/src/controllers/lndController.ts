@@ -4,7 +4,9 @@ import { logAudit } from '../services/auditService';
 import { notifyUser } from '../services/notificationService';
 import { 
   createTrainingCategorySchema, 
+  updateTrainingCategorySchema,
   createTrainingSchema, 
+  updateTrainingSchema,
   createTrainingPlanSchema,
   assignTrainingSchema,
   createTrainingSessionSchema,
@@ -24,6 +26,82 @@ export const createCategory = async (req: Request, res: Response) => {
     const category = await prisma.trainingCategory.create({ data });
     await logAudit('LND_CATEGORY_CREATED', userId, { categoryId: category.id });
     res.status(201).json(category);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const updateCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const data = updateTrainingCategorySchema.parse(req.body);
+    const userId = (req as any).user!.id;
+    const categoryId = parseInt(id, 10);
+
+    const existing = await prisma.trainingCategory.findUnique({
+      where: { id: categoryId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: 'Training category not found' });
+    }
+
+    if (data.name && data.name !== existing.name) {
+      const duplicate = await prisma.trainingCategory.findUnique({
+        where: { name: data.name },
+      });
+      if (duplicate) {
+        return res.status(400).json({ error: 'A category with this name already exists' });
+      }
+    }
+
+    const updated = await prisma.trainingCategory.update({
+      where: { id: categoryId },
+      data,
+      include: {
+        _count: {
+          select: { trainings: true },
+        },
+      },
+    });
+
+    await logAudit('LND_CATEGORY_UPDATED', userId, { categoryId: updated.id });
+    res.json(updated);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+export const deleteCategory = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = (req as any).user!.id;
+    const categoryId = parseInt(id, 10);
+
+    const category = await prisma.trainingCategory.findUnique({
+      where: { id: categoryId },
+      include: {
+        _count: {
+          select: { trainings: true },
+        },
+      },
+    });
+
+    if (!category) {
+      return res.status(404).json({ error: 'Training category not found' });
+    }
+
+    if (category._count.trainings > 0) {
+      return res.status(400).json({
+        error: `Cannot delete category "${category.name}" because it has ${category._count.trainings} course(s) assigned. Please reassign or delete the courses first.`,
+      });
+    }
+
+    await prisma.trainingCategory.delete({
+      where: { id: categoryId },
+    });
+
+    await logAudit('LND_CATEGORY_DELETED', userId, { categoryId, categoryName: category.name });
+    res.json({ message: 'Training category deleted successfully', id: categoryId });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }
@@ -55,21 +133,54 @@ export const createTraining = async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'End date must be on or after start date' });
     }
 
+    // Verify category exists
+    const category = await prisma.trainingCategory.findUnique({
+      where: { id: data.categoryId },
+    });
+    if (!category) {
+      return res.status(400).json({ error: 'Selected training category does not exist' });
+    }
+
+    // Verify department exists if provided
+    if (data.departmentId) {
+      const dept = await prisma.department.findUnique({
+        where: { id: data.departmentId },
+      });
+      if (!dept) {
+        return res.status(400).json({ error: 'Selected department does not exist' });
+      }
+    }
+
     const training = await prisma.training.create({
       data: {
-        ...data,
-        startDate: data.startDate ? new Date(data.startDate) : undefined,
-        endDate: data.endDate ? new Date(data.endDate) : undefined,
+        title: data.title,
+        description: data.description || null,
+        categoryId: data.categoryId,
+        departmentId: data.departmentId || null,
+        provider: data.provider || null,
+        type: data.type,
+        capacity: data.capacity !== undefined && data.capacity !== null ? data.capacity : null,
+        cost: data.cost !== undefined && data.cost !== null ? data.cost : null,
+        startDate: data.startDate ? new Date(data.startDate) : null,
+        endDate: data.endDate ? new Date(data.endDate) : null,
       },
       include: {
         category: true,
         department: true,
+        _count: {
+          select: {
+            assignments: true,
+            sessions: true,
+            evaluations: true,
+          },
+        },
       },
     });
     await logAudit('LND_TRAINING_CREATED', userId, { trainingId: training.id, departmentId: training.departmentId });
     res.status(201).json(training);
   } catch (error: any) {
-    res.status(400).json({ error: error.message });
+    const errorMsg = error?.issues?.[0]?.message || error.message || 'Failed to create training course';
+    res.status(400).json({ error: errorMsg, message: errorMsg });
   }
 };
 
@@ -169,6 +280,75 @@ export const getTrainingById = async (req: Request, res: Response) => {
     res.json(training);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+export const updateTraining = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const data = updateTrainingSchema.parse(req.body);
+    const userId = (req as any).user!.id;
+    const trainingId = parseInt(id, 10);
+
+    const existing = await prisma.training.findUnique({
+      where: { id: trainingId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ error: 'Training not found' });
+    }
+
+    if (existing.status === 'COMPLETED' || existing.status === 'CANCELLED') {
+      if (data.categoryId !== undefined && data.categoryId !== existing.categoryId) {
+        return res.status(400).json({ error: `Cannot change category of a ${existing.status.toLowerCase()} course` });
+      }
+      if (data.capacity !== undefined && data.capacity !== existing.capacity) {
+        return res.status(400).json({ error: `Cannot modify capacity of a ${existing.status.toLowerCase()} course` });
+      }
+      if (data.startDate !== undefined || data.endDate !== undefined) {
+        return res.status(400).json({ error: `Cannot modify dates of a ${existing.status.toLowerCase()} course` });
+      }
+    }
+
+    const start = data.startDate !== undefined ? (data.startDate ? new Date(data.startDate) : null) : existing.startDate;
+    const end = data.endDate !== undefined ? (data.endDate ? new Date(data.endDate) : null) : existing.endDate;
+
+    if (start && end && end < start) {
+      return res.status(400).json({ error: 'End date must be on or after start date' });
+    }
+
+    const updated = await prisma.training.update({
+      where: { id: trainingId },
+      data: {
+        title: data.title !== undefined ? data.title : undefined,
+        description: data.description !== undefined ? (data.description || null) : undefined,
+        categoryId: data.categoryId !== undefined ? data.categoryId : undefined,
+        departmentId: data.departmentId !== undefined ? (data.departmentId || null) : undefined,
+        provider: data.provider !== undefined ? (data.provider || null) : undefined,
+        type: data.type !== undefined ? data.type : undefined,
+        capacity: data.capacity !== undefined ? (data.capacity || null) : undefined,
+        cost: data.cost !== undefined ? (data.cost || null) : undefined,
+        startDate: data.startDate !== undefined ? (data.startDate ? new Date(data.startDate) : null) : undefined,
+        endDate: data.endDate !== undefined ? (data.endDate ? new Date(data.endDate) : null) : undefined,
+      },
+      include: {
+        category: true,
+        department: true,
+        _count: {
+          select: {
+            assignments: true,
+            sessions: true,
+            evaluations: true,
+          },
+        },
+      },
+    });
+
+    await logAudit('LND_TRAINING_UPDATED', userId, { trainingId: updated.id });
+    res.json(updated);
+  } catch (error: any) {
+    const errorMsg = error?.issues?.[0]?.message || error.message || 'Failed to update training course';
+    res.status(400).json({ error: errorMsg, message: errorMsg });
   }
 };
 

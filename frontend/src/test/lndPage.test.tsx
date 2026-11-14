@@ -301,4 +301,99 @@ describe('Phase 8: Learning & Development Module Tests', () => {
       await screen.findByText('Add / Update Employee Skill Profile'),
     ).toBeInTheDocument();
   });
+
+  it('navigates to Course Categories tab, renders categories with counts, and edits a category', async () => {
+    vi.spyOn(lndApi, 'updateCategory').mockResolvedValue({
+      id: 2,
+      name: 'Security & Compliance Updated',
+      description: 'Updated info security',
+      _count: { trainings: 1 },
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LndPage />
+      </QueryClientProvider>,
+    );
+
+    const categoriesTab = await screen.findByText('Course Categories (2)');
+    fireEvent.click(categoriesTab);
+
+    // Categories table content
+    expect((await screen.findAllByText('Cloud & Infrastructure')).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('Security & Compliance')).length).toBeGreaterThan(0);
+    expect(screen.getByText('2 courses')).toBeInTheDocument();
+
+    // Find edit buttons
+    const editBtns = screen.getAllByRole('button', { name: /edit/i });
+    fireEvent.click(editBtns[0]);
+
+    expect(await screen.findByText('Edit Training Category')).toBeInTheDocument();
+  });
+
+  it('filters courses in catalog by search input', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LndPage />
+      </QueryClientProvider>,
+    );
+
+    expect(await screen.findByText('Kubernetes in Production')).toBeInTheDocument();
+
+    const searchInput = screen.getByPlaceholderText('Search courses by title, vendor, curriculum...');
+    fireEvent.change(searchInput, { target: { value: 'NonExistentCourse' } });
+
+    await waitFor(() => {
+      expect(screen.queryByText('Kubernetes in Production')).not.toBeInTheDocument();
+    });
+
+    fireEvent.change(searchInput, { target: { value: 'Kubernetes' } });
+    await waitFor(() => {
+      expect(screen.getByText('Kubernetes in Production')).toBeInTheDocument();
+    });
+  });
+
+  it('opens Course Details slide-over drawer and shows overview, sessions, and participants', async () => {
+    vi.spyOn(lndApi, 'getTrainingById').mockResolvedValue({
+      ...mockTrainings[0],
+      sessions: mockSessions,
+      assignments: [
+        {
+          id: 1,
+          trainingId: 1,
+          employeeId: 101,
+          assignedAt: '2026-02-01T00:00:00.000Z',
+          employee: mockEmployees[0],
+        },
+      ],
+      evaluations: mockEvaluations,
+    });
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LndPage />
+      </QueryClientProvider>,
+    );
+
+    const detailsBtn = await screen.findByRole('button', { name: /details/i });
+    fireEvent.click(detailsBtn);
+
+    expect(await screen.findByText('Course Overview')).toBeInTheDocument();
+    expect(screen.getByText('Delivery Format')).toBeInTheDocument();
+    expect(screen.getByText('Enrolled Participants: 1 / 25 seats')).toBeInTheDocument();
+  });
+
+  it('opens Edit Course modal for training managers', async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <LndPage />
+      </QueryClientProvider>,
+    );
+
+    const editCourseBtn = await screen.findByRole('button', { name: /edit/i });
+    fireEvent.click(editCourseBtn);
+
+    expect(await screen.findByText('Edit Training Course')).toBeInTheDocument();
+    expect(screen.getByDisplayValue('Kubernetes in Production')).toBeInTheDocument();
+  });
 });

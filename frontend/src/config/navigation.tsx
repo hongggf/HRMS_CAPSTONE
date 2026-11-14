@@ -14,6 +14,7 @@ import {
   ThunderboltOutlined,
   FolderOpenOutlined,
   AuditOutlined,
+  ApiOutlined,
 } from '@ant-design/icons';
 import { RoleName } from '../types/api';
 
@@ -181,6 +182,16 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
         phase: 'Phase 9',
         description:
           'Immutable system audit trails, security event history, and change logs',
+      },
+      {
+        key: '/data-logs',
+        label: 'System Data Logs',
+        icon: <ApiOutlined />,
+        roles: ['HEAD_OF_HR', 'HR_ADMIN'],
+        isDev: false,
+        phase: 'Network DevTools',
+        description:
+          'Real-time API network inspector, payload verification, and returned response data',
       },
     ],
   },

@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
-import { ApiResponse, ApiErrorResponse, ApiErrorDetail } from '../types/api';
+import { useDataLogStore } from '../store/useDataLogStore';
+import { ApiResponse, ApiErrorDetail } from '../types/api';
 
 const baseURL =
   import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
@@ -26,11 +27,21 @@ export const normalizeApiError = (
     };
   }
 
-  if (axios.isAxiosError<ApiErrorResponse>(err)) {
+  if (axios.isAxiosError<any>(err)) {
     if (err.response?.data?.error) {
+      const errObj = err.response.data.error;
+      const message =
+        typeof errObj === 'string'
+          ? errObj
+          : errObj.message || (typeof errObj === 'object' ? JSON.stringify(errObj) : 'An error occurred');
       return {
-        message: err.response.data.error.message || 'An error occurred',
-        details: err.response.data.error.details,
+        message,
+        details: typeof errObj === 'object' ? errObj.details : undefined,
+      };
+    }
+    if (err.response?.data?.message) {
+      return {
+        message: err.response.data.message,
       };
     }
     if (err.code === 'ECONNABORTED') {
@@ -71,9 +82,57 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
+/**
+ * Logs intercepted API network traffic to the client-side data log store.
+ */
+const logApiResponse = (
+  config?: InternalAxiosRequestConfig | any,
+  response?: any,
+  error?: any,
+) => {
+  try {
+    const startTime = (config as any)?._requestStartTime || Date.now();
+    const durationMs = Date.now() - startTime;
+    const method = ((config?.method as string) || 'GET').toUpperCase();
+    const url = (config?.url as string) || '';
+    const status = response?.status || error?.response?.status || (error ? 500 : 200);
+    const statusText =
+      response?.statusText ||
+      error?.response?.statusText ||
+      (error ? 'Error' : 'OK');
+    const isError = Boolean(error) || status >= 400 || status === 0;
+
+    let parsedReqData = config?.data;
+    if (typeof parsedReqData === 'string') {
+      try {
+        parsedReqData = JSON.parse(parsedReqData);
+      } catch {
+        // Keep string if not valid JSON
+      }
+    }
+
+    useDataLogStore.getState().addLog({
+      method,
+      url,
+      status,
+      statusText,
+      durationMs,
+      requestData: parsedReqData,
+      queryParams: config?.params,
+      responseData: response?.data ?? error?.response?.data ?? null,
+      isError,
+      errorMessage: error ? error.message || 'Request failed' : null,
+    });
+  } catch {
+    // Non-blocking logger safeguard
+  }
+};
+
 // 1. Request Interceptor: Attach in-memory access token & preserve FormData
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    (config as any)._requestStartTime = Date.now();
+
     const token = useAuthStore.getState().accessToken;
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -92,6 +151,8 @@ apiClient.interceptors.request.use(
 // 2. Response Interceptor: Validate response shape & handle single-flight refresh on 401
 apiClient.interceptors.response.use(
   (response) => {
+    logApiResponse(response.config, response, null);
+
     // Validate response envelope: do not treat explicit backend error payload as success
     if (
       response.data &&
@@ -112,6 +173,8 @@ apiClient.interceptors.response.use(
     return response;
   },
   async (error: AxiosError) => {
+    logApiResponse(error.config, null, error);
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };

@@ -10,7 +10,9 @@ import {
   TrainingEvaluation,
   EmployeeSkill,
   CreateTrainingCategoryInput,
+  UpdateTrainingCategoryInput,
   CreateTrainingInput,
+  UpdateTrainingInput,
   CreateTrainingPlanInput,
   AssignTrainingInput,
   CreateTrainingSessionInput,
@@ -38,6 +40,25 @@ export const lndApi = {
     return ((res.data as any)?.data ?? res.data) as TrainingCategory;
   },
 
+  updateCategory: async (
+    id: number,
+    payload: UpdateTrainingCategoryInput,
+  ): Promise<TrainingCategory> => {
+    const res = await apiClient.put<
+      TrainingCategory | { success: boolean; data: TrainingCategory }
+    >(`/lnd/categories/${id}`, payload);
+    return ((res.data as any)?.data ?? res.data) as TrainingCategory;
+  },
+
+  deleteCategory: async (
+    id: number,
+  ): Promise<{ message: string; id: number }> => {
+    const res = await apiClient.delete<{ message: string; id: number }>(
+      `/lnd/categories/${id}`,
+    );
+    return (res.data as any)?.data ?? res.data;
+  },
+
   // Trainings
   getTrainings: async (params?: {
     departmentId?: number;
@@ -62,6 +83,16 @@ export const lndApi = {
     const res = await apiClient.post<
       Training | { success: boolean; data: Training }
     >('/lnd/trainings', payload);
+    return ((res.data as any)?.data ?? res.data) as Training;
+  },
+
+  updateTraining: async (
+    id: number,
+    payload: UpdateTrainingInput,
+  ): Promise<Training> => {
+    const res = await apiClient.put<
+      Training | { success: boolean; data: Training }
+    >(`/lnd/trainings/${id}`, payload);
     return ((res.data as any)?.data ?? res.data) as Training;
   },
 

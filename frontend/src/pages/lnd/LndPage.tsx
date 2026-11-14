@@ -14,6 +14,10 @@ import {
   Rate,
   Badge,
   message,
+  Input,
+  Popconfirm,
+  Tooltip,
+  theme,
 } from 'antd';
 import {
   ReadOutlined,
@@ -26,6 +30,11 @@ import {
   TrophyOutlined,
   ReloadOutlined,
   ScheduleOutlined,
+  SearchOutlined,
+  EyeOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  ClearOutlined,
 } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
@@ -39,6 +48,7 @@ import { Department } from '../../types/organization';
 import {
   Training,
   TrainingStatus,
+  TrainingCategory,
   TrainingPlan,
   TrainingPlanStatus,
   TrainingAttendance,
@@ -47,7 +57,10 @@ import {
 } from '../../types/lnd';
 
 import { CreateTrainingModal } from './components/CreateTrainingModal';
+import { EditTrainingModal } from './components/EditTrainingModal';
 import { CreateCategoryModal } from './components/CreateCategoryModal';
+import { EditCategoryModal } from './components/EditCategoryModal';
+import { CourseDetailsDrawer } from './components/CourseDetailsDrawer';
 import { AssignEmployeesModal } from './components/AssignEmployeesModal';
 import { CreatePlanModal } from './components/CreatePlanModal';
 import { CreateSessionModal } from './components/CreateSessionModal';
@@ -56,8 +69,10 @@ import { UpdateSkillModal } from './components/UpdateSkillModal';
 import { AddAttendeeModal } from './components/AddAttendeeModal';
 
 const { Title, Text } = Typography;
+const { useToken } = theme;
 
 export const LndPage: React.FC = () => {
+  const { token } = useToken();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
   const roles = (user?.roles ?? []).map((r: any) =>
@@ -77,10 +92,28 @@ export const LndPage: React.FC = () => {
   const [filterDepartmentId, setFilterDepartmentId] = useState<
     number | undefined
   >(undefined);
+  const [filterCategoryId, setFilterCategoryId] = useState<
+    number | undefined
+  >(undefined);
+  const [filterStatus, setFilterStatus] = useState<string | undefined>(
+    undefined,
+  );
+  const [searchCourseTerm, setSearchCourseTerm] = useState('');
+  const [categorySearchTerm, setCategorySearchTerm] = useState('');
 
-  // Modals
+  // Modals & Drawers
   const [createTrainingModalOpen, setCreateTrainingModalOpen] = useState(false);
+  const [editTrainingModalOpen, setEditTrainingModalOpen] = useState(false);
+  const [trainingToEdit, setTrainingToEdit] = useState<Training | null>(null);
   const [createCategoryModalOpen, setCreateCategoryModalOpen] = useState(false);
+  const [editCategoryModalOpen, setEditCategoryModalOpen] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<TrainingCategory | null>(
+    null,
+  );
+  const [detailsDrawerOpen, setDetailsDrawerOpen] = useState(false);
+  const [detailsCourseId, setDetailsCourseId] = useState<number | undefined>(
+    undefined,
+  );
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [trainingToAssign, setTrainingToAssign] = useState<Training | null>(
     null,
@@ -183,6 +216,29 @@ export const LndPage: React.FC = () => {
     onError: (err) => message.error(normalizeApiError(err).message),
   });
 
+  const updateCategoryMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
+      lndApi.updateCategory(id, payload),
+    onSuccess: () => {
+      message.success('Training category updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['lnd-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
+      setEditCategoryModalOpen(false);
+      setCategoryToEdit(null);
+    },
+    onError: (err) => message.error(normalizeApiError(err).message),
+  });
+
+  const deleteCategoryMutation = useMutation({
+    mutationFn: (id: number) => lndApi.deleteCategory(id),
+    onSuccess: () => {
+      message.success('Training category deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['lnd-categories'] });
+      queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
+    },
+    onError: (err) => message.error(normalizeApiError(err).message),
+  });
+
   const createTrainingMutation = useMutation({
     mutationFn: lndApi.createTraining,
     onSuccess: (newCourse) => {
@@ -190,6 +246,21 @@ export const LndPage: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
       setSelectedTrainingId(newCourse.id);
       setCreateTrainingModalOpen(false);
+    },
+    onError: (err) => message.error(normalizeApiError(err).message),
+  });
+
+  const updateTrainingMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: any }) =>
+      lndApi.updateTraining(id, payload),
+    onSuccess: (updated) => {
+      message.success('Training course updated successfully');
+      queryClient.invalidateQueries({ queryKey: ['lnd-trainings'] });
+      queryClient.invalidateQueries({
+        queryKey: ['lnd-training-detail', updated.id],
+      });
+      setEditTrainingModalOpen(false);
+      setTrainingToEdit(null);
     },
     onError: (err) => message.error(normalizeApiError(err).message),
   });
@@ -425,6 +496,44 @@ export const LndPage: React.FC = () => {
   const totalCategories = categories.length;
   const totalSkillsCount = skills.length;
 
+  // Filtered Course Catalog
+  const filteredTrainings = trainings.filter((t) => {
+    if (filterCategoryId && t.categoryId !== filterCategoryId) {
+      return false;
+    }
+    if (filterStatus && t.status !== filterStatus) {
+      return false;
+    }
+    if (searchCourseTerm.trim()) {
+      const q = searchCourseTerm.trim().toLowerCase();
+      const matchTitle = t.title?.toLowerCase().includes(q);
+      const matchProvider = t.provider?.toLowerCase().includes(q);
+      const matchDesc = t.description?.toLowerCase().includes(q);
+      const matchCat = t.category?.name?.toLowerCase().includes(q);
+      if (!matchTitle && !matchProvider && !matchDesc && !matchCat) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  // Filtered Categories
+  const filteredCategories = categories.filter((c) => {
+    if (categorySearchTerm.trim()) {
+      const q = categorySearchTerm.trim().toLowerCase();
+      const matchName = c.name.toLowerCase().includes(q);
+      const matchDesc = c.description?.toLowerCase().includes(q);
+      return matchName || matchDesc;
+    }
+    return true;
+  });
+
+  const hasCourseFilters =
+    Boolean(searchCourseTerm.trim()) ||
+    Boolean(filterCategoryId) ||
+    Boolean(filterStatus) ||
+    Boolean(filterDepartmentId);
+
   return (
     <div style={{ padding: '24px 0' }}>
       <div
@@ -515,32 +624,73 @@ export const LndPage: React.FC = () => {
             // Tab 1: Course Catalog
             {
               key: 'courses',
-              label: 'Course Catalog & Categories',
+              label: 'Course Directory & Catalog',
               children: (
                 <div>
+                  {/* Search and Filters Bar */}
                   <div
                     style={{
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      marginBottom: 16,
-                      flexWrap: 'wrap',
+                      flexDirection: 'column',
                       gap: 12,
+                      marginBottom: 16,
+                      background: token.colorFillAlter,
+                      padding: 16,
+                      borderRadius: 8,
+                      border: `1px solid ${token.colorBorderSecondary}`,
                     }}
                   >
                     <div
                       style={{
                         display: 'flex',
                         alignItems: 'center',
-                        gap: 8,
+                        gap: 12,
                         flexWrap: 'wrap',
                       }}
                     >
-                      <Text strong>Department:</Text>
+                      <Input
+                        placeholder="Search courses by title, vendor, curriculum..."
+                        prefix={<SearchOutlined />}
+                        allowClear
+                        value={searchCourseTerm}
+                        onChange={(e) => setSearchCourseTerm(e.target.value)}
+                        style={{ width: 280 }}
+                      />
+
+                      <Select
+                        allowClear
+                        placeholder="Filter by Category"
+                        style={{ width: 200 }}
+                        value={filterCategoryId}
+                        onChange={(val) => setFilterCategoryId(val)}
+                        options={[
+                          { value: undefined as any, label: 'All Categories' },
+                          ...categories.map((c) => ({
+                            value: c.id,
+                            label: `${c.name} (${c._count?.trainings || 0})`,
+                          })),
+                        ]}
+                      />
+
+                      <Select
+                        allowClear
+                        placeholder="Filter by Status"
+                        style={{ width: 150 }}
+                        value={filterStatus}
+                        onChange={(val) => setFilterStatus(val)}
+                        options={[
+                          { value: undefined as any, label: 'All Statuses' },
+                          { value: 'DRAFT', label: 'Draft' },
+                          { value: 'ACTIVE', label: 'Active' },
+                          { value: 'COMPLETED', label: 'Completed' },
+                          { value: 'CANCELLED', label: 'Cancelled' },
+                        ]}
+                      />
+
                       <Select
                         allowClear
                         placeholder="All Departments"
-                        style={{ width: 220 }}
+                        style={{ width: 200 }}
                         value={filterDepartmentId}
                         onChange={(val) => setFilterDepartmentId(val)}
                         options={[
@@ -551,6 +701,7 @@ export const LndPage: React.FC = () => {
                           })),
                         ]}
                       />
+
                       {currentEmployee?.department && (
                         <Button
                           size="small"
@@ -572,30 +723,63 @@ export const LndPage: React.FC = () => {
                             }
                           }}
                         >
-                          My Department ({currentEmployee.department.name})
+                          My Dept ({currentEmployee.department.name})
+                        </Button>
+                      )}
+
+                      {hasCourseFilters && (
+                        <Button
+                          size="small"
+                          icon={<ClearOutlined />}
+                          onClick={() => {
+                            setSearchCourseTerm('');
+                            setFilterCategoryId(undefined);
+                            setFilterStatus(undefined);
+                            setFilterDepartmentId(undefined);
+                          }}
+                        >
+                          Reset Filters
                         </Button>
                       )}
                     </div>
 
-                    <div>
-                      <Text strong style={{ marginRight: 8 }}>
-                        Categories:
+                    {/* Quick Category Filter Pills */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 8,
+                        flexWrap: 'wrap',
+                        paddingTop: 4,
+                        borderTop: `1px dashed ${token.colorBorderSecondary}`,
+                      }}
+                    >
+                      <Text type="secondary" style={{ fontSize: 12 }}>
+                        Quick Category:
                       </Text>
+                      <Tag.CheckableTag
+                        checked={filterCategoryId === undefined}
+                        onChange={() => setFilterCategoryId(undefined)}
+                      >
+                        All ({trainings.length})
+                      </Tag.CheckableTag>
                       {categories.map((c) => (
-                        <Tag
+                        <Tag.CheckableTag
                           key={c.id}
-                          color="geekblue"
-                          style={{ marginBottom: 4 }}
+                          checked={filterCategoryId === c.id}
+                          onChange={(checked) =>
+                            setFilterCategoryId(checked ? c.id : undefined)
+                          }
                         >
                           {c.name} ({c._count?.trainings || 0})
-                        </Tag>
+                        </Tag.CheckableTag>
                       ))}
                     </div>
                   </div>
 
                   <Table
                     loading={trainingsLoading}
-                    dataSource={trainings}
+                    dataSource={filteredTrainings}
                     rowKey="id"
                     columns={[
                       {
@@ -604,11 +788,30 @@ export const LndPage: React.FC = () => {
                         key: 'title',
                         render: (title: string, record: Training) => (
                           <div>
-                            <Text strong>{title}</Text>
+                            <Text
+                              strong
+                              style={{ cursor: 'pointer', color: '#1677ff' }}
+                              onClick={() => {
+                                setDetailsCourseId(record.id);
+                                setDetailsDrawerOpen(true);
+                              }}
+                            >
+                              {title}
+                            </Text>
                             {record.description && (
-                              <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+                              <Text
+                                type="secondary"
+                                style={{
+                                  fontSize: 12,
+                                  display: 'block',
+                                  maxWidth: 280,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
                                 {record.description}
-                              </div>
+                              </Text>
                             )}
                           </div>
                         ),
@@ -616,8 +819,18 @@ export const LndPage: React.FC = () => {
                       {
                         title: 'Category',
                         key: 'category',
-                        render: (_: any, record: Training) =>
-                          record.category?.name || 'General',
+                        render: (_: any, record: Training) => (
+                          <Tag
+                            color="geekblue"
+                            style={{ cursor: 'pointer' }}
+                            title="Click to filter by this category"
+                            onClick={() =>
+                              setFilterCategoryId(record.categoryId)
+                            }
+                          >
+                            {record.category?.name || 'General'}
+                          </Tag>
+                        ),
                       },
                       {
                         title: 'Target Department',
@@ -723,18 +936,40 @@ export const LndPage: React.FC = () => {
                               (a) => a.employeeId === currentEmployee.id,
                             );
                           return (
-                            <Space size="small">
+                            <Space size="small" wrap>
+                              <Button
+                                size="small"
+                                icon={<EyeOutlined />}
+                                onClick={() => {
+                                  setDetailsCourseId(record.id);
+                                  setDetailsDrawerOpen(true);
+                                }}
+                              >
+                                Details
+                              </Button>
                               {canManageLnd && (
-                                <Button
-                                  size="small"
-                                  icon={<UsergroupAddOutlined />}
-                                  onClick={() => {
-                                    setTrainingToAssign(record);
-                                    setAssignModalOpen(true);
-                                  }}
-                                >
-                                  Enroll Employees
-                                </Button>
+                                <>
+                                  <Button
+                                    size="small"
+                                    icon={<EditOutlined />}
+                                    onClick={() => {
+                                      setTrainingToEdit(record);
+                                      setEditTrainingModalOpen(true);
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="small"
+                                    icon={<UsergroupAddOutlined />}
+                                    onClick={() => {
+                                      setTrainingToAssign(record);
+                                      setAssignModalOpen(true);
+                                    }}
+                                  >
+                                    Enroll Employees
+                                  </Button>
+                                </>
                               )}
                               {currentEmployee &&
                                 (isEnrolled ? (
@@ -767,6 +1002,181 @@ export const LndPage: React.FC = () => {
                       },
                     ]}
                     pagination={{ pageSize: 8 }}
+                  />
+                </div>
+              ),
+            },
+
+            // Tab 2: Dedicated Category Management
+            {
+              key: 'categories',
+              label: `Course Categories (${categories.length})`,
+              children: (
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 16,
+                      flexWrap: 'wrap',
+                      gap: 12,
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <Input
+                        placeholder="Search category name or description..."
+                        prefix={<SearchOutlined />}
+                        allowClear
+                        value={categorySearchTerm}
+                        onChange={(e) => setCategorySearchTerm(e.target.value)}
+                        style={{ width: 280 }}
+                      />
+                      <Text type="secondary" style={{ fontSize: 13 }}>
+                        Organize curriculum topics and competency tracks across
+                        departments
+                      </Text>
+                    </div>
+
+                    {canManageLnd && (
+                      <Button
+                        type="primary"
+                        icon={<PlusOutlined />}
+                        onClick={() => setCreateCategoryModalOpen(true)}
+                      >
+                        New Category
+                      </Button>
+                    )}
+                  </div>
+
+                  <Table
+                    dataSource={filteredCategories}
+                    rowKey="id"
+                    columns={[
+                      {
+                        title: 'Category Name',
+                        dataIndex: 'name',
+                        key: 'name',
+                        render: (name: string) => (
+                          <Tag
+                            color="geekblue"
+                            style={{
+                              fontSize: 13,
+                              padding: '2px 8px',
+                              fontWeight: 500,
+                            }}
+                          >
+                            {name}
+                          </Tag>
+                        ),
+                      },
+                      {
+                        title: 'Description',
+                        dataIndex: 'description',
+                        key: 'description',
+                        render: (desc: string | null) =>
+                          desc || (
+                            <Text type="secondary" italic>
+                              No description provided
+                            </Text>
+                          ),
+                      },
+                      {
+                        title: 'Linked Courses',
+                        key: 'coursesCount',
+                        render: (_: any, record: TrainingCategory) => {
+                          const count = record._count?.trainings || 0;
+                          return (
+                            <Tag
+                              color={count > 0 ? 'blue' : 'default'}
+                              style={{ cursor: count > 0 ? 'pointer' : 'default' }}
+                              title={
+                                count > 0
+                                  ? 'Click to view courses in this category'
+                                  : undefined
+                              }
+                              onClick={() => {
+                                if (count > 0) {
+                                  setFilterCategoryId(record.id);
+                                  setActiveTab('courses');
+                                }
+                              }}
+                            >
+                              {count} course{count === 1 ? '' : 's'}
+                            </Tag>
+                          );
+                        },
+                      },
+                      {
+                        title: 'Actions',
+                        key: 'actions',
+                        render: (_: any, record: TrainingCategory) => {
+                          if (!canManageLnd) {
+                            return <Text type="secondary">—</Text>;
+                          }
+                          const hasLinkedCourses =
+                            (record._count?.trainings || 0) > 0;
+                          return (
+                            <Space size="small">
+                              <Button
+                                size="small"
+                                icon={<EditOutlined />}
+                                onClick={() => {
+                                  setCategoryToEdit(record);
+                                  setEditCategoryModalOpen(true);
+                                }}
+                              >
+                                Edit
+                              </Button>
+
+                              {hasLinkedCourses ? (
+                                <Tooltip title="Cannot delete category that has courses assigned to it. Please reassign or delete the courses first.">
+                                  <Button
+                                    size="small"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    disabled
+                                  >
+                                    Delete
+                                  </Button>
+                                </Tooltip>
+                              ) : (
+                                <Popconfirm
+                                  title="Delete Category"
+                                  description={`Are you sure you want to delete "${record.name}"?`}
+                                  onConfirm={() =>
+                                    deleteCategoryMutation.mutate(record.id)
+                                  }
+                                  okText="Delete"
+                                  okButtonProps={{ danger: true }}
+                                >
+                                  <Button
+                                    size="small"
+                                    danger
+                                    icon={<DeleteOutlined />}
+                                    loading={
+                                      deleteCategoryMutation.isPending &&
+                                      deleteCategoryMutation.variables ===
+                                        record.id
+                                    }
+                                  >
+                                    Delete
+                                  </Button>
+                                </Popconfirm>
+                              )}
+                            </Space>
+                          );
+                        },
+                      },
+                    ]}
+                    pagination={{ pageSize: 10 }}
                   />
                 </div>
               ),
@@ -815,9 +1225,12 @@ export const LndPage: React.FC = () => {
                                 `Training #${record.trainingId}`}
                             </Text>
                             {record.training?.category && (
-                              <div style={{ fontSize: 12, color: '#8c8c8c' }}>
+                              <Text
+                                type="secondary"
+                                style={{ fontSize: 12, display: 'block' }}
+                              >
                                 {record.training.category.name}
-                              </div>
+                              </Text>
                             )}
                           </div>
                         ),
@@ -1073,14 +1486,15 @@ export const LndPage: React.FC = () => {
                       style={{
                         textAlign: 'center',
                         padding: '40px 0',
-                        background: '#fafafa',
+                        background: token.colorFillAlter,
                         borderRadius: 8,
+                        border: `1px dashed ${token.colorBorderSecondary}`,
                       }}
                     >
                       <ScheduleOutlined
                         style={{
                           fontSize: 36,
-                          color: '#bfbfbf',
+                          color: token.colorTextDisabled,
                           marginBottom: 12,
                         }}
                       />
@@ -1108,14 +1522,15 @@ export const LndPage: React.FC = () => {
                       style={{
                         textAlign: 'center',
                         padding: '40px 0',
-                        background: '#fafafa',
+                        background: token.colorFillAlter,
                         borderRadius: 8,
+                        border: `1px dashed ${token.colorBorderSecondary}`,
                       }}
                     >
                       <UsergroupAddOutlined
                         style={{
                           fontSize: 36,
-                          color: '#bfbfbf',
+                          color: token.colorTextDisabled,
                           marginBottom: 12,
                         }}
                       />
@@ -1422,7 +1837,7 @@ export const LndPage: React.FC = () => {
         />
       </Card>
 
-      {/* Modals */}
+      {/* Modals & Drawers */}
       <CreateCategoryModal
         visible={createCategoryModalOpen}
         onCancel={() => setCreateCategoryModalOpen(false)}
@@ -1430,6 +1845,19 @@ export const LndPage: React.FC = () => {
           await createCategoryMutation.mutateAsync(values);
         }}
         loading={createCategoryMutation.isPending}
+      />
+
+      <EditCategoryModal
+        visible={editCategoryModalOpen}
+        category={categoryToEdit}
+        onCancel={() => {
+          setEditCategoryModalOpen(false);
+          setCategoryToEdit(null);
+        }}
+        onSubmit={async (id, values) => {
+          await updateCategoryMutation.mutateAsync({ id, payload: values });
+        }}
+        loading={updateCategoryMutation.isPending}
       />
 
       <CreateTrainingModal
@@ -1441,6 +1869,45 @@ export const LndPage: React.FC = () => {
         categories={categories}
         departments={departments}
         loading={createTrainingMutation.isPending}
+      />
+
+      <EditTrainingModal
+        visible={editTrainingModalOpen}
+        training={trainingToEdit}
+        onCancel={() => {
+          setEditTrainingModalOpen(false);
+          setTrainingToEdit(null);
+        }}
+        onSubmit={async (id, values) => {
+          await updateTrainingMutation.mutateAsync({ id, payload: values });
+        }}
+        categories={categories}
+        departments={departments}
+        loading={updateTrainingMutation.isPending}
+      />
+
+      <CourseDetailsDrawer
+        visible={detailsDrawerOpen}
+        trainingId={detailsCourseId}
+        onClose={() => {
+          setDetailsDrawerOpen(false);
+          setDetailsCourseId(undefined);
+        }}
+        canManage={canManageLnd}
+        onEditCourse={(course) => {
+          setDetailsDrawerOpen(false);
+          setTrainingToEdit(course);
+          setEditTrainingModalOpen(true);
+        }}
+        onAssignEmployees={(course) => {
+          setDetailsDrawerOpen(false);
+          setTrainingToAssign(course);
+          setAssignModalOpen(true);
+        }}
+        onAddSession={(course) => {
+          setSelectedTrainingId(course.id);
+          setCreateSessionModalOpen(true);
+        }}
       />
 
       <AssignEmployeesModal

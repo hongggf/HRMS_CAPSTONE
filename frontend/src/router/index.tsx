@@ -15,6 +15,7 @@ import { PerformancePage } from '../pages/performance/PerformancePage';
 import { LndPage } from '../pages/lnd/LndPage';
 import { UsersPage } from '../pages/users/UsersPage';
 import { AuditLogsPage } from '../pages/audit/AuditLogsPage';
+import { DataLogsPage } from '../pages/datalogs/DataLogsPage';
 import { NotFound404 } from '../pages/error/NotFound404';
 
 export const router = createBrowserRouter([
@@ -149,6 +150,24 @@ export const router = createBrowserRouter([
         element: (
           <RoleGuard requiredRoles={['HEAD_OF_HR', 'HR_ADMIN']}>
             <AuditLogsPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'data-logs',
+        element: (
+          <RoleGuard
+            requiredRoles={[
+              'HEAD_OF_HR',
+              'HR_ADMIN',
+              'HR_RECRUITMENT',
+              'HR_ATTENDANCE',
+              'HR_PAYROLL',
+              'HR_PERFORMANCE',
+              'HR_LND',
+            ]}
+          >
+            <DataLogsPage />
           </RoleGuard>
         ),
       },

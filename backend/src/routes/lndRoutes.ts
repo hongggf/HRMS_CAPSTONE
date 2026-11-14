@@ -2,8 +2,11 @@ import { Router } from 'express';
 import { requireAuth, requirePermission } from '../middlewares/auth';
 import { 
   createCategory, 
+  updateCategory,
+  deleteCategory,
   listCategories, 
   createTraining, 
+  updateTraining,
   listTrainings,
   getTrainingById,
   updateTrainingStatus,
@@ -30,11 +33,14 @@ router.use(requireAuth);
 // Categories
 router.post('/categories', requirePermission(['LND_CREATE']), createCategory);
 router.get('/categories', requirePermission(['LND_READ']), listCategories);
+router.put('/categories/:id', requirePermission(['LND_UPDATE']), updateCategory);
+router.delete('/categories/:id', requirePermission(['LND_UPDATE']), deleteCategory);
 
 // Trainings
 router.post('/trainings', requirePermission(['LND_CREATE']), createTraining);
 router.get('/trainings', requirePermission(['LND_READ']), listTrainings);
 router.get('/trainings/:id', requirePermission(['LND_READ']), getTrainingById);
+router.put('/trainings/:id', requirePermission(['LND_UPDATE']), updateTraining);
 router.patch('/trainings/:id/status', requirePermission(['LND_UPDATE']), updateTrainingStatus);
 
 // Plans

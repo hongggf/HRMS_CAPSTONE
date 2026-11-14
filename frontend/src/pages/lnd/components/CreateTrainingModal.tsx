@@ -39,14 +39,24 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
       const endDate = dates && dates[1] ? dates[1].toISOString() : undefined;
 
       await onSubmit({
-        title: values.title,
-        description: values.description,
-        categoryId: values.categoryId,
+        title: values.title.trim(),
+        description: values.description ? values.description.trim() : undefined,
+        categoryId: Number(values.categoryId),
         departmentId: values.departmentId ? Number(values.departmentId) : null,
-        provider: values.provider,
-        type: values.type,
-        capacity: values.capacity,
-        cost: values.cost,
+        provider: values.provider ? values.provider.trim() : undefined,
+        type: values.type || 'ONLINE',
+        capacity:
+          values.capacity !== undefined &&
+          values.capacity !== null &&
+          values.capacity !== ''
+            ? Number(values.capacity)
+            : undefined,
+        cost:
+          values.cost !== undefined &&
+          values.cost !== null &&
+          values.cost !== ''
+            ? Number(values.cost)
+            : undefined,
         startDate,
         endDate,
       });
