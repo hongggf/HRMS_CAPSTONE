@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { LoginPage } from '../pages/login/LoginPage';
 import { AdminLayout } from '../components/layout/AdminLayout';
+import { EmployeeLayout } from '../components/layout/EmployeeLayout';
 import { ProtectedRoute } from '../components/auth/ProtectedRoute';
 import { RoleGuard } from '../components/auth/RoleGuard';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
@@ -17,11 +18,75 @@ import { UsersPage } from '../pages/users/UsersPage';
 import { AuditLogsPage } from '../pages/audit/AuditLogsPage';
 import { DataLogsPage } from '../pages/datalogs/DataLogsPage';
 import { NotFound404 } from '../pages/error/NotFound404';
+import { EmployeeLoginPage } from '../pages/employee/EmployeeLoginPage';
+import { EmployeeActivatePage } from '../pages/employee/EmployeeActivatePage';
+import { EmployeeDashboardPage } from '../pages/employee/EmployeeDashboardPage';
+import { EmployeePayslipsPage } from '../pages/employee/EmployeePayslipsPage';
+import { EmployeeLearningPage } from '../pages/employee/EmployeeLearningPage';
+import { useAuthStore } from '../store/useAuthStore';
+
+const RootRedirect: React.FC = () => {
+  const { user } = useAuthStore();
+  const isEmployeeOnly =
+    user?.roles?.includes('EMPLOYEE') &&
+    !user.roles.some((r) => r.startsWith('HR_') || r === 'HEAD_OF_HR');
+
+  if (isEmployeeOnly) {
+    return <Navigate to="/employee/dashboard" replace />;
+  }
+  return <Navigate to="/dashboard" replace />;
+};
 
 export const router = createBrowserRouter([
   {
     path: '/login',
     element: <LoginPage />,
+  },
+  {
+    path: '/employee/login',
+    element: <EmployeeLoginPage />,
+  },
+  {
+    path: '/employee/activate',
+    element: <EmployeeActivatePage />,
+  },
+  {
+    path: '/employee',
+    element: (
+      <ProtectedRoute>
+        <EmployeeLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/employee/dashboard" replace />,
+      },
+      {
+        path: 'dashboard',
+        element: (
+          <RoleGuard requiredRoles={['EMPLOYEE', 'HEAD_OF_HR']}>
+            <EmployeeDashboardPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'payslips',
+        element: (
+          <RoleGuard requiredRoles={['EMPLOYEE', 'HEAD_OF_HR']}>
+            <EmployeePayslipsPage />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'learning',
+        element: (
+          <RoleGuard requiredRoles={['EMPLOYEE', 'HEAD_OF_HR']}>
+            <EmployeeLearningPage />
+          </RoleGuard>
+        ),
+      },
+    ],
   },
   {
     path: '/',
@@ -33,7 +98,7 @@ export const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/dashboard" replace />,
+        element: <RootRedirect />,
       },
       {
         path: 'dashboard',

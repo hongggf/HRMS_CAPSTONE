@@ -6,6 +6,7 @@ import { AuthRequest } from '../middlewares/auth';
 import { sendSuccess } from '../utils/response';
 import { AppError } from '../utils/AppError';
 import { generateTokens, revokeRefreshTokens } from '../services/authService';
+import * as accountProvisioningService from '../services/accountProvisioningService';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 
@@ -92,7 +93,41 @@ export const logout = async (req: AuthRequest, res: Response, next: NextFunction
 
 export const getMe = async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    return sendSuccess(res, { user: req.user }, 'Profile retrieved successfully');
+    let employeeProfile = null;
+    if (req.user?.id) {
+      employeeProfile = await prisma.employee.findUnique({
+        where: { userId: req.user.id },
+        include: {
+          department: true,
+          position: true,
+        },
+      });
+    }
+    return sendSuccess(
+      res,
+      { user: req.user, employee: employeeProfile },
+      'Profile retrieved successfully'
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyInvitation = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const token = req.query.token as string;
+    const data = await accountProvisioningService.verifyInvitationToken(token);
+    return sendSuccess(res, data, 'Invitation token is valid');
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const acceptInvitation = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { token, password } = req.body;
+    const data = await accountProvisioningService.acceptInvitation(token, password);
+    return sendSuccess(res, data, 'Account activated successfully. Welcome!');
   } catch (error) {
     next(error);
   }

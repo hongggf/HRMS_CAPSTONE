@@ -197,6 +197,30 @@ export const NAVIGATION_CONFIG: NavigationItem[] = [
   },
 ];
 
+export const EMPLOYEE_NAVIGATION_CONFIG: NavigationItem[] = [
+  {
+    key: '/employee/dashboard',
+    label: 'Dashboard',
+    icon: <DashboardOutlined />,
+    roles: ['EMPLOYEE', 'HEAD_OF_HR'],
+    description: 'Personalized employee self-service overview',
+  },
+  {
+    key: '/employee/payslips',
+    label: 'My Payslips',
+    icon: <DollarOutlined />,
+    roles: ['EMPLOYEE', 'HEAD_OF_HR'],
+    description: 'Official monthly payslips and compensation records',
+  },
+  {
+    key: '/employee/learning',
+    label: 'My Learning',
+    icon: <ReadOutlined />,
+    roles: ['EMPLOYEE', 'HEAD_OF_HR'],
+    description: 'Professional development courses, schedules, and skills',
+  },
+];
+
 /**
  * Filters hierarchical navigation configuration based on active user roles.
  * A parent group is only shown if at least one of its children is accessible.

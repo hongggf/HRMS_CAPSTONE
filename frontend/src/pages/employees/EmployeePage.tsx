@@ -18,6 +18,8 @@ import {
   Dropdown,
   Progress,
   message,
+  Modal,
+  Alert,
 } from 'antd';
 import type { MenuProps } from 'antd';
 import {
@@ -42,11 +44,13 @@ import {
   CalendarOutlined,
   IdcardOutlined,
   FilterOutlined,
+  SendOutlined,
 } from '@ant-design/icons';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { ColumnsType } from 'antd/es/table';
 import { employeeApi } from '../../api/employee';
 import { departmentApi } from '../../api/organization';
+import { normalizeApiError } from '../../api/client';
 import {
   Employee,
   EmployeeStatus,
@@ -115,6 +119,47 @@ export const EmployeePage: React.FC = () => {
 
   const [uploadDocModalOpen, setUploadDocModalOpen] = useState<boolean>(false);
   const [uploadTargetEmp, setUploadTargetEmp] = useState<Employee | null>(null);
+
+  const queryClient = useQueryClient();
+  const [inviteModalOpen, setInviteModalOpen] = useState<boolean>(false);
+  const [inviteResultData, setInviteResultData] = useState<{
+    employeeName: string;
+    email: string;
+    invitationLink: string;
+    expiresAt: string;
+    isResend?: boolean;
+  } | null>(null);
+
+  const handleProvisionAccount = async (record: Employee) => {
+    let hide: (() => void) | null = null;
+    const isResend = !!record.userId;
+    try {
+      const actionText = isResend ? 'Re-sending ESS invitation' : 'Provisioning ESS account';
+      hide = message.loading(`${actionText} for ${record.firstName} ${record.lastName}...`, 0);
+      const res = await employeeApi.provisionAccount(record.id);
+      setInviteResultData({
+        employeeName: `${record.firstName} ${record.lastName}`,
+        email: record.email,
+        invitationLink: res.invitationLink,
+        expiresAt: res.expiresAt,
+        isResend,
+      });
+      setInviteModalOpen(true);
+      message.success(
+        isResend
+          ? `ESS invitation re-sent to ${record.email}`
+          : `Account provisioned and invitation sent to ${record.email}`,
+      );
+      queryClient.invalidateQueries({ queryKey: ['employees-list'] });
+    } catch (err: unknown) {
+      const normalized = normalizeApiError(err);
+      message.error(normalized.message || 'Failed to process invitation');
+    } finally {
+      if (hide) {
+        hide();
+      }
+    }
+  };
 
   // Fetch employees list
   const {
@@ -329,6 +374,15 @@ export const EmployeePage: React.FC = () => {
               setUploadTargetEmp(record);
               setUploadDocModalOpen(true);
             },
+          },
+          {
+            type: 'divider' as const,
+          },
+          {
+            key: 'provision-account',
+            icon: <SendOutlined />,
+            label: record.userId ? 'Re-send ESS Invitation' : 'Provision ESS Account & Invite',
+            onClick: () => handleProvisionAccount(record),
           },
         ]
       : []),
@@ -1437,6 +1491,65 @@ export const EmployeePage: React.FC = () => {
           }}
         />
       )}
+
+      {/* Account Provisioning Invitation Modal */}
+      <Modal
+        title={
+          <Space>
+            <CheckCircleOutlined style={{ color: '#52c41a' }} />
+            <span>
+              {inviteResultData?.isResend
+                ? 'Employee ESS Invitation Re-sent'
+                : 'Employee ESS Account Provisioned'}
+            </span>
+          </Space>
+        }
+        open={inviteModalOpen}
+        onCancel={() => setInviteModalOpen(false)}
+        footer={[
+          <Button key="close" type="primary" onClick={() => setInviteModalOpen(false)}>
+            Close
+          </Button>,
+        ]}
+      >
+        {inviteResultData && (
+          <Space direction="vertical" size="middle" style={{ width: '100%', marginTop: 8 }}>
+            <Alert
+              type="success"
+              showIcon
+              message={
+                inviteResultData.isResend
+                  ? `New Invitation Sent to ${inviteResultData.employeeName}`
+                  : `Invitation Sent to ${inviteResultData.employeeName}`
+              }
+              description={
+                inviteResultData.isResend
+                  ? `A fresh single-use activation invitation has been generated for ${inviteResultData.email}. Previous unused invitations were invalidated.`
+                  : `A user account with the EMPLOYEE role was generated for ${inviteResultData.email}. An invitation email with single-use activation credentials has been dispatched.`
+              }
+            />
+
+            <div>
+              <Text strong style={{ display: 'block', marginBottom: 6 }}>
+                Direct Activation Link (24-Hour Expiration):
+              </Text>
+              <Input.Search
+                readOnly
+                value={inviteResultData.invitationLink}
+                enterButton="Copy Link"
+                onSearch={() => {
+                  navigator.clipboard.writeText(inviteResultData.invitationLink);
+                  message.success('Activation link copied to clipboard!');
+                }}
+              />
+            </div>
+
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              The employee can open this link in their browser to create their password and access their Employee Portal.
+            </Text>
+          </Space>
+        )}
+      </Modal>
     </div>
   );
 };

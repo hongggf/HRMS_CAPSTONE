@@ -5,7 +5,7 @@ import {
   LockOutlined,
   SafetyCertificateOutlined,
 } from '@ant-design/icons';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { authApi } from '../../api/auth';
 import { normalizeApiError } from '../../api/client';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -24,7 +24,7 @@ export const LoginPage: React.FC = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, isAuthenticated, accessToken, isInitializing } =
+  const { login, isAuthenticated, accessToken, isInitializing, user } =
     useAuthStore();
 
   const state = location.state as LocationState | null;
@@ -33,9 +33,13 @@ export const LoginPage: React.FC = () => {
   // Prevent redirect loops and redirect only if genuinely authenticated with active accessToken
   React.useEffect(() => {
     if (isAuthenticated && accessToken && !isInitializing) {
-      navigate('/dashboard', { replace: true });
+      if (user?.roles?.includes('EMPLOYEE')) {
+        navigate('/employee/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     }
-  }, [isAuthenticated, accessToken, isInitializing, navigate]);
+  }, [isAuthenticated, accessToken, isInitializing, user, navigate]);
 
   const onFinish = async (values: { email: string; password: string }) => {
     if (loading) return;
@@ -45,7 +49,12 @@ export const LoginPage: React.FC = () => {
       const email = values.email.trim().toLowerCase();
       const data = await authApi.login(email, values.password);
       login(data.user, data.accessToken, data.refreshToken);
-      navigate(from, { replace: true });
+
+      if (data.user.roles.includes('EMPLOYEE')) {
+        navigate('/employee/dashboard', { replace: true });
+      } else {
+        navigate(from.startsWith('/employee') ? '/dashboard' : from, { replace: true });
+      }
     } catch (err: unknown) {
       const normalized = normalizeApiError(err);
       setErrorMessage(normalized.message);
@@ -190,6 +199,12 @@ export const LoginPage: React.FC = () => {
               Sign In
             </Button>
           </Form.Item>
+
+          <div style={{ textAlign: 'center', marginTop: 16 }}>
+            <Link to="/employee/login" style={{ fontSize: 13, color: '#1677ff' }}>
+              Are you an employee? Sign in to Employee Portal &rarr;
+            </Link>
+          </div>
         </Form>
       </Card>
     </div>

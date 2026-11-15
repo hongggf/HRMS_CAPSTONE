@@ -49,6 +49,9 @@ model User {
   // Phase 9 Relations
   promotionsRequested PromotionRequest[] @relation("PromotionRequestedBy")
   promotionsApproved  PromotionRequest[] @relation("PromotionApprovedBy")
+
+  // Employee Portal & Activation Relations
+  accountInvitations AccountInvitation[]
 }
 
 model Role {
@@ -440,6 +443,27 @@ model Employee {
   trainingAttendances TrainingAttendance[]
   trainingEvaluations TrainingEvaluation[]
   skills              EmployeeSkill[]
+
+  // Employee Portal & Activation Relations
+  accountInvitations  AccountInvitation[]
+}
+
+model AccountInvitation {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  employeeId Int
+  userId     Int
+  email      String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  employee   Employee  @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([employeeId])
+  @@index([userId])
 }
 
 model EmployeeDocument {

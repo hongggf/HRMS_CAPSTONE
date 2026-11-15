@@ -1,10 +1,11 @@
 import { Request, Response } from 'express';
-import { EmployeeStatus, OnboardingStatus, ApplicationStatus } from '@prisma/client';
+import { EmployeeStatus, OnboardingStatus, ApplicationStatus, PayrollPeriodStatus } from '@prisma/client';
 import { prisma } from '../config/db';
 import { createEmployeeSchema, updateEmployeeSchema } from '../validators/employeeValidator';
 import { storageService } from '../services/storageService';
 import { logAudit } from '../services/auditService';
 import { notifyUser } from '../services/notificationService';
+import { provisionEmployeeAccount } from '../services/accountProvisioningService';
 
 
 
@@ -170,10 +171,262 @@ export const getEmployees = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyEmployeeProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const employee = await prisma.employee.findUnique({
+      where: { userId },
+      include: {
+        department: true,
+        position: true,
+        manager: {
+          select: { id: true, firstName: true, lastName: true, employeeId: true }
+        },
+        documents: true,
+        positionHistory: {
+          include: { department: true, position: true },
+          orderBy: { startDate: 'desc' }
+        },
+        salaryHistory: {
+          orderBy: { effectiveDate: 'desc' }
+        }
+      }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee profile not found for authenticated user' });
+    }
+
+    res.json({ success: true, data: employee });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getEmployeeDashboardSummary = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const employee = await prisma.employee.findUnique({
+      where: { userId },
+      include: {
+        department: true,
+        position: true,
+        manager: {
+          select: { id: true, firstName: true, lastName: true, employeeId: true }
+        }
+      }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee record not found for authenticated user' });
+    }
+
+    // 1. Latest released payslip
+    const latestPayslip = await prisma.payroll.findFirst({
+      where: {
+        employeeId: employee.id,
+        payrollPeriod: {
+          status: { in: [PayrollPeriodStatus.APPROVED, PayrollPeriodStatus.LOCKED, PayrollPeriodStatus.PAID] }
+        }
+      },
+      include: {
+        payrollPeriod: true,
+        items: true
+      },
+      orderBy: {
+        payrollPeriod: { startDate: 'desc' }
+      }
+    });
+
+    // 2. Leave balances for current year
+    const currentYear = new Date().getFullYear();
+    const leaveBalances = await prisma.leaveBalance.findMany({
+      where: {
+        employeeId: employee.id,
+        year: currentYear
+      },
+      include: {
+        leaveType: true
+      }
+    });
+
+    // 3. Learning & Development assigned courses
+    const trainingAssignments = await prisma.trainingAssignment.findMany({
+      where: { employeeId: employee.id },
+      include: {
+        training: {
+          include: {
+            category: true,
+            sessions: true
+          }
+        }
+      },
+      take: 5
+    });
+
+    // 4. Performance review & current cycle
+    const latestReview = await prisma.performanceReview.findFirst({
+      where: { employeeId: employee.id },
+      include: {
+        cycle: true
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    // 5. Attendance summary for current month
+    const startOfMonth = new Date(currentYear, new Date().getMonth(), 1);
+    const endOfMonth = new Date(currentYear, new Date().getMonth() + 1, 0, 23, 59, 59);
+
+    const monthlyAttendance = await prisma.attendance.findMany({
+      where: {
+        employeeId: employee.id,
+        date: {
+          gte: startOfMonth,
+          lte: endOfMonth
+        }
+      }
+    });
+
+    const presentDays = monthlyAttendance.filter(a => a.status === 'PRESENT').length;
+    const lateDays = monthlyAttendance.filter(a => a.status === 'LATE').length;
+    const totalWorkingMinutes = monthlyAttendance.reduce((acc, curr) => acc + (curr.workingMinutes || 0), 0);
+    const totalWorkingHours = Math.round((totalWorkingMinutes / 60) * 10) / 10;
+
+    // Today's attendance
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const todayAttendance = await prisma.attendance.findFirst({
+      where: {
+        employeeId: employee.id,
+        date: { gte: today, lt: tomorrow }
+      }
+    });
+
+    // 6. Recent notifications
+    const recentNotifications = await prisma.notification.findMany({
+      where: { recipientId: userId },
+      orderBy: { createdAt: 'desc' },
+      take: 5
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        employee: {
+          id: employee.id,
+          employeeId: employee.employeeId,
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email,
+          department: employee.department?.name,
+          position: employee.position?.title,
+          status: employee.status,
+          employmentType: employee.employmentType,
+          hireDate: employee.hireDate,
+        },
+        latestPayslip: latestPayslip ? {
+          id: latestPayslip.id,
+          netSalary: latestPayslip.netSalary,
+          basicSalary: latestPayslip.basicSalary,
+          grossSalary: latestPayslip.basicSalary + latestPayslip.totalAllowances + latestPayslip.totalOvertime,
+          totalAllowances: latestPayslip.totalAllowances,
+          totalDeductions: latestPayslip.totalDeductions,
+          totalOvertime: latestPayslip.totalOvertime,
+          periodName: latestPayslip.payrollPeriod.name,
+          periodStatus: latestPayslip.payrollPeriod.status,
+          periodStart: latestPayslip.payrollPeriod.startDate,
+          periodEnd: latestPayslip.payrollPeriod.endDate,
+        } : null,
+        leaveBalances: leaveBalances.map(b => ({
+          id: b.id,
+          leaveType: b.leaveType.name,
+          totalDays: b.balance,
+          usedDays: b.used,
+          remainingDays: Math.max(b.balance - b.used, 0),
+          year: b.year
+        })),
+        trainings: trainingAssignments.map(ta => ({
+          assignmentId: ta.id,
+          trainingId: ta.training.id,
+          title: ta.training.title,
+          category: ta.training.category?.name,
+          status: ta.training.status,
+          assignedAt: ta.assignedAt,
+          sessionsCount: ta.training.sessions?.length || 0,
+        })),
+        performance: latestReview ? {
+          reviewId: latestReview.id,
+          cycleName: latestReview.cycle?.name,
+          cycleStatus: latestReview.cycle?.status,
+          reviewStatus: latestReview.status,
+          score: latestReview.overallScore,
+        } : null,
+        attendance: {
+          month: new Date().toLocaleString('default', { month: 'long', year: 'numeric' }),
+          presentDays,
+          lateDays,
+          totalWorkingHours,
+          todayStatus: todayAttendance?.status || 'NOT_RECORDED',
+          checkIn: todayAttendance?.checkIn,
+          checkOut: todayAttendance?.checkOut,
+        },
+        recentNotifications
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const provisionAccount = async (req: Request, res: Response) => {
+  try {
+    const employeeId = parseInt(req.params.id);
+    if (isNaN(employeeId)) {
+      return res.status(400).json({ error: 'Invalid employee ID' });
+    }
+    const initiatorUserId = (req as any).user!.id;
+    const result = await provisionEmployeeAccount(employeeId, initiatorUserId);
+    res.status(200).json({
+      success: true,
+      message: 'Employee account provisioned and invitation sent successfully',
+      data: result
+    });
+  } catch (error: any) {
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({ error: error.message });
+    }
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getEmployeeById = async (req: Request, res: Response) => {
   try {
+    const authUser = (req as any).user;
+    const targetId = parseInt(req.params.id);
+
+    // IDOR & Role Protection:
+    // If the authenticated user only has the EMPLOYEE role, they can NEVER query another employee's profile
+    const isEmployeeOnly = authUser?.roles?.includes('EMPLOYEE') &&
+      !authUser.roles.some((r: string) => r.startsWith('HR_') || r === 'HEAD_OF_HR');
+    
+    if (isEmployeeOnly) {
+      const myEmp = await prisma.employee.findUnique({ where: { userId: authUser.id } });
+      if (!myEmp || myEmp.id !== targetId) {
+        return res.status(403).json({ error: 'Forbidden: You cannot access another employee profile' });
+      }
+    }
+
     const employee = await prisma.employee.findUnique({
-      where: { id: parseInt(req.params.id) },
+      where: { id: targetId },
       include: {
         department: true,
         position: true,

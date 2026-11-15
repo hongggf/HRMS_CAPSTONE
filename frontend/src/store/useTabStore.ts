@@ -40,8 +40,11 @@ export const useTabStore = create<TabState>((set, get) => ({
           ...tabs,
           {
             ...newTab,
-            // Enforce protection policy: /dashboard is never closable
-            closable: newTab.closable !== false && newTab.key !== '/dashboard',
+            // Enforce protection policy: /dashboard and /employee/dashboard are never closable
+            closable:
+              newTab.closable !== false &&
+              newTab.key !== '/dashboard' &&
+              newTab.key !== '/employee/dashboard',
           },
         ],
         activeKey: newTab.key,
@@ -53,8 +56,9 @@ export const useTabStore = create<TabState>((set, get) => ({
 
   removeTab: (targetKey: string) => {
     const { tabs, activeKey } = get();
-    // Deny closing protected dashboard tab
-    if (targetKey === '/dashboard') return activeKey;
+    // Deny closing protected dashboard tabs
+    if (targetKey === '/dashboard' || targetKey === '/employee/dashboard')
+      return activeKey;
 
     let nextActiveKey = activeKey;
     if (activeKey === targetKey) {

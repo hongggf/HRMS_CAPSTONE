@@ -15,6 +15,7 @@ async function main() {
     'HR_PAYROLL',
     'HR_PERFORMANCE',
     'HR_LND',
+    'EMPLOYEE',
   ];
 
   const roles = [];

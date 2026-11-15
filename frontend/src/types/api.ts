@@ -5,7 +5,8 @@ export type RoleName =
   | 'HR_ATTENDANCE'
   | 'HR_PAYROLL'
   | 'HR_PERFORMANCE'
-  | 'HR_LND';
+  | 'HR_LND'
+  | 'EMPLOYEE';
 
 export interface User {
   id: number;

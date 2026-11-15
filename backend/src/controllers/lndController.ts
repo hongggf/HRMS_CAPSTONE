@@ -750,12 +750,38 @@ export const evaluateTraining = async (req: Request, res: Response) => {
     const { id } = req.params;
     const data = evaluateTrainingSchema.parse(req.body);
     const userId = (req as any).user!.id;
+    const userRoles = (req as any).user?.roles || [];
+    const isEmployeeOnly =
+      userRoles.includes('EMPLOYEE') &&
+      !userRoles.some((r: string) => r.startsWith('HR_') || r === 'HEAD_OF_HR');
+
+    let effectiveEvaluatorId = data.evaluatorId;
+    if (isEmployeeOnly) {
+      const myEmp = await prisma.employee.findUnique({ where: { userId } });
+      if (!myEmp) {
+        return res.status(403).json({ error: 'No employee record linked to user' });
+      }
+      effectiveEvaluatorId = myEmp.id;
+
+      // Verify enrolled in course
+      const isEnrolled = await prisma.trainingAssignment.findUnique({
+        where: {
+          trainingId_employeeId: {
+            trainingId: parseInt(id, 10),
+            employeeId: myEmp.id,
+          },
+        },
+      });
+      if (!isEnrolled) {
+        return res.status(403).json({ error: 'You are not enrolled in this training course' });
+      }
+    }
 
     // Prevent accidental duplicate evaluation
     const existing = await prisma.trainingEvaluation.findFirst({
       where: {
         trainingId: parseInt(id, 10),
-        evaluatorId: data.evaluatorId,
+        evaluatorId: effectiveEvaluatorId,
       },
     });
     if (existing) {
@@ -766,6 +792,7 @@ export const evaluateTraining = async (req: Request, res: Response) => {
       data: {
         trainingId: parseInt(id, 10),
         ...data,
+        evaluatorId: effectiveEvaluatorId,
       },
       include: {
         evaluator: {
@@ -847,6 +874,278 @@ export const updateSkill = async (req: Request, res: Response) => {
 
     await logAudit('LND_SKILL_UPDATED', userId, { skillId: skill.id });
     res.json(skill);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+};
+
+// ==========================================
+// Employee Self-Service (ESS) Learning APIs
+// ==========================================
+
+export const getMyLearning = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const employee = await prisma.employee.findUnique({
+      where: { userId },
+      include: { department: true }
+    });
+
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee record not found for authenticated user' });
+    }
+
+    // 1. All assignments for this employee
+    const assignments = await prisma.trainingAssignment.findMany({
+      where: { employeeId: employee.id },
+      include: {
+        training: {
+          include: {
+            category: true,
+            department: true,
+            sessions: {
+              include: {
+                attendances: {
+                  where: { employeeId: employee.id }
+                }
+              },
+              orderBy: { date: 'asc' }
+            },
+            evaluations: {
+              where: { evaluatorId: employee.id }
+            }
+          }
+        }
+      },
+      orderBy: { assignedAt: 'desc' }
+    });
+
+    // 2. Format assigned trainings with progress, attendance, and evaluation status
+    const assignedTrainings = assignments.map(a => {
+      const t = a.training;
+      const totalSessions = t.sessions.length;
+      const attendedSessions = t.sessions.filter(s => s.attendances.some(att => att.status === 'ATTENDED')).length;
+      const progress = totalSessions > 0 ? Math.round((attendedSessions / totalSessions) * 100) : (t.status === 'COMPLETED' ? 100 : 0);
+      const isCompleted = t.status === 'COMPLETED' || (totalSessions > 0 && attendedSessions === totalSessions);
+      const evaluation = t.evaluations[0] || null;
+
+      return {
+        assignmentId: a.id,
+        trainingId: t.id,
+        title: t.title,
+        description: t.description,
+        category: t.category?.name || 'General',
+        categoryId: t.categoryId,
+        provider: t.provider,
+        type: t.type,
+        capacity: t.capacity,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        status: t.status,
+        assignedAt: a.assignedAt,
+        totalSessions,
+        attendedSessions,
+        progress,
+        isCompleted,
+        evaluation: evaluation ? {
+          id: evaluation.id,
+          rating: evaluation.rating,
+          feedback: evaluation.feedback,
+          comments: evaluation.comments,
+          createdAt: evaluation.createdAt
+        } : null,
+        sessions: t.sessions.map(s => {
+          const myAttendance = s.attendances[0];
+          return {
+            id: s.id,
+            title: s.title,
+            date: s.date,
+            location: s.location,
+            attendanceStatus: myAttendance?.status || 'REGISTERED',
+            attendedAt: myAttendance?.attendedAt || null
+          };
+        })
+      };
+    });
+
+    // 3. Upcoming training sessions for this employee
+    const now = new Date();
+    const upcomingSessions: any[] = [];
+    assignedTrainings.forEach(at => {
+      at.sessions.forEach(s => {
+        if (new Date(s.date) >= now) {
+          upcomingSessions.push({
+            ...s,
+            trainingId: at.trainingId,
+            trainingTitle: at.title,
+            category: at.category
+          });
+        }
+      });
+    });
+    upcomingSessions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    // 4. Available trainings to browse and enroll (ACTIVE, not cancelled, not already assigned, within capacity)
+    const assignedTrainingIds = assignments.map(a => a.trainingId);
+    const availableTrainingsList = await prisma.training.findMany({
+      where: {
+        id: { notIn: assignedTrainingIds.length > 0 ? assignedTrainingIds : [-1] },
+        status: { in: ['ACTIVE', 'DRAFT'] }
+      },
+      include: {
+        category: true,
+        department: true,
+        sessions: { orderBy: { date: 'asc' } },
+        _count: { select: { assignments: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const availableTrainings = availableTrainingsList.map(t => ({
+      id: t.id,
+      title: t.title,
+      description: t.description,
+      category: t.category?.name || 'General',
+      categoryId: t.categoryId,
+      provider: t.provider,
+      type: t.type,
+      capacity: t.capacity,
+      enrolledCount: t._count.assignments,
+      seatsRemaining: t.capacity ? Math.max(t.capacity - t._count.assignments, 0) : null,
+      startDate: t.startDate,
+      endDate: t.endDate,
+      status: t.status,
+      sessionsCount: t.sessions.length
+    }));
+
+    // 5. Training History (all sessions where attendance was marked, and completed courses)
+    const attendances = await prisma.trainingAttendance.findMany({
+      where: { employeeId: employee.id },
+      include: {
+        session: {
+          include: {
+            training: {
+              include: { category: true }
+            }
+          }
+        }
+      },
+      orderBy: { session: { date: 'desc' } }
+    });
+
+    const trainingHistory = attendances.map(att => ({
+      id: att.id,
+      sessionId: att.sessionId,
+      sessionTitle: att.session.title,
+      sessionDate: att.session.date,
+      location: att.session.location,
+      trainingId: att.session.trainingId,
+      trainingTitle: att.session.training.title,
+      category: att.session.training.category?.name,
+      status: att.status,
+      attendedAt: att.attendedAt
+    }));
+
+    // 6. Verified Employee Skills
+    const skills = await prisma.employeeSkill.findMany({
+      where: { employeeId: employee.id },
+      orderBy: { acquiredAt: 'desc' }
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        employee: {
+          id: employee.id,
+          employeeId: employee.employeeId,
+          firstName: employee.firstName,
+          lastName: employee.lastName,
+          email: employee.email,
+          department: employee.department?.name
+        },
+        assignedTrainings,
+        upcomingSessions,
+        availableTrainings,
+        trainingHistory,
+        skills
+      }
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const submitEmployeeEvaluation = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const employee = await prisma.employee.findUnique({ where: { userId } });
+    if (!employee) {
+      return res.status(404).json({ error: 'Employee record not found for authenticated user' });
+    }
+
+    const trainingId = parseInt(req.params.id, 10);
+    const { rating, feedback, comments } = req.body;
+
+    if (!rating || typeof rating !== 'number' || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: 'Rating must be an integer between 1 and 5' });
+    }
+
+    // Verify employee is assigned to this training
+    const assignment = await prisma.trainingAssignment.findUnique({
+      where: {
+        trainingId_employeeId: {
+          trainingId,
+          employeeId: employee.id
+        }
+      }
+    });
+
+    if (!assignment) {
+      return res.status(403).json({ error: 'You are not enrolled in this training course' });
+    }
+
+    // Check duplicate evaluation
+    const existing = await prisma.trainingEvaluation.findFirst({
+      where: {
+        trainingId,
+        evaluatorId: employee.id
+      }
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: 'You have already submitted an evaluation for this training course' });
+    }
+
+    const evaluation = await prisma.trainingEvaluation.create({
+      data: {
+        trainingId,
+        evaluatorId: employee.id,
+        rating,
+        feedback: feedback || null,
+        comments: comments || null
+      },
+      include: {
+        training: {
+          select: { id: true, title: true }
+        }
+      }
+    });
+
+    await logAudit('LND_EVALUATION_SUBMITTED', userId, {
+      trainingId,
+      evaluationId: evaluation.id,
+      rating
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Evaluation submitted successfully',
+      data: evaluation
+    });
   } catch (error: any) {
     res.status(400).json({ error: error.message });
   }

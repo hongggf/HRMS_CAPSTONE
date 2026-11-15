@@ -26,3 +26,17 @@ export const changePasswordSchema = z.object({
   path: ["body", "newPassword"],
 });
 
+export const acceptInvitationSchema = z.object({
+  body: z.object({
+    token: z.string().min(1, 'Invitation token is required'),
+    password: z.string().regex(passwordRegex, passwordErrorMessage),
+  }),
+});
+
+export const verifyInvitationSchema = z.object({
+  query: z.object({
+    token: z.string().min(1, 'Invitation token is required'),
+  }),
+});
+
+

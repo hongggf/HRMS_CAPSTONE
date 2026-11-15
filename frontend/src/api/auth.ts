@@ -61,6 +61,45 @@ export const authApi = {
     return data as User;
   },
 
+  verifyInvitation: async (
+    token: string,
+  ): Promise<{
+    email: string;
+    firstName: string;
+    lastName: string;
+    employeeId: string;
+    department?: string;
+    position?: string;
+    expiresAt: string;
+  }> => {
+    const res = await apiClient.get<
+      ApiResponse<{
+        email: string;
+        firstName: string;
+        lastName: string;
+        employeeId: string;
+        department?: string;
+        position?: string;
+        expiresAt: string;
+      }>
+    >(`/auth/invitation/verify?token=${encodeURIComponent(token)}`);
+    return res.data.data;
+  },
+
+  acceptInvitation: async (
+    token: string,
+    password: string,
+  ): Promise<LoginResponseData> => {
+    const res = await apiClient.post<ApiResponse<LoginResponseData>>(
+      '/auth/invitation/accept',
+      {
+        token,
+        password,
+      },
+    );
+    return res.data.data;
+  },
+
   restoreSession: async (): Promise<boolean> => {
     const {
       refreshToken,

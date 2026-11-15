@@ -23,7 +23,9 @@ import {
   evaluateTraining, 
   getEmployeeSkills,
   getAllSkills,
-  updateSkill 
+  updateSkill,
+  getMyLearning,
+  submitEmployeeEvaluation,
 } from '../controllers/lndController';
 
 const router = Router();
@@ -49,6 +51,7 @@ router.get('/plans', requirePermission(['LND_READ', 'LND_CREATE']), listTraining
 router.patch('/plans/:id/status', requirePermission(['LND_UPDATE']), updateTrainingPlanStatus);
 
 // Assignments & Self-Enrollment
+router.get('/my-learning', getMyLearning);
 router.post('/trainings/:id/assignments', requirePermission(['LND_CREATE']), assignEmployees);
 router.post('/trainings/:id/join', joinTraining);
 
@@ -60,7 +63,8 @@ router.post('/sessions/:sessionId/attendance', requirePermission(['LND_UPDATE'])
 
 // Course Evaluations
 router.get('/trainings/:id/evaluations', requirePermission(['LND_READ']), listEvaluations);
-router.post('/trainings/:id/evaluations', requirePermission(['LND_CREATE']), evaluateTraining);
+router.post('/trainings/:id/evaluations', evaluateTraining);
+router.post('/trainings/:id/my-evaluation', submitEmployeeEvaluation);
 
 // Skills
 router.get('/skills', requirePermission(['LND_READ', 'LND_UPDATE']), getAllSkills);

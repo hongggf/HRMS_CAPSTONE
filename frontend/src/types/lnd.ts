@@ -220,3 +220,97 @@ export interface UpdateEmployeeSkillInput {
   skillName: string;
   level: SkillLevel;
 }
+
+// Employee Self-Service (ESS) Learning Portal Types
+export interface EmployeeAssignedTraining {
+  assignmentId: number;
+  trainingId: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  categoryId: number;
+  provider?: string | null;
+  type: TrainingType;
+  capacity?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  status: TrainingStatus;
+  assignedAt: string;
+  totalSessions: number;
+  attendedSessions: number;
+  progress: number;
+  isCompleted: boolean;
+  evaluation?: {
+    id: number;
+    rating: number;
+    feedback?: string | null;
+    comments?: string | null;
+    createdAt: string;
+  } | null;
+  sessions: Array<{
+    id: number;
+    title: string;
+    date: string;
+    location?: string | null;
+    attendanceStatus: TrainingAttendanceStatus;
+    attendedAt?: string | null;
+  }>;
+}
+
+export interface EmployeeUpcomingSession {
+  id: number;
+  title: string;
+  date: string;
+  location?: string | null;
+  attendanceStatus: TrainingAttendanceStatus;
+  attendedAt?: string | null;
+  trainingId: number;
+  trainingTitle: string;
+  category: string;
+}
+
+export interface EmployeeAvailableTraining {
+  id: number;
+  title: string;
+  description?: string | null;
+  category: string;
+  categoryId: number;
+  provider?: string | null;
+  type: TrainingType;
+  capacity?: number | null;
+  enrolledCount: number;
+  seatsRemaining?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  status: TrainingStatus;
+  sessionsCount: number;
+}
+
+export interface EmployeeTrainingHistoryItem {
+  id: number;
+  sessionId: number;
+  sessionTitle: string;
+  sessionDate: string;
+  location?: string | null;
+  trainingId: number;
+  trainingTitle: string;
+  category?: string;
+  status: TrainingAttendanceStatus;
+  attendedAt?: string | null;
+}
+
+export interface EmployeeLearningSummary {
+  employee: {
+    id: number;
+    employeeId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department?: string;
+  };
+  assignedTrainings: EmployeeAssignedTraining[];
+  upcomingSessions: EmployeeUpcomingSession[];
+  availableTrainings: EmployeeAvailableTraining[];
+  trainingHistory: EmployeeTrainingHistoryItem[];
+  skills: EmployeeSkill[];
+}

@@ -1,7 +1,21 @@
 import { Router } from 'express';
-import { login, refresh, logout, getMe, changePassword } from '../controllers/authController';
+import {
+  login,
+  refresh,
+  logout,
+  getMe,
+  changePassword,
+  verifyInvitation,
+  acceptInvitation,
+} from '../controllers/authController';
 import { validate } from '../middlewares/validate';
-import { loginSchema, refreshSchema, changePasswordSchema } from '../validators/authValidators';
+import {
+  loginSchema,
+  refreshSchema,
+  changePasswordSchema,
+  acceptInvitationSchema,
+  verifyInvitationSchema,
+} from '../validators/authValidators';
 import { requireAuth } from '../middlewares/auth';
 import rateLimit from 'express-rate-limit';
 import { sendError } from '../utils/response';
@@ -24,10 +38,20 @@ const changePasswordLimiter = rateLimit({
   }
 });
 
+const invitationLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'production' ? 10 : 100,
+  handler: (req, res) => {
+    return sendError(res, 'Too many activation attempts, please try again after 15 minutes', 429);
+  }
+});
+
 router.post('/login', loginLimiter, validate(loginSchema), login as any);
 router.post('/refresh', validate(refreshSchema), refresh as any);
 router.post('/logout', requireAuth, logout as any);
 router.get('/me', requireAuth, getMe as any);
 router.post('/change-password', requireAuth, changePasswordLimiter, validate(changePasswordSchema), changePassword as any);
+router.get('/invitation/verify', validate(verifyInvitationSchema), verifyInvitation as any);
+router.post('/invitation/accept', invitationLimiter, validate(acceptInvitationSchema), acceptInvitation as any);
 
 export default router;

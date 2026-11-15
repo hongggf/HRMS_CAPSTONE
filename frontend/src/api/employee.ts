@@ -4,6 +4,7 @@ import {
   EmployeeDocument,
   CreateEmployeeInput,
   UpdateEmployeePositionInput,
+  EmployeeDashboardSummary,
 } from '../types/employee';
 
 export const employeeApi = {
@@ -95,5 +96,39 @@ export const employeeApi = {
     >(`/employees/${id}/activate`);
     const data = (res.data as any)?.data ?? res.data;
     return data as Employee;
+  },
+
+  getMyProfile: async (): Promise<Employee> => {
+    const res = await apiClient.get<
+      Employee | { success: boolean; data: Employee }
+    >('/employees/me');
+    const data = (res.data as any)?.data ?? res.data;
+    return data as Employee;
+  },
+
+  getMyDashboard: async (): Promise<EmployeeDashboardSummary> => {
+    const res = await apiClient.get<
+      { success: boolean; data: EmployeeDashboardSummary } | EmployeeDashboardSummary
+    >('/employees/me/dashboard');
+    const data = (res.data as any)?.data ?? res.data;
+    return data as EmployeeDashboardSummary;
+  },
+
+  provisionAccount: async (
+    id: number,
+  ): Promise<{
+    employeeId: number;
+    userId: number;
+    email: string;
+    token: string;
+    invitationLink: string;
+    expiresAt: string;
+  }> => {
+    const res = await apiClient.post<
+      | { success: boolean; data: any }
+      | any
+    >(`/employees/${id}/provision-account`);
+    const data = (res.data as any)?.data ?? res.data;
+    return data;
   },
 };

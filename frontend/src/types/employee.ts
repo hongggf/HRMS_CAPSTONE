@@ -129,3 +129,73 @@ export const ALLOWED_FILE_EXTENSIONS = [
   '.doc',
   '.docx',
 ];
+
+export interface EmployeeDashboardSummary {
+  employee: {
+    id: number;
+    employeeId: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department?: string;
+    position?: string;
+    status: EmployeeStatus;
+    employmentType: EmploymentType;
+    hireDate?: string | null;
+  };
+  latestPayslip?: {
+    id: number;
+    netSalary: number;
+    basicSalary: number;
+    grossSalary: number;
+    totalAllowances: number;
+    totalDeductions: number;
+    totalOvertime: number;
+    periodName: string;
+    periodStatus: string;
+    periodStart: string;
+    periodEnd: string;
+  } | null;
+  leaveBalances: Array<{
+    id: number;
+    leaveType: string;
+    totalDays: number;
+    usedDays: number;
+    remainingDays: number;
+    year: number;
+  }>;
+  trainings: Array<{
+    assignmentId: number;
+    trainingId: number;
+    title: string;
+    category?: string;
+    status: string;
+    assignedAt: string;
+    sessionsCount: number;
+  }>;
+  performance?: {
+    reviewId: number;
+    cycleName?: string;
+    cycleStatus?: string;
+    reviewStatus: string;
+    score?: number | null;
+  } | null;
+  attendance: {
+    month: string;
+    presentDays: number;
+    lateDays: number;
+    totalWorkingHours: number;
+    todayStatus: string;
+    checkIn?: string | null;
+    checkOut?: string | null;
+  };
+  recentNotifications: Array<{
+    id: number;
+    title: string;
+    message: string;
+    type: string;
+    createdAt: string;
+    isRead: boolean;
+  }>;
+}
+

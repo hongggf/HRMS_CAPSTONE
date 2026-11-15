@@ -19,6 +19,7 @@ import {
   MarkAttendanceInput,
   EvaluateTrainingInput,
   UpdateEmployeeSkillInput,
+  EmployeeLearningSummary,
 } from '../types/lnd';
 
 export const lndApi = {
@@ -232,5 +233,25 @@ export const lndApi = {
       EmployeeSkill | { success: boolean; data: EmployeeSkill }
     >(`/lnd/employees/${employeeId}/skills`, payload);
     return ((res.data as any)?.data ?? res.data) as EmployeeSkill;
+  },
+
+  // Employee Self-Service (ESS)
+  getMyLearning: async (): Promise<EmployeeLearningSummary> => {
+    const res = await apiClient.get<
+      EmployeeLearningSummary | { success: boolean; data: EmployeeLearningSummary }
+    >('/employees/me/learning');
+    const data = (res.data as any)?.data ?? res.data;
+    return data as EmployeeLearningSummary;
+  },
+
+  submitEvaluation: async (
+    trainingId: number,
+    payload: { rating: number; feedback?: string; comments?: string },
+  ): Promise<any> => {
+    const res = await apiClient.post<any>(
+      `/employees/me/trainings/${trainingId}/evaluation`,
+      payload,
+    );
+    return (res.data as any)?.data ?? res.data;
   },
 };
